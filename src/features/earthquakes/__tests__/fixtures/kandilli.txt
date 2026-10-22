@@ -1,0 +1,9 @@
+<HTML><BODY><pre>
+RECENT EARTHQUAKES IN TURKEY
+Date       Time      Latit(N)  Long(E)   Depth(km)     MD   ML   Mw    Region                                            Quality
+---------- --------  --------  -------   ----------    ------------    -----------                                       --------------
+2026.10.22 21:52:12  40.7650   30.9850       11.3      -.-  4.7  4.6   GOLYAKA (DUZCE)                                   REVIZE01      (2026.10.22 21:59:30)
+2026.10.22 19:59:58  39.2010   28.1100        6.9      -.-  2.0  -.-   SINDIRGI (BALIKESIR)                              Ilksel
+2026.10.22 18:00:00  38.5000   27.2000        5.0      1.6  -.-  -.-   AKHISAR (MANISA)                                  Ilksel
+garbage line
+</pre></BODY></HTML>
