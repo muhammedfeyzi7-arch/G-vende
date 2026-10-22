@@ -4,7 +4,19 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Switch, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { AppText } from '@/components/ui';
 import { colors, hitSlop, radius, spacing } from '@/theme';
@@ -438,6 +450,14 @@ const styles = StyleSheet.create({
   },
   rowDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   rowIcon: { width: 36, alignItems: 'center' },
+  stepBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surfaceRaised,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatar: { backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' },
   statusBadge: {
     position: 'absolute',
@@ -461,3 +481,76 @@ const styles = StyleSheet.create({
     minHeight: 68,
   },
 });
+
+/** Yığın (stack) ekranları için kaydırılabilir sayfa gövdesi. */
+export function Page({ children, keyboard }: { children: ReactNode; keyboard?: boolean }) {
+  const insets = useSafeAreaInsets();
+  const body = (
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}
+    >
+      {children}
+    </ScrollView>
+  );
+  return keyboard ? (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
+      {body}
+    </KeyboardAvoidingView>
+  ) : (
+    body
+  );
+}
+
+export function GroupTitle({ children }: { children: string }) {
+  return (
+    <AppText variant="label" style={{ textTransform: 'uppercase', letterSpacing: 0.6, marginTop: spacing.sm, marginLeft: spacing.xs }}>
+      {children}
+    </AppText>
+  );
+}
+
+export function Stepper({
+  label,
+  value,
+  step,
+  min,
+  max,
+  format,
+  onChange,
+  first,
+}: {
+  label: string;
+  value: number;
+  step: number;
+  min: number;
+  max: number;
+  format: (v: number) => string;
+  onChange: (v: number) => void;
+  first?: boolean;
+}) {
+  const set = (v: number) => onChange(Math.min(max, Math.max(min, Math.round(v * 10) / 10)));
+  return (
+    <View
+      style={[styles.row, !first && styles.rowDivider]}
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel={`${label}: ${format(value)}`}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(e) => set(value + (e.nativeEvent.actionName === 'increment' ? step : -step))}
+    >
+      <AppText variant="body" style={{ flex: 1, fontSize: 16 }}>
+        {label}
+      </AppText>
+      <Pressable onPress={() => set(value - step)} style={styles.stepBtn} accessibilityLabel="Azalt" hitSlop={hitSlop}>
+        <Ionicons name="remove" size={18} color={colors.text} />
+      </Pressable>
+      <AppText variant="heading" style={{ minWidth: 60, textAlign: 'center' }}>
+        {format(value)}
+      </AppText>
+      <Pressable onPress={() => set(value + step)} style={styles.stepBtn} accessibilityLabel="Artır" hitSlop={hitSlop}>
+        <Ionicons name="add" size={18} color={colors.text} />
+      </Pressable>
+    </View>
+  );
+}

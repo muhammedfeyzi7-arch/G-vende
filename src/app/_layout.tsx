@@ -82,6 +82,17 @@ export default function RootLayout() {
                 <Stack.Screen name="konum" options={{ title: 'Konum', presentation: 'modal' }} />
                 <Stack.Screen name="giris" options={{ title: 'Giriş Yap', presentation: 'modal' }} />
                 <Stack.Screen name="aile/davet/[token]" options={{ title: 'Aile Daveti' }} />
+                <Stack.Screen name="profil" options={{ title: 'Profil Düzenle' }} />
+                <Stack.Screen name="hesap" options={{ title: 'Hesap' }} />
+                <Stack.Screen name="gizlilik/index" options={{ title: 'Konum ve Gizlilik' }} />
+                <Stack.Screen name="gizlilik/gizle" options={{ title: 'Konumumu Gizle' }} />
+                <Stack.Screen name="guvenlik" options={{ title: 'Güvenlik' }} />
+                <Stack.Screen name="tercihler" options={{ title: 'Uygulama Tercihleri' }} />
+                <Stack.Screen name="bildirim-ayarlari" options={{ title: 'Bildirim Ayarları' }} />
+                <Stack.Screen name="yardim" options={{ title: 'Yardım Merkezi' }} />
+                <Stack.Screen name="geri-bildirim" options={{ title: 'Geri Bildirim' }} />
+                <Stack.Screen name="hakkinda" options={{ title: 'Hakkında' }} />
+                <Stack.Screen name="bildirimler" options={{ title: 'Bildirimler' }} />
                 <Stack.Screen name="isik" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
               </Stack>
             </BiometricGate>
