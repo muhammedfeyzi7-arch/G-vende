@@ -18,6 +18,7 @@ import {
   type CheckinStatus,
   type FamilyGroup,
 } from '@/features/family/api';
+import { ScreenHeader } from '@/components/ds';
 import { LocalFamilyCard } from '@/features/family/LocalFamilyCard';
 import { useFamily } from '@/features/family/useFamily';
 import { useApp } from '@/providers/AppProvider';
@@ -30,7 +31,7 @@ export default function FamilyScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { state, reload } = useFamily();
-  const { userCoords, location, online } = useApp();
+  const { userCoords, location, online, settings } = useApp();
   const [busy, setBusy] = useState<string | null>(null);
 
   const run = async (key: string, fn: () => Promise<unknown>, success?: string) => {
@@ -56,7 +57,7 @@ export default function FamilyScreen() {
             groups.map((g) => g.id),
             status,
             note,
-            sharesAny && location.status === 'granted' && userCoords ? coarsen(userCoords, 0.001) : null,
+            settings.locationSharing && sharesAny && location.status === 'granted' && userCoords ? coarsen(userCoords, 0.001) : null,
           ),
         status === 'safe'
           ? 'Ailenize güvende olduğunuz bildirildi.'
@@ -120,7 +121,7 @@ export default function FamilyScreen() {
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <Button
               style={{ flex: 1 }}
-              label="Güvendeyim"
+              label="Gruba: Güvendeyim"
               icon="shield-checkmark"
               loading={busy === 'safe'}
               disabled={!online}
@@ -128,7 +129,7 @@ export default function FamilyScreen() {
             />
             <Button
               style={{ flex: 1 }}
-              label="Yardım lazım"
+              label="Gruba: Yardım"
               icon="alert-circle"
               variant="danger"
               loading={busy === 'need_help'}
@@ -155,9 +156,7 @@ export default function FamilyScreen() {
       }}
       keyboardShouldPersistTaps="handled"
     >
-      <AppText variant="title" style={{ fontSize: 24 }}>
-        Ailem
-      </AppText>
+      <ScreenHeader title="Ailem" subtitle="Afet anında ailenizle iletişimde kalın." />
       <LocalFamilyCard />
       {state.status !== 'not-configured' ? (
         <AppText variant="label" style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>

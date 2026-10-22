@@ -1,48 +1,35 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Contacts from 'expo-contacts/legacy';
-import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
-import { AppText, Button, Card } from '@/components/ui';
+import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { AppText, Button } from '@/components/ui';
+import { Avatar, ListRow, RowGroup } from '@/components/ds';
 import { openDirections } from '@/features/assembly-points/api';
+import { useProfile } from '@/hooks/useProfile';
 import { useApp } from '@/providers/AppProvider';
 import { colors, radius, spacing } from '@/theme';
-import { coarsen } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
-import { buildStatusMessage, callPhone, formatPhone, sendStatusSms, type StatusKind } from './local';
-import { useLocalFamily } from './useLocalFamily';
+import { formatPhone, MAX_LOCAL_CONTACTS } from './local';
+import { buildPeople } from './people';
+import { useFamilyActions } from './useFamilyActions';
 
-/** Sunucu olmadan da çalışan acil kişi listesi ve SMS ile durum bildirimi. */
+/** Sunucu olmadan çalışan aile bölümü: durum bildirimi (SMS), kişiler ve buluşma noktası. */
 export function LocalFamilyCard() {
-  const { userCoords, location, requestLocation } = useApp();
-
-  const fam = useLocalFamily();
+  const { userCoords, location, settings } = useApp();
+  const fam = useFamilyActions();
+  const { profile } = useProfile();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [relation, setRelation] = useState('');
-  const [withLocation, setWithLocation] = useState(true);
   const [editMp, setEditMp] = useState(false);
   const [mpName, setMpName] = useState('');
 
-  const send = async (kind: StatusKind) => {
-    Haptics.notificationAsync(kind === 'safe' ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning).catch(
-      () => {},
-    );
-    let gps = location.status === 'granted' ? location.coords : null;
-    if (withLocation && !gps && !(location.status === 'denied' && !location.canAskAgain)) {
-      const next = await requestLocation();
-      gps = next.status === 'granted' ? next.coords : null;
-    }
-    const msg = buildStatusMessage(kind, {
-      // GPS varsa ~100 m hassasiyetle; elle seçilen il konumu SMS'e eklenmez (yanıltıcı olur).
-      location: withLocation && gps ? coarsen(gps, 0.001) : null,
-      meetingPoint: fam.meetingPoint,
-    });
-    const r = await sendStatusSms(fam.contacts, msg);
-    if (!r.ok) Alert.alert('Gönderilemedi', r.reason);
-    else if (r.status === 'cancelled') Alert.alert('Gönderilmedi', 'Mesaj iptal edildi.');
-  };
+  const people = useMemo(
+    () => buildPeople({ name: profile.name, status: fam.myStatus }, fam.contacts, [], null),
+    [profile.name, fam.myStatus, fam.contacts],
+  );
 
   const pickFromContacts = async () => {
     try {
@@ -68,145 +55,139 @@ export function LocalFamilyCard() {
 
   const hasContacts = fam.contacts.length > 0;
   return (
-    <Card style={{ gap: spacing.md }}>
-      <View>
-        <AppText variant="heading">Acil durum kişilerim</AppText>
-        <AppText variant="caption">İnternet olmasa da SMS ile haber verin. Kişiler yalnızca bu cihazda saklanır.</AppText>
-      </View>
-
+    <View style={{ gap: spacing.md }}>
+      {/* Durum bildir */}
       <View style={styles.statusRow}>
         <Pressable
-          onPress={() => send('safe')}
-          disabled={!hasContacts}
+          onPress={() => fam.sendStatus('safe')}
           accessibilityRole="button"
           accessibilityLabel="Güvendeyim mesajı gönder"
-          style={({ pressed }) => [styles.statusBtn, styles.safeBtn, !hasContacts && styles.disabled, pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [styles.statusBtn, styles.safeBtn, pressed && { opacity: 0.85 }]}
         >
-          <Ionicons name="shield-checkmark" size={28} color="#04261B" />
+          <Ionicons name="shield-checkmark" size={30} color="#04261B" />
           <AppText variant="heading" color="#04261B">
             Güvendeyim
           </AppText>
         </Pressable>
         <Pressable
-          onPress={() =>
-            Alert.alert(
-              'Yardım mesajı',
-              'Kişilerinize yardıma ihtiyacınız olduğunu bildiren bir SMS hazırlanacak. Hayati tehlike varsa önce 112’yi arayın.',
-              [
-                { text: 'Vazgeç', style: 'cancel' },
-                { text: 'SMS hazırla', onPress: () => send('need_help') },
-              ],
-            )
-          }
-          disabled={!hasContacts}
+          onPress={fam.confirmHelp}
           accessibilityRole="button"
           accessibilityLabel="Yardım lazım mesajı gönder"
-          style={({ pressed }) => [styles.statusBtn, styles.helpBtn, !hasContacts && styles.disabled, pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [styles.statusBtn, styles.helpBtn, pressed && { opacity: 0.85 }]}
         >
-          <Ionicons name="alert-circle" size={28} color="#fff" />
+          <Ionicons name="alert-circle" size={30} color="#fff" />
           <AppText variant="heading" color="#fff">
             Yardım lazım
           </AppText>
         </Pressable>
       </View>
-      <View style={styles.switchRow}>
-        <AppText variant="label" style={{ flex: 1 }}>
-          Mesaja konumumu ekle (GPS, ~100 m)
-        </AppText>
-        <Switch
-          value={withLocation}
-          onValueChange={setWithLocation}
-          trackColor={{ true: colors.primary, false: colors.borderStrong }}
-          accessibilityLabel="Mesaja konumumu ekle"
+      <RowGroup>
+        <ListRow
+          first
+          icon="chatbubbles-outline"
+          title="Herkese durum sor"
+          subtitle="Kişilere “İyi misin?” SMS’i hazırlanır"
+          onPress={fam.askEveryone}
+          disabled={!hasContacts}
         />
-      </View>
-      {!hasContacts && fam.loaded ? <AppText variant="caption">Durum mesajı göndermek için önce kişi ekleyin.</AppText> : null}
+        <ListRow
+          icon="navigate-outline"
+          title="Konum paylaşımı"
+          subtitle={settings.locationSharing ? 'Durum mesajlarına konumunuz eklenir' : 'Kapalı — mesajlara konum eklenmez'}
+          value={settings.locationSharing ? 'Açık' : 'Kapalı'}
+          valueColor={settings.locationSharing ? colors.safe : undefined}
+          onPress={() => router.push('/gizlilik')}
+        />
+      </RowGroup>
 
-      {fam.contacts.map((c) => (
-        <View key={c.id} style={styles.contact}>
-          <View style={styles.avatar}>
-            <AppText variant="heading" color={colors.primary}>
-              {c.name.slice(0, 1).toLocaleUpperCase('tr-TR')}
-            </AppText>
-          </View>
-          <View style={{ flex: 1 }}>
-            <AppText variant="body">{c.name}</AppText>
-            <AppText variant="caption">
-              {formatPhone(c.phone)}
-              {c.relation ? ` · ${c.relation}` : ''}
-            </AppText>
-          </View>
-          <Pressable
-            onPress={() => callPhone(c.phone)}
-            style={styles.iconBtn}
-            accessibilityRole="button"
-            accessibilityLabel={`${c.name} kişisini ara`}
-          >
-            <Ionicons name="call" size={18} color={colors.safe} />
-          </Pressable>
-          <Pressable
-            onPress={() =>
-              Alert.alert('Kişiyi kaldır', `${c.name} listeden kaldırılsın mı?`, [
-                { text: 'Vazgeç', style: 'cancel' },
-                { text: 'Kaldır', style: 'destructive', onPress: () => fam.removeContact(c.id) },
-              ])
-            }
-            style={styles.iconBtn}
-            accessibilityRole="button"
-            accessibilityLabel={`${c.name} kişisini kaldır`}
-          >
-            <Ionicons name="trash-outline" size={18} color={colors.textSecondary} />
-          </Pressable>
+      {/* Kişiler */}
+      <View style={styles.card}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <AppText variant="heading" style={{ flex: 1 }}>
+            Aile üyeleri ({fam.contacts.length}/{MAX_LOCAL_CONTACTS})
+          </AppText>
         </View>
-      ))}
-
-      {adding ? (
-        <View style={{ gap: spacing.sm }}>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="İsim"
-            placeholderTextColor={colors.textMuted}
-            maxLength={40}
-            style={styles.input}
-            accessibilityLabel="İsim"
-          />
-          <TextInput
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Telefon (0532 123 45 67)"
-            placeholderTextColor={colors.textMuted}
-            keyboardType="phone-pad"
-            maxLength={20}
-            style={styles.input}
-            accessibilityLabel="Telefon"
-          />
-          <TextInput
-            value={relation}
-            onChangeText={setRelation}
-            placeholder="Yakınlık (isteğe bağlı, ör. Annem)"
-            placeholderTextColor={colors.textMuted}
-            maxLength={30}
-            style={styles.input}
-            accessibilityLabel="Yakınlık"
-          />
-          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-            <Button style={{ flex: 1 }} variant="ghost" label="Vazgeç" onPress={() => setAdding(false)} />
-            <Button style={{ flex: 1 }} label="Kaydet" onPress={save} />
-          </View>
-        </View>
-      ) : (
-        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-          <Button style={{ flex: 1 }} variant="secondary" icon="person-add-outline" label="Elle ekle" onPress={() => setAdding(true)} />
-          <Button style={{ flex: 1 }} variant="secondary" icon="book-outline" label="Rehberden" onPress={pickFromContacts} />
-        </View>
-      )}
-
-      <View style={styles.divider} />
-      <View style={{ gap: spacing.sm }}>
-        <AppText variant="label" color={colors.text}>
-          Ailemizin buluşma noktası
+        <AppText variant="caption">
+          Kişiler yalnızca bu cihazda saklanır. Durumlar, siz sorduğunuzda veya işaretlediğinizde güncellenir.
         </AppText>
+        {people.map((p) => (
+          <Pressable
+            key={p.key}
+            onPress={() =>
+              p.contactId ? router.push({ pathname: '/aile/kisi/[id]', params: { id: p.contactId } }) : fam.sendStatus('safe')
+            }
+            accessibilityRole="button"
+            accessibilityLabel={`${p.name}: ${p.label}`}
+            style={styles.person}
+          >
+            <Avatar
+              name={p.source === 'me' ? profile.name || 'Ben' : p.name}
+              uri={p.source === 'me' ? profile.photoUri : null}
+              size={48}
+              status={p.status}
+              ring={p.color}
+            />
+            <View style={{ flex: 1 }}>
+              <AppText variant="body" style={{ fontWeight: '600' }}>
+                {p.source === 'me' ? 'Ben' : (fam.contacts.find((c) => c.id === p.contactId)?.name ?? p.name)}
+              </AppText>
+              <AppText variant="caption" color={p.color}>
+                {p.label}
+                {p.at ? ` · ${relativeTimeTr(p.at)}` : ''}
+              </AppText>
+              {p.contactId ? (
+                <AppText variant="caption">{formatPhone(fam.contacts.find((c) => c.id === p.contactId)?.phone ?? '')}</AppText>
+              ) : null}
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          </Pressable>
+        ))}
+        {adding ? (
+          <View style={{ gap: spacing.sm }}>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="İsim"
+              placeholderTextColor={colors.textMuted}
+              maxLength={40}
+              style={styles.input}
+              accessibilityLabel="İsim"
+            />
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Telefon (0532 123 45 67)"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="phone-pad"
+              maxLength={20}
+              style={styles.input}
+              accessibilityLabel="Telefon"
+            />
+            <TextInput
+              value={relation}
+              onChangeText={setRelation}
+              placeholder="Yakınlık (ör. Annem)"
+              placeholderTextColor={colors.textMuted}
+              maxLength={30}
+              style={styles.input}
+              accessibilityLabel="Yakınlık"
+            />
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <Button style={{ flex: 1 }} variant="ghost" label="Vazgeç" onPress={() => setAdding(false)} />
+              <Button style={{ flex: 1 }} label="Kaydet" onPress={save} />
+            </View>
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <Button style={{ flex: 1 }} variant="secondary" icon="person-add-outline" label="Elle ekle" onPress={() => setAdding(true)} />
+            <Button style={{ flex: 1 }} variant="secondary" icon="book-outline" label="Rehberden" onPress={pickFromContacts} />
+          </View>
+        )}
+      </View>
+
+      {/* Buluşma noktası */}
+      <View style={styles.card}>
+        <AppText variant="heading">Ortak buluşma noktası</AppText>
         {editMp ? (
           <>
             <TextInput
@@ -253,8 +234,8 @@ export function LocalFamilyCard() {
             </View>
           </>
         ) : fam.meetingPoint ? (
-          <View style={styles.contact}>
-            <Ionicons name="flag" size={20} color={colors.warning} />
+          <View style={styles.person}>
+            <Ionicons name="flag" size={22} color={colors.warning} />
             <View style={{ flex: 1 }}>
               <AppText variant="body">{fam.meetingPoint.name}</AppText>
               <AppText variant="caption">
@@ -295,19 +276,24 @@ export function LocalFamilyCard() {
         )}
         <AppText variant="caption">Buluşma noktası durum mesajlarına eklenir. Ailenizle önceden konuşun.</AppText>
       </View>
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   statusRow: { flexDirection: 'row', gap: spacing.sm },
-  statusBtn: { flex: 1, minHeight: 84, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  statusBtn: { flex: 1, minHeight: 92, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', gap: 4 },
   safeBtn: { backgroundColor: colors.safe, boxShadow: '0 6px 18px rgba(20,217,154,0.3)' },
   helpBtn: { backgroundColor: colors.danger, boxShadow: '0 6px 18px rgba(255,53,72,0.3)' },
-  disabled: { opacity: 0.4 },
-  switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  contact: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 48 },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primaryMuted, alignItems: 'center', justifyContent: 'center' },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  person: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 56 },
   iconBtn: {
     width: 40,
     height: 40,
@@ -326,5 +312,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: 15,
   },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
 });

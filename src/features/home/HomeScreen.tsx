@@ -1,35 +1,57 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AppText, Banner } from '@/components/ui';
-import { TopTabs } from '@/components/TopTabs';
+import { AppText, Banner, Button } from '@/components/ui';
+import { accent } from '@/components/ds';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { computeAlertState } from '@/features/earthquakes/alertState';
 import { AlertCard } from '@/features/earthquakes/components/AlertCard';
 import { EventInfoRow } from '@/features/earthquakes/components/EventInfoRow';
+import { QuakeListItem } from '@/features/earthquakes/components/QuakeListItem';
+import { FamilySafetyCard } from '@/features/family/FamilySafetyCard';
+import { useFamily } from '@/features/family/useFamily';
+import { useFamilyActions } from '@/features/family/useFamilyActions';
+import { buildPeople, safeCount } from '@/features/family/people';
 import { LayerPanel, MapControls, MapLegend, NearbyAssemblyButton } from '@/features/map/MapOverlays';
 import { DEFAULT_LAYERS, QuakeMap, type MapSelection, type QuakeMapHandle } from '@/features/map/QuakeMap';
 import { SelectionCard } from '@/features/map/SelectionCard';
-import type { ReportFilter } from '@/features/reports/components/CategoryChips';
+import { ReportCard } from '@/features/reports/components/ReportCard';
 import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, font, radius, spacing } from '@/theme';
-import { AssemblyTab, DetailsTab, HelpTab, LiveFeedTab, OfficialDataTab } from './tabs';
+import { colors, radius, spacing } from '@/theme';
+import { relativeTimeTr } from '@/utils/time';
+import { HomeHeader } from './HomeHeader';
+import { QuickTiles } from './QuickTiles';
 
-const INFO_HEIGHT = 84;
-
-type TabKey = 'feed' | 'official' | 'assembly' | 'help' | 'details';
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'feed', label: 'Canlı Akış' },
-  { key: 'official', label: 'Resmî Veriler' },
-  { key: 'assembly', label: 'Toplanma Alanları' },
-  { key: 'help', label: 'Yardım' },
-  { key: 'details', label: 'Detaylar' },
-];
+function SectionTitle({
+  title,
+  action,
+  onAction,
+  right,
+}: {
+  title: string;
+  action?: string;
+  onAction?: () => void;
+  right?: React.ReactNode;
+}) {
+  return (
+    <View style={styles.sectionTitle}>
+      <AppText variant="title" style={{ fontSize: 20, flex: 1 }}>
+        {title}
+      </AppText>
+      {right}
+      {action && onAction ? (
+        <Pressable onPress={onAction} accessibilityRole="link" style={{ padding: 4 }}>
+          <AppText variant="label" color={colors.primary}>
+            {action} ›
+          </AppText>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -39,9 +61,9 @@ export function HomeScreen() {
   const events = useVisibleQuakes();
   const feed = useReports();
   const nearby = useNearbyAssembly(userCoords);
+  const family = useFamily();
+  const fam = useFamilyActions();
 
-  const [tab, setTab] = useState<TabKey>('feed');
-  const [filter, setFilter] = useState<ReportFilter>('all');
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
   const [layersOpen, setLayersOpen] = useState(false);
   const [selection, setSelection] = useState<MapSelection | null>(null);
@@ -50,16 +72,28 @@ export function HomeScreen() {
 
   const alert = useMemo(() => computeAlertState(events, userCoords), [events, userCoords]);
   const focus = alert.kind === 'none' ? null : alert.event;
-  // Haritada son 24 saatin olayları; liste sekmesinde tümü.
+  // Haritada son 24 saatin olayları
   const mapEvents = useMemo(
     () => events.filter((e) => Date.now() - Date.parse(e.primary.occurredAt) < 24 * 3600_000 || e.id === focus?.id),
     [events, focus],
   );
-  const mapHeight = Math.max(260, Math.min(380, height * 0.36));
+  const mapHeight = Math.max(300, Math.min(440, height * 0.42));
+
+  const groups =
+    family.state.status === 'ready'
+      ? family.state.groups
+      : family.state.status === 'error' && family.state.cached
+        ? family.state.cached.groups
+        : [];
+  const myUserId = family.state.status === 'ready' ? family.state.me : null;
+  const familyCount = useMemo(
+    () => safeCount(buildPeople({ name: '', status: fam.myStatus }, fam.contacts, groups, myUserId)),
+    [fam.myStatus, fam.contacts, groups, myUserId],
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([refreshQuakes(), feed.refresh(), nearby.reload()]);
+    await Promise.all([refreshQuakes(), feed.refresh(), nearby.reload(), family.reload()]);
     setRefreshing(false);
   };
 
@@ -68,52 +102,40 @@ export function HomeScreen() {
     else router.push('/konum');
   };
 
-  const onHelpful = (id: string) => {
-    if (!feed.reports.find((r) => r.id === id) || feed.reports.find((r) => r.id === id)?.isSample) return;
-    feed.toggleHelpful(id).catch((e: Error) => Alert.alert('İşlem yapılamadı', e.message));
-  };
+  const recentReports = feed.reports.slice(0, 10);
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScrollView
-        stickyHeaderIndices={[3]}
-        contentContainerStyle={{ paddingBottom: tabBarHeight + 96 }}
+        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: tabBarHeight + spacing.xl, gap: spacing.md }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textSecondary} />}
       >
-        {/* 0: Alarm kartı */}
-        <View style={{ paddingHorizontal: spacing.md, paddingTop: spacing.sm }}>
-          {!online ? (
-            <View style={{ marginBottom: spacing.sm }}>
-              <Banner
-                icon="cloud-offline-outline"
-                tone="warning"
-                text="İnternet bağlantısı yok. Kayıtlı veriler gösteriliyor."
-                onPress={() => router.push('/acil')}
-              />
-            </View>
-          ) : null}
-          <AlertCard
-            state={alert}
-            loading={quakes.loading}
-            error={quakes.error}
-            onPress={focus ? () => router.push({ pathname: '/deprem/[id]', params: { id: focus.id } }) : undefined}
+        <HomeHeader />
+        {!online ? (
+          <Banner
+            icon="cloud-offline-outline"
+            tone="warning"
+            text="İnternet yok. Kayıtlı veriler gösteriliyor; Acil Durum araçları çalışır."
+            onPress={() => router.push('/acil')}
           />
-          {location.status !== 'granted' && location.status !== 'manual' ? (
-            <View style={{ marginTop: spacing.sm }}>
-              <Banner
-                icon="location-outline"
-                text="Uzaklık ve yakın toplanma alanları için konumunuzu belirleyin."
-                onPress={() => router.push('/konum')}
-              />
-            </View>
-          ) : null}
-        </View>
+        ) : null}
 
-        {/* Harita: bilgi satırı üst kısma, lejant alt kısma gradyanla biner (referans düzeni) */}
-        <View style={[styles.mapCard, { height: mapHeight + INFO_HEIGHT }]}>
+        <AlertCard
+          state={alert}
+          loading={quakes.loading}
+          error={quakes.error}
+          onPress={focus ? () => router.push({ pathname: '/deprem/[id]', params: { id: focus.id } }) : undefined}
+        />
+        {focus ? (
+          <View style={styles.infoCard}>
+            <EventInfoRow event={focus} user={userCoords} locationHint={location.status === 'manual' ? location.label : undefined} />
+          </View>
+        ) : null}
+
+        <View style={[styles.mapCard, { height: mapHeight }]}>
           <QuakeMap
-            mapStyle={settings.mapStyle}
             ref={mapRef}
+            mapStyle={settings.mapStyle}
             events={mapEvents}
             focus={focus}
             reports={feed.reports}
@@ -125,29 +147,15 @@ export function HomeScreen() {
               setLayersOpen(false);
               setSelection(s);
             }}
-            topInset={INFO_HEIGHT}
             bottomInset={72}
           />
-          <LinearGradient
-            pointerEvents="box-none"
-            colors={[colors.bg, 'rgba(3,11,20,0.92)', 'rgba(3,11,20,0)']}
-            locations={[0, 0.6, 1]}
-            style={styles.topFade}
-          >
-            {focus ? (
-              <EventInfoRow event={focus} user={userCoords} locationHint={location.status === 'manual' ? location.label : undefined} />
-            ) : null}
-          </LinearGradient>
-          <LinearGradient pointerEvents="none" colors={['rgba(3,11,20,0)', 'rgba(3,11,20,0.75)']} style={styles.bottomFade} />
-          <View style={[styles.controls, { top: INFO_HEIGHT - 8 }]} pointerEvents="box-none">
-            <MapControls
-              layersOpen={layersOpen}
-              onLayers={() => setLayersOpen((v) => !v)}
-              onLocate={onLocate}
-              onFullscreen={() => router.push({ pathname: '/harita', params: focus ? { focus: focus.id } : {} })}
-            />
-            {layersOpen ? <LayerPanel layers={layers} onChange={setLayers} /> : null}
-          </View>
+          <MapControls
+            layersOpen={layersOpen}
+            onLayers={() => setLayersOpen((v) => !v)}
+            onLocate={onLocate}
+            onFullscreen={() => router.push({ pathname: '/harita', params: focus ? { focus: focus.id } : {} })}
+          />
+          {layersOpen ? <LayerPanel layers={layers} onChange={setLayers} /> : null}
           <View style={styles.mapBottom} pointerEvents="box-none">
             {selection ? (
               <View style={{ flex: 1 }}>
@@ -172,112 +180,161 @@ export function HomeScreen() {
             )}
           </View>
         </View>
-        <View style={{ paddingHorizontal: spacing.md }}>
-          <View style={styles.grabber} />
-        </View>
 
-        {/* 3: Yapışkan sekmeler (0: alarm, 1: harita, 2: tutamak) */}
-        <View style={{ backgroundColor: colors.bg }}>
-          <TopTabs tabs={TABS} value={tab} onChange={setTab} />
-        </View>
+        <QuickTiles
+          tiles={[
+            {
+              key: '112',
+              icon: 'call',
+              color: accent.red,
+              title: '112',
+              subtitle: 'Acil Çağrı',
+              big: true,
+              onPress: () => Linking.openURL('tel:112'),
+            },
+            {
+              key: 'aile',
+              icon: 'people',
+              color: accent.blue,
+              title: 'Ailem',
+              subtitle: familyCount.total > 1 ? `${familyCount.safe}/${familyCount.total} güvende` : 'Kişi ekle',
+              onPress: () => router.push('/ailem'),
+            },
+            { key: 'toplanma', icon: 'map', color: accent.green, title: 'Toplanma Alanları', onPress: () => router.push('/toplanma') },
+            {
+              key: 'canta',
+              icon: 'mci:bag-personal',
+              color: accent.orange,
+              title: 'Acil Durum Çantası',
+              onPress: () => router.push('/canta'),
+            },
+            { key: 'rehber', icon: 'document-text', color: accent.purple, title: 'Deprem Rehberi', onPress: () => router.push('/rehber') },
+          ]}
+        />
 
-        {/* 4: Sekme içeriği */}
-        <View>
-          {tab === 'feed' ? (
-            <LiveFeedTab
-              filter={filter}
-              onFilter={setFilter}
-              reports={feed.reports}
-              status={feed.status}
-              error={feed.error}
-              lastSyncedAt={feed.lastSyncedAt}
-              pending={feed.pending}
-              helpful={feed.helpful}
-              onHelpful={onHelpful}
-              onRetry={feed.refresh}
-              online={online}
-            />
-          ) : tab === 'official' ? (
-            <OfficialDataTab
-              snapshot={quakes.snapshot}
-              events={events}
-              user={userCoords}
-              loading={quakes.loading}
-              onRetry={refreshQuakes}
-            />
-          ) : tab === 'assembly' ? (
-            <AssemblyTab
-              state={nearby.state}
-              myPoint={nearby.myPoint}
-              onRetry={nearby.reload}
-              onShowAll={() => router.push('/toplanma')}
-              needsLocation={() => router.push('/konum')}
-            />
-          ) : tab === 'help' ? (
-            <HelpTab
-              helpReports={feed.reports.filter((r) => r.category === 'help')}
-              onOpenReport={(r) => !r.isSample && router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
-            />
+        <FamilySafetyCard groups={groups} myUserId={myUserId} />
+
+        <View style={styles.block}>
+          <SectionTitle
+            title="Son Bildirimler"
+            action="Tümünü Gör"
+            onAction={() => router.push('/akis')}
+            right={
+              <Pressable
+                onPress={() => router.push('/rapor/yeni')}
+                accessibilityRole="button"
+                accessibilityLabel="Bildirim ekle"
+                style={styles.addBtn}
+              >
+                <AppText variant="label" color={colors.text}>
+                  + Bildir
+                </AppText>
+              </Pressable>
+            }
+          />
+          {recentReports.length ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: spacing.sm, paddingHorizontal: spacing.md }}
+            >
+              {recentReports.map((r) => (
+                <ReportCard
+                  key={r.id}
+                  report={r}
+                  onPress={() => !r.isSample && router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
+                />
+              ))}
+            </ScrollView>
           ) : (
-            <DetailsTab event={focus} snapshot={quakes.snapshot} user={userCoords} />
+            <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
+              <AppText variant="label">
+                {feed.status === 'not-configured'
+                  ? 'Topluluk bildirimleri sunucu bağlantısı gerektirir (bu kurulumda yok). Sahte kayıt gösterilmez.'
+                  : feed.status === 'error'
+                    ? `Bildirimler alınamadı. ${feed.error ?? ''}`
+                    : 'Son 48 saatte paylaşılan bildirim yok.'}
+              </AppText>
+            </View>
           )}
+          {recentReports.length ? (
+            <AppText variant="caption" style={{ paddingHorizontal: spacing.lg }}>
+              Kullanıcı bildirimleri doğrulanmamış olabilir; resmî kayıt değildir.
+            </AppText>
+          ) : null}
+        </View>
+
+        <View style={styles.block}>
+          <SectionTitle title="Son Depremler" action="Tümünü Gör" onAction={() => router.push('/depremler')} />
+          {events.length ? (
+            events
+              .slice(0, 5)
+              .map((e) => (
+                <QuakeListItem
+                  key={e.id}
+                  event={e}
+                  user={userCoords}
+                  onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })}
+                />
+              ))
+          ) : (
+            <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
+              <AppText variant="label">{quakes.loading ? 'Yükleniyor…' : (quakes.error ?? 'Seçili eşiğin üzerinde kayıt yok.')}</AppText>
+              {!quakes.loading ? <Button label="Tekrar dene" variant="secondary" icon="refresh" onPress={refreshQuakes} /> : null}
+            </View>
+          )}
+          <AppText variant="caption" style={{ paddingHorizontal: spacing.lg }}>
+            Kaynak: AFAD, Kandilli, USGS · Son güncelleme{' '}
+            {quakes.snapshot?.lastSuccessAt ? relativeTimeTr(quakes.snapshot.lastSuccessAt) : 'yok'}
+          </AppText>
         </View>
       </ScrollView>
-
-      {tab === 'feed' ? (
-        <Pressable
-          onPress={() => router.push('/rapor/yeni')}
-          accessibilityRole="button"
-          accessibilityLabel="Bildirim ekle"
-          style={({ pressed }) => [
-            styles.fab,
-            { bottom: tabBarHeight + spacing.md },
-            pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
-          ]}
-        >
-          <Ionicons name="pencil" size={22} color="#fff" />
-          <AppText variant="heading" color="#fff" style={{ fontSize: font.size.lg }}>
-            Bildirim Ekle
-          </AppText>
-        </Pressable>
-      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
+  infoCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.sm,
+  },
   mapCard: {
-    marginTop: spacing.sm,
-    marginHorizontal: spacing.xs,
-    borderRadius: 26,
+    borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#0A1824',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
   },
-  topFade: { position: 'absolute', left: 0, right: 0, top: 0, height: INFO_HEIGHT + 36, paddingHorizontal: spacing.sm },
-  bottomFade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 110 },
-  controls: { position: 'absolute', left: 0, right: 0 },
   mapBottom: {
     position: 'absolute',
-    left: spacing.md,
-    right: spacing.md,
-    bottom: spacing.md,
+    left: spacing.sm,
+    right: spacing.sm,
+    bottom: spacing.sm,
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.borderStrong, marginVertical: spacing.sm },
-  fab: {
-    position: 'absolute',
-    right: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
+  block: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
+    paddingVertical: spacing.md,
     gap: spacing.sm,
-    backgroundColor: colors.primary,
+    overflow: 'hidden',
+  },
+  sectionTitle: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.lg },
+  addBtn: {
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
     borderRadius: radius.pill,
-    paddingHorizontal: spacing.xl,
-    minHeight: 58,
-    boxShadow: '0 8px 26px rgba(22,131,255,0.45)',
+    paddingHorizontal: spacing.md,
+    minHeight: 34,
+    justifyContent: 'center',
   },
 });

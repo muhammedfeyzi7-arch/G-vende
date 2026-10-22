@@ -93,6 +93,16 @@ export default function RootLayout() {
                 <Stack.Screen name="geri-bildirim" options={{ title: 'Geri Bildirim' }} />
                 <Stack.Screen name="hakkinda" options={{ title: 'Hakkında' }} />
                 <Stack.Screen name="bildirimler" options={{ title: 'Bildirimler' }} />
+                <Stack.Screen name="akis" options={{ title: 'Son Bildirimler' }} />
+                <Stack.Screen name="depremler" options={{ title: 'Deprem Geçmişi' }} />
+                <Stack.Screen name="acil-mod" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+                <Stack.Screen name="acil-sms" options={{ title: 'Acil SMS' }} />
+                <Stack.Screen name="duyurular" options={{ title: 'Resmî Bilgiler' }} />
+                <Stack.Screen name="canta" options={{ title: 'Acil Durum Çantası' }} />
+                <Stack.Screen name="rehber/index" options={{ title: 'Afet Rehberleri' }} />
+                <Stack.Screen name="rehber/[id]" options={{ title: 'Rehber' }} />
+                <Stack.Screen name="saglik-bilgilerim" options={{ title: 'Sağlık Bilgilerim' }} />
+                <Stack.Screen name="aile/kisi/[id]" options={{ title: 'Aile Üyesi' }} />
                 <Stack.Screen name="isik" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
               </Stack>
             </BiometricGate>

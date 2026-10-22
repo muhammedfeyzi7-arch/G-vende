@@ -1,9 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
-import { AppText, IconButton } from '@/components/ui';
+import { AppText } from '@/components/ui';
 import { colors, radius, spacing } from '@/theme';
 import { FELT_LEVELS } from '../reports/categories';
 import type { MapLayers } from './QuakeMap';
+
+function ControlButton({ icon, label, onPress, active }: { icon: string; label: string; onPress: () => void; active?: boolean }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: !!active }}
+      style={({ pressed }) => [styles.ctrl, active && { borderColor: colors.primary }, pressed && { opacity: 0.85 }]}
+    >
+      <Ionicons name={icon as never} size={24} color={active ? colors.primary : colors.text} />
+      <AppText variant="caption" color={colors.text} style={{ fontSize: 10.5 }}>
+        {label}
+      </AppText>
+    </Pressable>
+  );
+}
 
 export function MapControls({
   onLayers,
@@ -20,15 +37,9 @@ export function MapControls({
 }) {
   return (
     <View style={styles.controls}>
-      <IconButton icon="layers-outline" label="Harita katmanları" onPress={onLayers} active={layersOpen} size={50} />
-      <IconButton icon="navigate-outline" label="Konumuma git" onPress={onLocate} size={50} />
-      {onFullscreen ? (
-        <IconButton
-          icon={fullscreenIcon}
-          label={fullscreenIcon === 'scan-outline' ? 'Tam ekran harita' : 'Tam ekrandan çık'}
-          onPress={onFullscreen}
-        />
-      ) : null}
+      <ControlButton icon="layers" label="Katmanlar" onPress={onLayers} active={layersOpen} />
+      <ControlButton icon="navigate-outline" label="Konumum" onPress={onLocate} />
+      {onFullscreen ? <ControlButton icon={fullscreenIcon} label="Tam Ekran" onPress={onFullscreen} /> : null}
     </View>
   );
 }
@@ -119,10 +130,22 @@ export function NearbyAssemblyButton({ onPress, count, mine }: { onPress: () => 
 }
 
 const styles = StyleSheet.create({
-  controls: { position: 'absolute', right: spacing.md, top: spacing.md, gap: spacing.sm },
+  controls: { position: 'absolute', right: spacing.sm, top: spacing.sm, gap: spacing.xs + 2 },
+  ctrl: {
+    width: 76,
+    minHeight: 62,
+    borderRadius: 14,
+    backgroundColor: 'rgba(8,20,33,0.88)',
+    borderWidth: 1,
+    borderColor: 'rgba(60,90,120,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+    boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
+  },
   layerPanel: {
     position: 'absolute',
-    right: 70,
+    right: 92,
     top: spacing.md,
     width: 230,
     backgroundColor: 'rgba(7,21,34,0.97)',
