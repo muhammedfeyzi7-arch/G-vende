@@ -16,15 +16,11 @@ export function relativeTimeTr(date: Date | string | number, now: Date = new Dat
 }
 
 export function formatTimeTr(date: Date | string | number): string {
-  return new Intl.DateTimeFormat('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: TR_TZ }).format(
-    new Date(date),
-  );
+  return new Intl.DateTimeFormat('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: TR_TZ }).format(new Date(date));
 }
 
 export function formatDateTr(date: Date | string | number): string {
-  return new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: TR_TZ }).format(
-    new Date(date),
-  );
+  return new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: TR_TZ }).format(new Date(date));
 }
 
 export function formatDateTimeTr(date: Date | string | number): string {

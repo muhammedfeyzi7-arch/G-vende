@@ -19,11 +19,7 @@ export function AppText({
   numberOfLines?: number;
 }) {
   return (
-    <Text
-      numberOfLines={numberOfLines}
-      maxFontSizeMultiplier={1.6}
-      style={[textStyles[variant], color ? { color } : null, style]}
-    >
+    <Text numberOfLines={numberOfLines} maxFontSizeMultiplier={1.6} style={[textStyles[variant], color ? { color } : null, style]}>
       {children}
     </Text>
   );
@@ -146,12 +142,24 @@ export function StateMessage({
           {message}
         </AppText>
       ) : null}
-      {actionLabel && onAction ? <Button label={actionLabel} onPress={onAction} variant="secondary" style={{ marginTop: spacing.sm }} /> : null}
+      {actionLabel && onAction ? (
+        <Button label={actionLabel} onPress={onAction} variant="secondary" style={{ marginTop: spacing.sm }} />
+      ) : null}
     </View>
   );
 }
 
-export function Banner({ icon, text, tone = 'info', onPress }: { icon: IconName; text: string; tone?: 'info' | 'warning' | 'error'; onPress?: () => void }) {
+export function Banner({
+  icon,
+  text,
+  tone = 'info',
+  onPress,
+}: {
+  icon: IconName;
+  text: string;
+  tone?: 'info' | 'warning' | 'error';
+  onPress?: () => void;
+}) {
   const c = tone === 'error' ? colors.danger : tone === 'warning' ? colors.warning : colors.primary;
   return (
     <Pressable

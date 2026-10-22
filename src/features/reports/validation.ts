@@ -13,7 +13,8 @@ export function validateReport(input: NewReportInput): ValidationResult {
   const desc = input.description.trim();
   if (desc.length > MAX_DESCRIPTION) return { ok: false, error: `Açıklama en fazla ${MAX_DESCRIPTION} karakter olabilir.` };
   if (input.photos.length > MAX_PHOTOS) return { ok: false, error: `En fazla ${MAX_PHOTOS} fotoğraf eklenebilir.` };
-  if (input.category !== 'shake' && input.feltIntensity != null) return { ok: false, error: 'Şiddet yalnızca sarsıntı bildiriminde seçilebilir.' };
+  if (input.category !== 'shake' && input.feltIntensity != null)
+    return { ok: false, error: 'Şiddet yalnızca sarsıntı bildiriminde seçilebilir.' };
   if (input.category === 'other' && !desc) return { ok: false, error: '"Diğer" bildirimi için kısa bir açıklama yazın.' };
   if (input.location && (Math.abs(input.location.latitude) > 90 || Math.abs(input.location.longitude) > 180))
     return { ok: false, error: 'Konum geçersiz.' };

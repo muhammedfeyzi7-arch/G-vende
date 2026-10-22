@@ -26,7 +26,10 @@ export function ReportRow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${meta.label}. ${report.areaLabel ?? 'Bölge belirtilmemiş'}. ${headline} ${report.description ?? ''}. ${relativeTimeTr(report.createdAt)}.`}
+      accessibilityLabel={`${meta.label}. ${report.areaLabel ?? 'Bölge belirtilmemiş'}. ${headline} ${report.description ?? ''}. ${relativeTimeTr(report.createdAt)}. ${report.helpfulCount} kişi faydalı buldu.`}
+      // Satır tek erişilebilir öğe olduğundan iç düğme ekran okuyucuya eylem olarak sunulur.
+      accessibilityActions={[{ name: 'activate' }, { name: 'helpful', label: helpful ? 'Faydalı işaretini kaldır' : 'Faydalı buldum' }]}
+      onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'helpful' ? onHelpful() : onPress())}
       style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.surfacePressed }]}
     >
       <View style={[styles.icon, { backgroundColor: iconColor }]}>

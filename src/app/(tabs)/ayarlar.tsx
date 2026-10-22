@@ -28,7 +28,14 @@ export default function SettingsScreen() {
   // Tercihler değiştiğinde sunucuya eşitle (girişliyse)
   useEffect(() => {
     syncPreferences(settings, userCoords).catch(() => {});
-  }, [settings.quakeNotifications, settings.familyNotifications, settings.minNotifyMagnitude, settings.notifyIntervalMinutes, userCoords, session]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    settings.quakeNotifications,
+    settings.familyNotifications,
+    settings.minNotifyMagnitude,
+    settings.notifyIntervalMinutes,
+    userCoords,
+    session,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const enablePush = async () => {
     const r = await registerForPush();
@@ -50,25 +57,36 @@ export default function SettingsScreen() {
   };
 
   const deleteAccount = () =>
-    Alert.alert('Hesabı sil', 'Hesabınız, bildirimleriniz, aile üyelikleriniz ve durum kayıtlarınız kalıcı olarak silinir. Bu işlem geri alınamaz.', [
-      { text: 'Vazgeç', style: 'cancel' },
-      {
-        text: 'Kalıcı olarak sil',
-        style: 'destructive',
-        onPress: async () => {
-          const sb = getSupabase();
-          if (!sb) return;
-          const { error } = await sb.functions.invoke('delete-account', { method: 'POST' });
-          if (error) return Alert.alert('Silinemedi', friendlyError(error));
-          await sb.auth.signOut();
-          await clearAll();
-          Alert.alert('Hesabınız silindi');
+    Alert.alert(
+      'Hesabı sil',
+      'Hesabınız, bildirimleriniz, aile üyelikleriniz ve durum kayıtlarınız kalıcı olarak silinir. Bu işlem geri alınamaz.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Kalıcı olarak sil',
+          style: 'destructive',
+          onPress: async () => {
+            const sb = getSupabase();
+            if (!sb) return;
+            const { error } = await sb.functions.invoke('delete-account', { method: 'POST' });
+            if (error) return Alert.alert('Silinemedi', friendlyError(error));
+            await sb.auth.signOut();
+            await clearAll();
+            Alert.alert('Hesabınız silindi');
+          },
         },
-      },
-    ]);
+      ],
+    );
 
   return (
-    <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.md, padding: spacing.lg, gap: spacing.lg, paddingBottom: tabBarHeight + spacing.xl }}>
+    <ScrollView
+      contentContainerStyle={{
+        paddingTop: insets.top + spacing.md,
+        padding: spacing.lg,
+        gap: spacing.lg,
+        paddingBottom: tabBarHeight + spacing.xl,
+      }}
+    >
       <AppText variant="title" style={{ fontSize: 24 }}>
         Ayarlar
       </AppText>
@@ -90,10 +108,19 @@ export default function SettingsScreen() {
 
       <Section title="Bildirimler">
         <AppText variant="caption">
-          Bildirimler, deprem kaynaklarda yayımlandıktan sonra gönderilir ve birkaç dakika gecikebilir. GÜVENDE erken uyarı sistemi değildir.
+          Bildirimler, deprem kaynaklarda yayımlandıktan sonra gönderilir ve birkaç dakika gecikebilir. GÜVENDE erken uyarı sistemi
+          değildir.
         </AppText>
-        <Toggle label="Yeni deprem kayıtları" value={settings.quakeNotifications} onChange={(v) => updateSettings({ quakeNotifications: v })} />
-        <Toggle label="Aile üyelerinin durumu" value={settings.familyNotifications} onChange={(v) => updateSettings({ familyNotifications: v })} />
+        <Toggle
+          label="Yeni deprem kayıtları"
+          value={settings.quakeNotifications}
+          onChange={(v) => updateSettings({ quakeNotifications: v })}
+        />
+        <Toggle
+          label="Aile üyelerinin durumu"
+          value={settings.familyNotifications}
+          onChange={(v) => updateSettings({ familyNotifications: v })}
+        />
         <Stepper
           label="Bildirim için en küçük büyüklük"
           value={settings.minNotifyMagnitude}
@@ -140,10 +167,15 @@ export default function SettingsScreen() {
           value={settings.cacheFamilyOffline}
           onChange={(v) => updateSettings({ cacheFamilyOffline: v })}
         />
-        <Row icon="settings-outline" label="Sistem izinleri" sub="Konum, kamera, fotoğraf ve bildirim izinleri" onPress={() => Linking.openSettings()} />
+        <Row
+          icon="settings-outline"
+          label="Sistem izinleri"
+          sub="Konum, kamera, fotoğraf ve bildirim izinleri"
+          onPress={() => Linking.openSettings()}
+        />
         <AppText variant="caption">
-          Kullanıcı bildirimlerinde konum ~1 km’ye yuvarlanır; hesap bilginiz gösterilmez. Arka planda konum toplanmaz. Aile grubunda konum yalnızca siz açarsanız
-          ve durum bildirdiğiniz anda paylaşılır.
+          Kullanıcı bildirimlerinde konum ~1 km’ye yuvarlanır; hesap bilginiz gösterilmez. Arka planda konum toplanmaz. Aile grubunda konum
+          yalnızca siz açarsanız ve durum bildirdiğiniz anda paylaşılır.
         </AppText>
       </Section>
 
@@ -158,7 +190,12 @@ export default function SettingsScreen() {
           onChange={(v) => updateSettings({ minListMagnitude: v })}
         />
         {env.quakeSources.map((id) => (
-          <Toggle key={id} label={`${SOURCES[id].label} — ${SOURCES[id].attribution}`} value={settings.enabledSources.includes(id)} onChange={() => toggleSource(id)} />
+          <Toggle
+            key={id}
+            label={`${SOURCES[id].label} — ${SOURCES[id].attribution}`}
+            value={settings.enabledSources.includes(id)}
+            onChange={() => toggleSource(id)}
+          />
         ))}
         <SourceHealthCard snapshot={quakes.snapshot} />
       </Section>
@@ -169,10 +206,14 @@ export default function SettingsScreen() {
       </Section>
 
       <Section title="Hakkında">
-        <Row icon="information-circle-outline" label={`GÜVENDE ${Constants.expoConfig?.version ?? ''}`} sub="Deprem bilgisi ve afet hazırlığı uygulaması" />
+        <Row
+          icon="information-circle-outline"
+          label={`GÜVENDE ${Constants.expoConfig?.version ?? ''}`}
+          sub="Deprem bilgisi ve afet hazırlığı uygulaması"
+        />
         <AppText variant="caption">
-          Deprem verileri AFAD, Kandilli Rasathanesi (KRDAE) ve USGS kaynaklarından alınır; kaynakların yayımladığı değerler değiştirilmeden gösterilir. Harita
-          verisi © OpenStreetMap katkıcıları. Uygulama resmî kurumların yerini tutmaz; acil durumlarda 112’yi arayın.
+          Deprem verileri AFAD, Kandilli Rasathanesi (KRDAE) ve USGS kaynaklarından alınır; kaynakların yayımladığı değerler değiştirilmeden
+          gösterilir. Harita verisi © OpenStreetMap katkıcıları. Uygulama resmî kurumların yerini tutmaz; acil durumlarda 112’yi arayın.
         </AppText>
       </Section>
     </ScrollView>
@@ -190,7 +231,19 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Row({ icon, label, sub, onPress, danger }: { icon: IconName; label: string; sub?: string; onPress?: () => void; danger?: boolean }) {
+function Row({
+  icon,
+  label,
+  sub,
+  onPress,
+  danger,
+}: {
+  icon: IconName;
+  label: string;
+  sub?: string;
+  onPress?: () => void;
+  danger?: boolean;
+}) {
   return (
     <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'} style={styles.row}>
       <Ionicons name={icon} size={22} color={danger ? colors.danger : colors.textSecondary} />
@@ -211,15 +264,43 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
       <AppText variant="body" style={{ flex: 1 }}>
         {label}
       </AppText>
-      <Switch value={value} onValueChange={onChange} trackColor={{ true: colors.primary, false: colors.borderStrong }} accessibilityLabel={label} />
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ true: colors.primary, false: colors.borderStrong }}
+        accessibilityLabel={label}
+      />
     </View>
   );
 }
 
-function Stepper({ label, value, step, min, max, format, onChange }: { label: string; value: number; step: number; min: number; max: number; format: (v: number) => string; onChange: (v: number) => void }) {
+function Stepper({
+  label,
+  value,
+  step,
+  min,
+  max,
+  format,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  step: number;
+  min: number;
+  max: number;
+  format: (v: number) => string;
+  onChange: (v: number) => void;
+}) {
   const set = (v: number) => onChange(Math.min(max, Math.max(min, Math.round(v * 10) / 10)));
   return (
-    <View style={styles.row} accessible accessibilityRole="adjustable" accessibilityLabel={`${label}: ${format(value)}`} accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]} onAccessibilityAction={(e) => set(value + (e.nativeEvent.actionName === 'increment' ? step : -step))}>
+    <View
+      style={styles.row}
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel={`${label}: ${format(value)}`}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(e) => set(value + (e.nativeEvent.actionName === 'increment' ? step : -step))}
+    >
       <AppText variant="body" style={{ flex: 1 }}>
         {label}
       </AppText>
@@ -238,5 +319,12 @@ function Stepper({ label, value, step, min, max, format, onChange }: { label: st
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 48 },
-  stepBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' },
+  stepBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceRaised,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

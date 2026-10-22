@@ -33,8 +33,14 @@ export default function AssemblyScreen() {
         </View>
         <View style={{ flex: 1 }}>
           <AppText variant="heading">{p.name}</AppText>
-          <AppText variant="label">{[p.neighborhood, p.district, p.province].filter(Boolean).join(', ') || p.address || 'Adres belirtilmemiş'}</AppText>
-          {userCoords ? <AppText variant="label" color={colors.text}>{formatDistance(distanceKm(userCoords, p))} {location.status === 'manual' ? '(il merkezine göre)' : 'kuş uçuşu'}</AppText> : null}
+          <AppText variant="label">
+            {[p.neighborhood, p.district, p.province].filter(Boolean).join(', ') || p.address || 'Adres belirtilmemiş'}
+          </AppText>
+          {userCoords ? (
+            <AppText variant="label" color={colors.text}>
+              {formatDistance(distanceKm(userCoords, p))} {location.status === 'manual' ? '(il merkezine göre)' : 'kuş uçuşu'}
+            </AppText>
+          ) : null}
         </View>
         <Pressable
           onPress={async () => setSaved(await toggleSaved(p))}
@@ -59,9 +65,17 @@ export default function AssemblyScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
-      <Banner icon="information-circle-outline" text="Rota uygulaması yolların afet sonrası durumunu bilmez. Kapalı yol ve hasarlı yapılara dikkat edin." />
+      <Banner
+        icon="information-circle-outline"
+        text="Rota uygulaması yolların afet sonrası durumunu bilmez. Kapalı yol ve hasarlı yapılara dikkat edin."
+      />
       {location.status === 'manual' ? (
-        <Banner icon="location-outline" tone="warning" text={`Konum: ${location.label}. Kesin mesafe için konum izni verin.`} onPress={() => router.push('/konum')} />
+        <Banner
+          icon="location-outline"
+          tone="warning"
+          text={`Konum: ${location.label}. Kesin mesafe için konum izni verin.`}
+          onPress={() => router.push('/konum')}
+        />
       ) : null}
 
       <View style={{ flexDirection: 'row', gap: spacing.sm }} accessibilityRole="radiogroup">
@@ -81,7 +95,13 @@ export default function AssemblyScreen() {
       </View>
 
       {state.status === 'no-location' ? (
-        <StateMessage icon="location-outline" title="Konumunuz bilinmiyor" message="Konum izni verin veya ilinizi elle seçin." actionLabel="Konum seç" onAction={() => router.push('/konum')} />
+        <StateMessage
+          icon="location-outline"
+          title="Konumunuz bilinmiyor"
+          message="Konum izni verin veya ilinizi elle seçin."
+          actionLabel="Konum seç"
+          onAction={() => router.push('/konum')}
+        />
       ) : state.status === 'loading' ? (
         <StateMessage icon="hourglass-outline" title="Yükleniyor…" compact />
       ) : state.status === 'ready' && state.points.length > 0 ? (
@@ -126,6 +146,22 @@ export default function AssemblyScreen() {
 }
 
 const styles = StyleSheet.create({
-  apIcon: { width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: colors.safe, alignItems: 'center', justifyContent: 'center' },
-  radius: { flex: 1, minHeight: 44, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderStrong, alignItems: 'center', justifyContent: 'center' },
+  apIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: colors.safe,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radius: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

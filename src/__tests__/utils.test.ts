@@ -40,8 +40,19 @@ describe('time', () => {
 
 describe('toplanma alanı sıralama', () => {
   const p = (id: string, lat: number, lon: number): AssemblyPoint => ({
-    id, name: id, address: null, province: null, district: null, neighborhood: null, latitude: lat, longitude: lon, capacity: null,
-    sourceName: 'test', sourceUrl: 'https://example.test', sourcePublishedAt: null, importedAt: '2026-10-01T00:00:00Z',
+    id,
+    name: id,
+    address: null,
+    province: null,
+    district: null,
+    neighborhood: null,
+    latitude: lat,
+    longitude: lon,
+    capacity: null,
+    sourceName: 'test',
+    sourceUrl: 'https://example.test',
+    sourcePublishedAt: null,
+    importedAt: '2026-10-01T00:00:00Z',
   });
   it('yarıçap dışını atar ve yakından uzağa sıralar', () => {
     const center = { latitude: 40.0, longitude: 30.0 };

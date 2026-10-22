@@ -69,7 +69,9 @@ export async function fetchNearby(center: LatLng, radiusKm = 5): Promise<NearbyR
     await writeJson('assembly-nearby', { points, fetchedAt, center });
     return { points, fetchedAt, fromCache: false };
   } catch (e) {
-    const cached = await readJson<{ points: (AssemblyPoint & { distanceKm: number })[]; fetchedAt: string; center: LatLng }>('assembly-nearby');
+    const cached = await readJson<{ points: (AssemblyPoint & { distanceKm: number })[]; fetchedAt: string; center: LatLng }>(
+      'assembly-nearby',
+    );
     if (cached && distanceKm(cached.center, center) < radiusKm) {
       return { points: sortByDistance(cached.points, center, radiusKm), fetchedAt: cached.fetchedAt, fromCache: true };
     }

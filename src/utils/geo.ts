@@ -7,9 +7,7 @@ const toRad = (d: number) => (d * Math.PI) / 180;
 export function distanceKm(a: LatLng, b: LatLng): number {
   const dLat = toRad(b.latitude - a.latitude);
   const dLon = toRad(b.longitude - a.longitude);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.latitude)) * Math.cos(toRad(b.latitude)) * Math.sin(dLon / 2) ** 2;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.latitude)) * Math.cos(toRad(b.latitude)) * Math.sin(dLon / 2) ** 2;
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
@@ -33,8 +31,7 @@ export function circlePolygon(center: LatLng, radiusKm: number, steps = 64): { t
   for (let i = 0; i <= steps; i++) {
     const brng = (2 * Math.PI * i) / steps;
     const lat = Math.asin(Math.sin(latR) * Math.cos(d) + Math.cos(latR) * Math.sin(d) * Math.cos(brng));
-    const lon =
-      lonR + Math.atan2(Math.sin(brng) * Math.sin(d) * Math.cos(latR), Math.cos(d) - Math.sin(latR) * Math.sin(lat));
+    const lon = lonR + Math.atan2(Math.sin(brng) * Math.sin(d) * Math.cos(latR), Math.cos(d) - Math.sin(latR) * Math.sin(lat));
     coords.push([(lon * 180) / Math.PI, (lat * 180) / Math.PI]);
   }
   return { type: 'Polygon', coordinates: [coords] };

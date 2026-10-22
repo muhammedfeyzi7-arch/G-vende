@@ -19,12 +19,24 @@ export default function PendingReports() {
       {pending.map((p) => (
         <Card key={p.clientId} style={{ gap: 6 }}>
           <AppText variant="heading">{CATEGORY_META[p.category].formLabel}</AppText>
-          {p.description ? <AppText variant="label" numberOfLines={2}>{p.description}</AppText> : null}
+          {p.description ? (
+            <AppText variant="label" numberOfLines={2}>
+              {p.description}
+            </AppText>
+          ) : null}
           <AppText variant="caption">
             Oluşturuldu {relativeTimeTr(p.createdAt)} · {p.attempts} deneme{p.photos.length ? ` · ${p.photos.length} fotoğraf` : ''}
           </AppText>
-          {p.serverId ? <AppText variant="caption" color={colors.safe}>Bildirim yayınlandı; fotoğraflar bekliyor.</AppText> : null}
-          {p.lastError ? <AppText variant="caption" color={isRetryable(p) ? colors.warning : colors.danger}>Son hata: {p.lastError}</AppText> : null}
+          {p.serverId ? (
+            <AppText variant="caption" color={colors.safe}>
+              Bildirim yayınlandı; fotoğraflar bekliyor.
+            </AppText>
+          ) : null}
+          {p.lastError ? (
+            <AppText variant="caption" color={isRetryable(p) ? colors.warning : colors.danger}>
+              Son hata: {p.lastError}
+            </AppText>
+          ) : null}
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
             <Button label="Sil" variant="ghost" icon="trash-outline" onPress={() => discardPending(p.clientId)} />
           </View>

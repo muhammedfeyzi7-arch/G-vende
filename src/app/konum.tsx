@@ -55,8 +55,17 @@ export default function LocationScreen() {
           </Card>
           <AppText variant="heading">veya ilinizi seçin</AppText>
           <AppText variant="caption">İl merkezi yaklaşık konum olarak kullanılır; mesafeler kaba tahmindir.</AppText>
-          <TextInput value={q} onChangeText={setQ} placeholder="İl ara" placeholderTextColor={colors.textMuted} style={styles.search} accessibilityLabel="İl ara" />
-          {settings.manualProvince ? <Button label="Seçimi kaldır" variant="ghost" icon="close-circle-outline" onPress={() => setManualProvince(null)} /> : null}
+          <TextInput
+            value={q}
+            onChangeText={setQ}
+            placeholder="İl ara"
+            placeholderTextColor={colors.textMuted}
+            style={styles.search}
+            accessibilityLabel="İl ara"
+          />
+          {settings.manualProvince ? (
+            <Button label="Seçimi kaldır" variant="ghost" icon="close-circle-outline" onPress={() => setManualProvince(null)} />
+          ) : null}
         </View>
       }
       renderItem={({ item }) => {
@@ -83,6 +92,14 @@ export default function LocationScreen() {
 }
 
 const styles = StyleSheet.create({
-  search: { minHeight: 44, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.surface, color: colors.text, paddingHorizontal: spacing.md },
+  search: {
+    minHeight: 44,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surface,
+    color: colors.text,
+    paddingHorizontal: spacing.md,
+  },
   row: { minHeight: 48, flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, borderRadius: radius.sm },
 });

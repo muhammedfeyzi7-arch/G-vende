@@ -41,7 +41,12 @@ export function SelectionCard({
           {relativeTimeTr(e.primary.occurredAt)} · Derinlik {formatDepth(e.primary.depthKm)} · {sourceLabel(e.primary)}
           {user ? ` · ${formatDistance(distanceKm(user, e.primary))}` : ''}
         </AppText>
-        <Button label="Deprem detayı" icon="information-circle-outline" variant="secondary" onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })} />
+        <Button
+          label="Deprem detayı"
+          icon="information-circle-outline"
+          variant="secondary"
+          onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })}
+        />
       </>
     );
   } else if (selection.kind === 'report') {
@@ -53,7 +58,11 @@ export function SelectionCard({
           {CATEGORY_META[r.category].label} · {r.areaLabel ?? 'Bölge belirtilmemiş'} · {relativeTimeTr(r.createdAt)}
         </AppText>
         <AppText variant="heading">{reportHeadline(r.category, r.feltIntensity)}</AppText>
-        {r.description ? <AppText variant="label" numberOfLines={2}>{r.description}</AppText> : null}
+        {r.description ? (
+          <AppText variant="label" numberOfLines={2}>
+            {r.description}
+          </AppText>
+        ) : null}
         {!r.isSample ? (
           <Button label="Bildirimi aç" variant="secondary" onPress={() => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })} />
         ) : null}
@@ -68,7 +77,11 @@ export function SelectionCard({
           Resmî toplanma alanı{user ? ` · ${formatDistance(distanceKm(user, p))}` : ''}
         </AppText>
         <AppText variant="heading">{p.name}</AppText>
-        {p.address ? <AppText variant="label" numberOfLines={2}>{p.address}</AppText> : null}
+        {p.address ? (
+          <AppText variant="label" numberOfLines={2}>
+            {p.address}
+          </AppText>
+        ) : null}
         <AppText variant="caption">Kaynak: {p.sourceName}</AppText>
         <Button label="Yol tarifi aç" icon="walk-outline" onPress={() => openDirections(p)} />
         <AppText variant="caption">Afet sonrası yollar kapanmış olabilir; rota güvenliği garanti edilmez.</AppText>

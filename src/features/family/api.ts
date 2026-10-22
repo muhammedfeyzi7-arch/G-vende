@@ -27,7 +27,9 @@ export async function fetchGroups(): Promise<FamilyGroup[]> {
   const sb = requireSupabase();
   const { data: groups, error } = await sb
     .from('family_groups')
-    .select('id, name, meeting_point_name, meeting_point_lat, meeting_point_lon, family_members(user_id, display_name, role, share_location)')
+    .select(
+      'id, name, meeting_point_name, meeting_point_lat, meeting_point_lon, family_members(user_id, display_name, role, share_location)',
+    )
     .order('created_at');
   if (error) throw error;
   const ids = (groups ?? []).map((g) => g.id as string);
@@ -45,8 +47,12 @@ export async function fetchGroups(): Promise<FamilyGroup[]> {
   return (groups ?? []).map((g) => ({
     id: g.id,
     name: g.name,
-    meetingPoint: g.meeting_point_name ? { name: g.meeting_point_name, latitude: g.meeting_point_lat, longitude: g.meeting_point_lon } : null,
-    members: ((g.family_members ?? []) as { user_id: string; display_name: string; role: 'owner' | 'member'; share_location: boolean }[]).map((m) => {
+    meetingPoint: g.meeting_point_name
+      ? { name: g.meeting_point_name, latitude: g.meeting_point_lat, longitude: g.meeting_point_lon }
+      : null,
+    members: (
+      (g.family_members ?? []) as { user_id: string; display_name: string; role: 'owner' | 'member'; share_location: boolean }[]
+    ).map((m) => {
       const c = checkins?.find((x) => x.group_id === g.id && x.user_id === m.user_id);
       return {
         userId: m.user_id,
@@ -103,7 +109,11 @@ export async function checkin(groupIds: string[], status: CheckinStatus, note: s
 
 export async function setShareLocation(groupId: string, share: boolean) {
   const uid = await currentUserId();
-  const { error } = await requireSupabase().from('family_members').update({ share_location: share }).eq('group_id', groupId).eq('user_id', uid!);
+  const { error } = await requireSupabase()
+    .from('family_members')
+    .update({ share_location: share })
+    .eq('group_id', groupId)
+    .eq('user_id', uid!);
   if (error) throw error;
 }
 

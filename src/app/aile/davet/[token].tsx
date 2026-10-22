@@ -23,7 +23,14 @@ export default function AcceptInvite() {
         <Button label="Önce giriş yapın" onPress={() => router.push('/giris')} />
       ) : (
         <>
-          <TextInput value={name} onChangeText={setName} placeholder="Grupta görünecek adınız" placeholderTextColor={colors.textMuted} maxLength={40} style={styles.input} />
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Grupta görünecek adınız"
+            placeholderTextColor={colors.textMuted}
+            maxLength={40}
+            style={styles.input}
+          />
           <Button
             label="Katıl"
             loading={busy}
@@ -47,5 +54,14 @@ export default function AcceptInvite() {
 }
 
 const styles = StyleSheet.create({
-  input: { minHeight: 48, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.surface, color: colors.text, paddingHorizontal: spacing.md, fontSize: 16 },
+  input: {
+    minHeight: 48,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surface,
+    color: colors.text,
+    paddingHorizontal: spacing.md,
+    fontSize: 16,
+  },
 });

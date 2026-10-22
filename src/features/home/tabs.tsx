@@ -73,14 +73,31 @@ export function LiveFeedTab({
       ) : status === 'loading' && reports.length === 0 ? (
         <StateMessage icon="hourglass-outline" title="Bildirimler yükleniyor…" compact />
       ) : status === 'error' && reports.length === 0 ? (
-        <StateMessage icon="cloud-offline-outline" tone="error" title="Bildirimler alınamadı" message={error ?? undefined} actionLabel="Tekrar dene" onAction={onRetry} />
+        <StateMessage
+          icon="cloud-offline-outline"
+          tone="error"
+          title="Bildirimler alınamadı"
+          message={error ?? undefined}
+          actionLabel="Tekrar dene"
+          onAction={onRetry}
+        />
       ) : filtered.length === 0 ? (
-        <StateMessage icon="chatbubbles-outline" title="Bu kategoride bildirim yok" message="Son 48 saatte paylaşılan bildirim bulunmuyor." compact />
+        <StateMessage
+          icon="chatbubbles-outline"
+          title="Bu kategoride bildirim yok"
+          message="Son 48 saatte paylaşılan bildirim bulunmuyor."
+          compact
+        />
       ) : (
         <View>
           {status === 'error' ? (
             <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.sm }}>
-              <Banner icon="alert-circle-outline" tone="error" text={`Güncellenemedi: ${error}. Son eşitleme ${lastSyncedAt ? relativeTimeTr(lastSyncedAt) : 'bilinmiyor'}.`} onPress={onRetry} />
+              <Banner
+                icon="alert-circle-outline"
+                tone="error"
+                text={`Güncellenemedi: ${error}. Son eşitleme ${lastSyncedAt ? relativeTimeTr(lastSyncedAt) : 'bilinmiyor'}.`}
+                onPress={onRetry}
+              />
             </View>
           ) : null}
           {filtered.map((r) => (
@@ -122,11 +139,23 @@ export function OfficialDataTab({
       {loading && !snapshot ? (
         <StateMessage icon="hourglass-outline" title="Deprem verileri yükleniyor…" compact />
       ) : events.length === 0 ? (
-        <StateMessage icon="pulse-outline" title="Kayıt yok" message="Seçili büyüklük eşiğinin üzerinde son 7 günde kayıt bulunamadı." compact />
+        <StateMessage
+          icon="pulse-outline"
+          title="Kayıt yok"
+          message="Seçili büyüklük eşiğinin üzerinde son 7 günde kayıt bulunamadı."
+          compact
+        />
       ) : (
-        events.slice(0, 60).map((e) => (
-          <QuakeListItem key={e.id} event={e} user={user} onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })} />
-        ))
+        events
+          .slice(0, 60)
+          .map((e) => (
+            <QuakeListItem
+              key={e.id}
+              event={e}
+              user={user}
+              onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })}
+            />
+          ))
       )}
     </View>
   );
@@ -165,7 +194,11 @@ export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapsho
         );
       })}
       {snapshot?.stale ? (
-        <Banner icon="time-outline" tone="warning" text={`Hiçbir kaynağa ulaşılamadı. Gösterilen veriler önbellekten; son başarılı güncelleme: ${snapshot.lastSuccessAt ? formatDateTimeTr(snapshot.lastSuccessAt) : 'yok'}.`} />
+        <Banner
+          icon="time-outline"
+          tone="warning"
+          text={`Hiçbir kaynağa ulaşılamadı. Gösterilen veriler önbellekten; son başarılı güncelleme: ${snapshot.lastSuccessAt ? formatDateTimeTr(snapshot.lastSuccessAt) : 'yok'}.`}
+        />
       ) : null}
       <AppText variant="caption">
         Aynı deprem farklı kaynaklarda farklı büyüklükle yayımlanabilir. Uygulama özgün değerleri korur; ayrıntı için depreme dokunun.
@@ -174,7 +207,17 @@ export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapsho
   );
 }
 
-export function AssemblyTab({ state, onRetry, onShowAll, needsLocation }: { state: NearbyState; onRetry: () => void; onShowAll: () => void; needsLocation: () => void }) {
+export function AssemblyTab({
+  state,
+  onRetry,
+  onShowAll,
+  needsLocation,
+}: {
+  state: NearbyState;
+  onRetry: () => void;
+  onShowAll: () => void;
+  needsLocation: () => void;
+}) {
   if (state.status === 'no-location')
     return (
       <StateMessage
@@ -201,13 +244,20 @@ export function AssemblyTab({ state, onRetry, onShowAll, needsLocation }: { stat
           onAction={state.status === 'error' ? onRetry : undefined}
           compact
         />
-        <Button label="e-Devlet’te sorgula (AFAD)" icon="open-outline" variant="secondary" onPress={() => Linking.openURL(EDEVLET_ASSEMBLY_URL)} />
+        <Button
+          label="e-Devlet’te sorgula (AFAD)"
+          icon="open-outline"
+          variant="secondary"
+          onPress={() => Linking.openURL(EDEVLET_ASSEMBLY_URL)}
+        />
       </View>
     );
   if (state.status === 'loading') return <StateMessage icon="hourglass-outline" title="Yükleniyor…" compact />;
   return (
     <View style={{ padding: spacing.lg, gap: spacing.sm }}>
-      {state.fromCache ? <Banner icon="cloud-offline-outline" tone="warning" text={`Önbellekten gösteriliyor (${relativeTimeTr(state.fetchedAt)}).`} /> : null}
+      {state.fromCache ? (
+        <Banner icon="cloud-offline-outline" tone="warning" text={`Önbellekten gösteriliyor (${relativeTimeTr(state.fetchedAt)}).`} />
+      ) : null}
       {state.points.slice(0, 5).map((p) => (
         <Card key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md }}>
           <View style={styles.apIcon}>
@@ -221,7 +271,12 @@ export function AssemblyTab({ state, onRetry, onShowAll, needsLocation }: { stat
               {formatDistance(p.distanceKm)} · {p.sourceName}
             </AppText>
           </View>
-          <Pressable onPress={() => openDirections(p)} accessibilityRole="button" accessibilityLabel={`${p.name} için yol tarifi`} style={styles.routeBtn}>
+          <Pressable
+            onPress={() => openDirections(p)}
+            accessibilityRole="button"
+            accessibilityLabel={`${p.name} için yol tarifi`}
+            style={styles.routeBtn}
+          >
             <Ionicons name="walk" size={20} color={colors.primary} />
           </Pressable>
         </Card>
@@ -237,11 +292,17 @@ export function HelpTab({ helpReports, onOpenReport }: { helpReports: UserReport
       <Card style={{ gap: spacing.sm, borderColor: colors.dangerBorder }}>
         <AppText variant="heading">Hayati tehlike varsa 112’yi arayın</AppText>
         <AppText variant="label">
-          Uygulamadaki yardım bildirimleri acil çağrı değildir; ekiplerin bunları görmesi garanti edilmez. Acil durumlarda 112 Acil Çağrı Merkezi’ni arayın.
+          Uygulamadaki yardım bildirimleri acil çağrı değildir; ekiplerin bunları görmesi garanti edilmez. Acil durumlarda 112 Acil Çağrı
+          Merkezi’ni arayın.
         </AppText>
         <Button label="112’yi ara" icon="call" variant="danger" onPress={call112} />
       </Card>
-      <Button label="Deprem anında ve sonrasında yapılacaklar" icon="book-outline" variant="secondary" onPress={() => router.push('/acil')} />
+      <Button
+        label="Deprem anında ve sonrasında yapılacaklar"
+        icon="book-outline"
+        variant="secondary"
+        onPress={() => router.push('/acil')}
+      />
       <AppText variant="heading" style={{ marginTop: spacing.sm }}>
         Son yardım bildirimleri
       </AppText>
@@ -267,7 +328,15 @@ export function HelpTab({ helpReports, onOpenReport }: { helpReports: UserReport
   );
 }
 
-export function DetailsTab({ event, snapshot, user }: { event: EarthquakeEvent | null; snapshot: QuakeSnapshot | null; user: LatLng | null }) {
+export function DetailsTab({
+  event,
+  snapshot,
+  user,
+}: {
+  event: EarthquakeEvent | null;
+  snapshot: QuakeSnapshot | null;
+  user: LatLng | null;
+}) {
   if (!event) return <StateMessage icon="information-circle-outline" title="Seçili deprem yok" compact />;
   return (
     <View style={{ padding: spacing.lg, gap: spacing.md }}>
@@ -275,23 +344,46 @@ export function DetailsTab({ event, snapshot, user }: { event: EarthquakeEvent |
         <AppText variant="heading">{placeTitle(event)}</AppText>
         <AppText variant="label">{formatDateTimeTr(event.primary.occurredAt)} (TSİ)</AppText>
         <View style={styles.readingHeader}>
-          <AppText variant="caption" style={{ flex: 1.2 }}>Kaynak</AppText>
-          <AppText variant="caption" style={{ flex: 1 }}>Büyüklük</AppText>
-          <AppText variant="caption" style={{ flex: 1 }}>Derinlik</AppText>
-          <AppText variant="caption" style={{ flex: 1.2 }}>Durum</AppText>
+          <AppText variant="caption" style={{ flex: 1.2 }}>
+            Kaynak
+          </AppText>
+          <AppText variant="caption" style={{ flex: 1 }}>
+            Büyüklük
+          </AppText>
+          <AppText variant="caption" style={{ flex: 1 }}>
+            Derinlik
+          </AppText>
+          <AppText variant="caption" style={{ flex: 1.2 }}>
+            Durum
+          </AppText>
         </View>
         {event.readings.map((r) => (
           <View key={r.source} style={styles.readingRow}>
-            <AppText variant="label" color={colors.text} style={{ flex: 1.2 }}>{SOURCES[r.source].label}</AppText>
-            <AppText variant="label" color={colors.text} style={{ flex: 1 }}>{formatMagnitude(r.magnitude)} {r.magnitudeType ?? ''}</AppText>
-            <AppText variant="label" color={colors.text} style={{ flex: 1 }}>{formatDepth(r.depthKm)}</AppText>
-            <AppText variant="caption" style={{ flex: 1.2 }}>{r.reviewStatus === 'reviewed' ? 'Revize' : r.reviewStatus === 'automatic' ? 'Otomatik/ilksel' : 'Belirtilmemiş'}</AppText>
+            <AppText variant="label" color={colors.text} style={{ flex: 1.2 }}>
+              {SOURCES[r.source].label}
+            </AppText>
+            <AppText variant="label" color={colors.text} style={{ flex: 1 }}>
+              {formatMagnitude(r.magnitude)} {r.magnitudeType ?? ''}
+            </AppText>
+            <AppText variant="label" color={colors.text} style={{ flex: 1 }}>
+              {formatDepth(r.depthKm)}
+            </AppText>
+            <AppText variant="caption" style={{ flex: 1.2 }}>
+              {r.reviewStatus === 'reviewed' ? 'Revize' : r.reviewStatus === 'automatic' ? 'Otomatik/ilksel' : 'Belirtilmemiş'}
+            </AppText>
           </View>
         ))}
-        <AppText variant="caption">Son güncelleme: {snapshot?.lastSuccessAt ? formatDateTimeTr(snapshot.lastSuccessAt) : 'bilinmiyor'}</AppText>
+        <AppText variant="caption">
+          Son güncelleme: {snapshot?.lastSuccessAt ? formatDateTimeTr(snapshot.lastSuccessAt) : 'bilinmiyor'}
+        </AppText>
         {user ? null : <AppText variant="caption">Uzaklık için konum izni verin veya ilinizi seçin.</AppText>}
       </Card>
-      <Button label="Tüm ayrıntılar" icon="open-outline" variant="secondary" onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: event.id } })} />
+      <Button
+        label="Tüm ayrıntılar"
+        icon="open-outline"
+        variant="secondary"
+        onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: event.id } })}
+      />
     </View>
   );
 }
@@ -300,9 +392,30 @@ const styles = StyleSheet.create({
   footnote: { paddingHorizontal: spacing.lg, paddingVertical: spacing.lg, textAlign: 'center' },
   healthRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   healthDot: { width: 10, height: 10, borderRadius: 5 },
-  apIcon: { width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: colors.safe, alignItems: 'center', justifyContent: 'center' },
-  routeBtn: { width: 44, height: 44, borderRadius: radius.md, backgroundColor: colors.primaryMuted, alignItems: 'center', justifyContent: 'center' },
+  apIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: colors.safe,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  routeBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.primaryMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   helpRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm, minHeight: 44 },
   readingHeader: { flexDirection: 'row', marginTop: spacing.sm },
-  readingRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  readingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
 });

@@ -34,5 +34,4 @@ export async function readCurrent(): Promise<LocationState> {
   }
 }
 
-export const coordsOf = (s: LocationState): LatLng | null =>
-  s.status === 'granted' || s.status === 'manual' ? s.coords : null;
+export const coordsOf = (s: LocationState): LatLng | null => (s.status === 'granted' || s.status === 'manual' ? s.coords : null);

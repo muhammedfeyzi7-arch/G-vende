@@ -53,6 +53,7 @@ const config: ExpoConfig = {
       },
     ],
     ['expo-notifications', { color: '#1683FF' }],
+    './plugins/withKandilliCleartext',
   ],
   experiments: { typedRoutes: true },
 };

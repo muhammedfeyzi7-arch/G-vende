@@ -2,7 +2,15 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { colors, spacing } from '@/theme';
 
-export function TopTabs<K extends string>({ tabs, value, onChange }: { tabs: { key: K; label: string }[]; value: K; onChange: (k: K) => void }) {
+export function TopTabs<K extends string>({
+  tabs,
+  value,
+  onChange,
+}: {
+  tabs: { key: K; label: string }[];
+  value: K;
+  onChange: (k: K) => void;
+}) {
   return (
     <View style={styles.wrap}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row} accessibilityRole="tablist">
@@ -16,7 +24,11 @@ export function TopTabs<K extends string>({ tabs, value, onChange }: { tabs: { k
               accessibilityState={{ selected: active }}
               style={styles.tab}
             >
-              <AppText variant="heading" color={active ? colors.primary : colors.textSecondary} style={{ fontSize: 16, fontWeight: active ? '700' : '500' }}>
+              <AppText
+                variant="heading"
+                color={active ? colors.primary : colors.textSecondary}
+                style={{ fontSize: 16, fontWeight: active ? '700' : '500' }}
+              >
                 {t.label}
               </AppText>
               <View style={[styles.underline, active && { backgroundColor: colors.primary }]} />

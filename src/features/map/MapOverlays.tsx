@@ -22,7 +22,13 @@ export function MapControls({
     <View style={styles.controls}>
       <IconButton icon="layers-outline" label="Harita katmanları" onPress={onLayers} active={layersOpen} />
       <IconButton icon="navigate-outline" label="Konumuma git" onPress={onLocate} />
-      {onFullscreen ? <IconButton icon={fullscreenIcon} label={fullscreenIcon === 'scan-outline' ? 'Tam ekran harita' : 'Tam ekrandan çık'} onPress={onFullscreen} /> : null}
+      {onFullscreen ? (
+        <IconButton
+          icon={fullscreenIcon}
+          label={fullscreenIcon === 'scan-outline' ? 'Tam ekran harita' : 'Tam ekrandan çık'}
+          onPress={onFullscreen}
+        />
+      ) : null}
     </View>
   );
 }
@@ -59,7 +65,11 @@ export function LayerPanel({ layers, onChange }: { layers: MapLayers; onChange: 
 
 export function MapLegend() {
   return (
-    <View style={styles.legend} accessible accessibilityLabel="Lejant: kullanıcıların bildirdiği hissedilen sarsıntı. Çok güçlü kırmızı, güçlü turuncu, orta sarı, hafif gri.">
+    <View
+      style={styles.legend}
+      accessible
+      accessibilityLabel="Lejant: kullanıcıların bildirdiği hissedilen sarsıntı. Çok güçlü kırmızı, güçlü turuncu, orta sarı, hafif gri."
+    >
       <AppText variant="caption" color={colors.textSecondary}>
         Bildirilen hissedilme
       </AppText>
@@ -115,6 +125,7 @@ const styles = StyleSheet.create({
   },
   layerRow: { flexDirection: 'row', alignItems: 'center', minHeight: 40 },
   legend: {
+    flexShrink: 1,
     backgroundColor: 'rgba(3,11,20,0.82)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.sm + 2,
@@ -135,8 +146,9 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     paddingVertical: spacing.sm,
     paddingLeft: spacing.sm,
-    paddingRight: spacing.md,
-    maxWidth: 230,
+    paddingRight: spacing.sm,
+    flexShrink: 1,
+    maxWidth: '50%',
     minHeight: 48,
   },
   assemblyIcon: {

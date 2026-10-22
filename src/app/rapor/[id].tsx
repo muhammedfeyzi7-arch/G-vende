@@ -20,12 +20,27 @@ export default function ReportDetail() {
   const { reports, helpful, toggleHelpful, flag } = useReports();
   const [flagged, setFlagged] = useState(false);
   const r = reports.find((x) => x.id === id);
-  if (!r) return <StateMessage icon="search-outline" title="Bildirim bulunamadı" message="Kaldırılmış, gizlenmiş veya 48 saatten eski olabilir." actionLabel="Geri dön" onAction={() => router.back()} />;
+  if (!r)
+    return (
+      <StateMessage
+        icon="search-outline"
+        title="Bildirim bulunamadı"
+        message="Kaldırılmış, gizlenmiş veya 48 saatten eski olabilir."
+        actionLabel="Geri dön"
+        onAction={() => router.back()}
+      />
+    );
 
   const meta = CATEGORY_META[r.category];
   const ageH = (Date.now() - Date.parse(r.createdAt)) / 3600_000;
 
-  const requireLogin = (fn: () => void) => (session ? fn() : Alert.alert('Giriş gerekli', 'Bu işlem için giriş yapın.', [{ text: 'Vazgeç', style: 'cancel' }, { text: 'Giriş yap', onPress: () => router.push('/giris') }]));
+  const requireLogin = (fn: () => void) =>
+    session
+      ? fn()
+      : Alert.alert('Giriş gerekli', 'Bu işlem için giriş yapın.', [
+          { text: 'Vazgeç', style: 'cancel' },
+          { text: 'Giriş yap', onPress: () => router.push('/giris') },
+        ]);
 
   const onFlag = () =>
     requireLogin(() =>
@@ -70,15 +85,24 @@ export default function ReportDetail() {
       )}
       <Card style={{ gap: 6 }}>
         <AppText variant="label">Bölge: {r.areaLabel ?? 'Belirtilmemiş'}</AppText>
-        {r.feltIntensity ? <AppText variant="label">Hissedilen: {FELT_LEVELS.find((l) => l.value === r.feltIntensity)?.label} (kişisel algı)</AppText> : null}
+        {r.feltIntensity ? (
+          <AppText variant="label">Hissedilen: {FELT_LEVELS.find((l) => l.value === r.feltIntensity)?.label} (kişisel algı)</AppText>
+        ) : null}
         <AppText variant="label">
           Paylaşıldı: {formatDateTimeTr(r.createdAt)} ({relativeTimeTr(r.createdAt)})
         </AppText>
         {userCoords && r.latitude != null && r.longitude != null ? (
-          <AppText variant="label">Size uzaklık: ~{formatDistance(distanceKm(userCoords, { latitude: r.latitude, longitude: r.longitude }))}</AppText>
+          <AppText variant="label">
+            Size uzaklık: ~{formatDistance(distanceKm(userCoords, { latitude: r.latitude, longitude: r.longitude }))}
+          </AppText>
         ) : null}
         <AppText variant="label">
-          Doğrulama: {r.verification === 'official' ? 'Yetkili tarafından doğrulandı' : r.verification === 'community' ? 'Topluluk teyitli' : 'Doğrulanmadı'}
+          Doğrulama:{' '}
+          {r.verification === 'official'
+            ? 'Yetkili tarafından doğrulandı'
+            : r.verification === 'community'
+              ? 'Topluluk teyitli'
+              : 'Doğrulanmadı'}
         </AppText>
         <AppText variant="caption">Konum ~1 km hassasiyetle gösterilir.</AppText>
       </Card>
@@ -90,7 +114,14 @@ export default function ReportDetail() {
           label={`Faydalı (${r.helpfulCount})`}
           onPress={() => requireLogin(() => toggleHelpful(r.id).catch((e: Error) => Alert.alert('Hata', e.message)))}
         />
-        <Button style={{ flex: 1 }} variant="secondary" icon="flag-outline" label={flagged ? 'Şikâyet edildi' : 'Şikâyet et'} disabled={flagged} onPress={onFlag} />
+        <Button
+          style={{ flex: 1 }}
+          variant="secondary"
+          icon="flag-outline"
+          label={flagged ? 'Şikâyet edildi' : 'Şikâyet et'}
+          disabled={flagged}
+          onPress={onFlag}
+        />
       </View>
     </ScrollView>
   );

@@ -20,7 +20,11 @@ export function CategoryChips({ value, onChange }: { value: ReportFilter; onChan
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             accessibilityLabel={`${f.label} filtresi`}
-            style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && !active && { backgroundColor: colors.surfacePressed }]}
+            style={({ pressed }) => [
+              styles.chip,
+              active && styles.chipActive,
+              pressed && !active && { backgroundColor: colors.surfacePressed },
+            ]}
           >
             <Ionicons name={f.icon} size={16} color={active ? '#fff' : tint} />
             <AppText variant="label" color={active ? '#fff' : colors.text}>

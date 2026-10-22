@@ -48,7 +48,10 @@ export function HomeScreen() {
   const alert = useMemo(() => computeAlertState(events, userCoords), [events, userCoords]);
   const focus = alert.kind === 'none' ? null : alert.event;
   // Haritada son 24 saatin olayları; liste sekmesinde tümü.
-  const mapEvents = useMemo(() => events.filter((e) => Date.now() - Date.parse(e.primary.occurredAt) < 24 * 3600_000 || e.id === focus?.id), [events, focus]);
+  const mapEvents = useMemo(
+    () => events.filter((e) => Date.now() - Date.parse(e.primary.occurredAt) < 24 * 3600_000 || e.id === focus?.id),
+    [events, focus],
+  );
   const mapHeight = Math.max(280, Math.min(420, height * 0.4));
 
   const onRefresh = async () => {
@@ -78,7 +81,12 @@ export function HomeScreen() {
         <View style={{ paddingHorizontal: spacing.md, paddingTop: spacing.sm }}>
           {!online ? (
             <View style={{ marginBottom: spacing.sm }}>
-              <Banner icon="cloud-offline-outline" tone="warning" text="İnternet bağlantısı yok. Kayıtlı veriler gösteriliyor." onPress={() => router.push('/acil')} />
+              <Banner
+                icon="cloud-offline-outline"
+                tone="warning"
+                text="İnternet bağlantısı yok. Kayıtlı veriler gösteriliyor."
+                onPress={() => router.push('/acil')}
+              />
             </View>
           ) : null}
           <AlertCard
@@ -94,7 +102,11 @@ export function HomeScreen() {
           )}
           {location.status !== 'granted' && location.status !== 'manual' ? (
             <View style={{ marginBottom: spacing.sm }}>
-              <Banner icon="location-outline" text="Uzaklık ve yakın toplanma alanları için konumunuzu belirleyin." onPress={() => router.push('/konum')} />
+              <Banner
+                icon="location-outline"
+                text="Uzaklık ve yakın toplanma alanları için konumunuzu belirleyin."
+                onPress={() => router.push('/konum')}
+              />
             </View>
           ) : null}
 
@@ -137,7 +149,9 @@ export function HomeScreen() {
                 <>
                   <MapLegend />
                   <NearbyAssemblyButton
-                    count={nearby.state.status === 'ready' ? nearby.state.points.length : nearby.state.status === 'not-configured' ? 0 : null}
+                    count={
+                      nearby.state.status === 'ready' ? nearby.state.points.length : nearby.state.status === 'not-configured' ? 0 : null
+                    }
                     onPress={() => router.push('/toplanma')}
                   />
                 </>
@@ -169,9 +183,20 @@ export function HomeScreen() {
               online={online}
             />
           ) : tab === 'official' ? (
-            <OfficialDataTab snapshot={quakes.snapshot} events={events} user={userCoords} loading={quakes.loading} onRetry={refreshQuakes} />
+            <OfficialDataTab
+              snapshot={quakes.snapshot}
+              events={events}
+              user={userCoords}
+              loading={quakes.loading}
+              onRetry={refreshQuakes}
+            />
           ) : tab === 'assembly' ? (
-            <AssemblyTab state={nearby.state} onRetry={nearby.reload} onShowAll={() => router.push('/toplanma')} needsLocation={() => router.push('/konum')} />
+            <AssemblyTab
+              state={nearby.state}
+              onRetry={nearby.reload}
+              onShowAll={() => router.push('/toplanma')}
+              needsLocation={() => router.push('/konum')}
+            />
           ) : tab === 'help' ? (
             <HelpTab
               helpReports={feed.reports.filter((r) => r.category === 'help')}
@@ -183,17 +208,23 @@ export function HomeScreen() {
         </View>
       </ScrollView>
 
-      <Pressable
-        onPress={() => router.push('/rapor/yeni')}
-        accessibilityRole="button"
-        accessibilityLabel="Bildirim ekle"
-        style={({ pressed }) => [styles.fab, { bottom: tabBarHeight + spacing.md }, pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }]}
-      >
-        <Ionicons name="pencil" size={22} color="#fff" />
-        <AppText variant="heading" color="#fff" style={{ fontSize: font.size.lg }}>
-          Bildirim Ekle
-        </AppText>
-      </Pressable>
+      {tab === 'feed' || tab === 'help' ? (
+        <Pressable
+          onPress={() => router.push('/rapor/yeni')}
+          accessibilityRole="button"
+          accessibilityLabel="Bildirim ekle"
+          style={({ pressed }) => [
+            styles.fab,
+            { bottom: tabBarHeight + spacing.md },
+            pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
+          ]}
+        >
+          <Ionicons name="pencil" size={22} color="#fff" />
+          <AppText variant="heading" color="#fff" style={{ fontSize: font.size.lg }}>
+            Bildirim Ekle
+          </AppText>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

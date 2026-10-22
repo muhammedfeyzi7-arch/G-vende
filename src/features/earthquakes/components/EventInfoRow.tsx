@@ -10,16 +10,38 @@ import { formatDepth, placeTitle } from '../format';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-function Item({ icon, label, value, sub, flex = 1 }: { icon: IconName; label?: string; value: string; sub?: string; flex?: number }) {
+const ICON = 18;
+
+function Item({
+  icon,
+  label,
+  value,
+  sub,
+  flex = 1,
+  lines = 1,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+  sub?: string;
+  flex?: number;
+  lines?: number;
+}) {
   return (
-    <View style={[styles.item, { flex }]} accessible accessibilityLabel={`${label ?? ''} ${value} ${sub ?? ''}`}>
-      <Ionicons name={icon} size={22} color={colors.text} style={{ marginTop: 2 }} />
+    <View style={[styles.item, { flex }]} accessible accessibilityLabel={`${label} ${value} ${sub ?? ''}`}>
+      <Ionicons name={icon} size={ICON} color={colors.text} style={{ marginTop: 2 }} />
       <View style={{ flexShrink: 1 }}>
-        {label ? <AppText variant="caption">{label}</AppText> : null}
-        <AppText variant="heading" numberOfLines={2} style={{ fontSize: 16 }}>
+        <AppText variant="caption" numberOfLines={1}>
+          {label}
+        </AppText>
+        <AppText variant="heading" numberOfLines={lines} style={styles.value}>
           {value}
         </AppText>
-        {sub ? <AppText variant="caption" numberOfLines={1}>{sub}</AppText> : null}
+        {sub ? (
+          <AppText variant="caption" numberOfLines={1}>
+            {sub}
+          </AppText>
+        ) : null}
       </View>
     </View>
   );
@@ -29,40 +51,49 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
   const d = user ? distanceKm(user, event.primary) : null;
   return (
     <View style={styles.row}>
-      <Item icon="time-outline" value={formatTimeTr(event.primary.occurredAt)} sub={relativeTimeTr(event.primary.occurredAt)} />
-      <Item icon="location-outline" label="Merkez üssü" value={placeTitle(event)} flex={1.5} />
-      <Item icon="locate-outline" label="Derinlik" value={formatDepth(event.primary.depthKm)} />
-      <View style={[styles.item, { flex: 1.1 }]}>
-        <Ionicons name="navigate-outline" size={22} color={colors.text} style={{ marginTop: 2 }} />
+      <Item
+        icon="time-outline"
+        label="Zaman"
+        value={formatTimeTr(event.primary.occurredAt)}
+        sub={relativeTimeTr(event.primary.occurredAt)}
+        flex={1}
+      />
+      <Item icon="location-outline" label="Merkez üssü" value={placeTitle(event)} flex={1.2} lines={2} />
+      <Item icon="locate-outline" label="Derinlik" value={formatDepth(event.primary.depthKm)} flex={0.85} />
+      <Pressable
+        style={[styles.item, { flex: 0.95 }]}
+        hitSlop={hitSlop}
+        accessibilityRole="button"
+        accessibilityLabel={`Size uzaklık ${formatDistance(d)}`}
+        accessibilityHint="Uzaklığın nasıl hesaplandığını açıklar"
+        onPress={() =>
+          Alert.alert(
+            'Uzaklık nasıl hesaplanır?',
+            d == null
+              ? 'Konumunuz bilinmediği için uzaklık hesaplanamadı. Konum izni verebilir veya Ayarlar’dan ilinizi seçebilirsiniz.'
+              : `Kaynağın bildirdiği merkez üssü ile ${locationHint ?? 'konumunuz'} arasındaki kuş uçuşu mesafedir. Sarsıntı şiddetini göstermez.`,
+          )
+        }
+      >
+        <Ionicons name="navigate-outline" size={ICON} color={colors.text} style={{ marginTop: 2 }} />
         <View style={{ flexShrink: 1 }}>
-          <AppText variant="caption">Sana uzaklığı</AppText>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <AppText variant="heading" style={{ fontSize: 16 }}>
-              {formatDistance(d)}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <AppText variant="caption" numberOfLines={1}>
+              Uzaklık
             </AppText>
-            <Pressable
-              hitSlop={hitSlop}
-              accessibilityRole="button"
-              accessibilityLabel="Uzaklık hesabı hakkında"
-              onPress={() =>
-                Alert.alert(
-                  'Uzaklık nasıl hesaplanır?',
-                  d == null
-                    ? 'Konumunuz bilinmediği için uzaklık hesaplanamadı. Konum izni verebilir veya Ayarlar’dan ilinizi seçebilirsiniz.'
-                    : `Kaynağın bildirdiği merkez üssü ile ${locationHint ?? 'konumunuz'} arasındaki kuş uçuşu mesafedir. Sarsıntı şiddetini göstermez.`,
-                )
-              }
-            >
-              <Ionicons name="information-circle-outline" size={18} color={colors.textMuted} />
-            </Pressable>
+            <Ionicons name="information-circle-outline" size={12} color={colors.textMuted} />
           </View>
+          <AppText variant="heading" numberOfLines={1} style={styles.value}>
+            {formatDistance(d)}
+          </AppText>
         </View>
-      </View>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.sm, paddingVertical: spacing.md, paddingHorizontal: spacing.xs },
-  item: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
+  item: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' },
+  value: { fontSize: 15 },
 });

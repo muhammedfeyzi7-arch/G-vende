@@ -97,5 +97,14 @@ export default function SignIn() {
 }
 
 const styles = StyleSheet.create({
-  input: { minHeight: 48, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.surface, color: colors.text, paddingHorizontal: spacing.md, fontSize: 16 },
+  input: {
+    minHeight: 48,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surface,
+    color: colors.text,
+    paddingHorizontal: spacing.md,
+    fontSize: 16,
+  },
 });

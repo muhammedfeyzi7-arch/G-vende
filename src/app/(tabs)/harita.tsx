@@ -57,7 +57,11 @@ export default function MapScreen() {
         bottomInset={tabBarHeight}
       />
       <View style={[styles.top, { paddingTop: insets.top + spacing.sm }]} pointerEvents="box-none">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm, paddingHorizontal: spacing.md }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: spacing.sm, paddingHorizontal: spacing.md }}
+        >
           {PERIODS.map((p) => {
             const active = hours === p.key;
             return (
@@ -88,7 +92,14 @@ export default function MapScreen() {
       </View>
       <View style={[styles.bottom, { bottom: tabBarHeight + spacing.sm }]} pointerEvents="box-none">
         {selection ? (
-          <SelectionCard selection={selection} events={events} reports={reports} assembly={nearby.points} user={userCoords} onClose={() => setSelection(null)} />
+          <SelectionCard
+            selection={selection}
+            events={events}
+            reports={reports}
+            assembly={nearby.points}
+            user={userCoords}
+            onClose={() => setSelection(null)}
+          />
         ) : (
           <MapLegend />
         )}

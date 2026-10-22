@@ -53,7 +53,10 @@ export default function NewReport() {
     if (photos.length >= MAX_PHOTOS) return;
     const perm = fromCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('İzin gerekli', fromCamera ? 'Fotoğraf çekmek için kamera izni verin (Ayarlar).' : 'Fotoğraf seçmek için galeri izni verin (Ayarlar).');
+      Alert.alert(
+        'İzin gerekli',
+        fromCamera ? 'Fotoğraf çekmek için kamera izni verin (Ayarlar).' : 'Fotoğraf seçmek için galeri izni verin (Ayarlar).',
+      );
       return;
     }
     const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.8, exif: false, allowsMultipleSelection: false };
@@ -86,20 +89,38 @@ export default function NewReport() {
       setSending(false);
       Alert.alert(res.sent ? 'Gönderildi' : 'Gönderim bekliyor', res.message, [{ text: 'Tamam', onPress: () => router.back() }]);
     };
-    if (v.warnings.length) Alert.alert('Kişisel bilgi uyarısı', v.warnings.join('\n'), [{ text: 'Düzenle', style: 'cancel' }, { text: 'Yine de gönder', onPress: go }]);
+    if (v.warnings.length)
+      Alert.alert('Kişisel bilgi uyarısı', v.warnings.join('\n'), [
+        { text: 'Düzenle', style: 'cancel' },
+        { text: 'Yine de gönder', onPress: go },
+      ]);
     else go();
   };
 
   const signedIn = !!session;
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={80}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + spacing.xxl }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + spacing.xxl }}
+        keyboardShouldPersistTaps="handled"
+      >
         {!isBackendConfigured() ? (
           <Banner icon="server-outline" tone="warning" text="Sunucu yapılandırılmadığı için bildirim gönderilemez (geliştirme ortamı)." />
         ) : !signedIn ? (
-          <Banner icon="person-circle-outline" tone="warning" text="Kötüye kullanımı önlemek için bildirim göndermeden önce giriş yapmanız gerekir." onPress={() => router.push('/giris')} />
+          <Banner
+            icon="person-circle-outline"
+            tone="warning"
+            text="Kötüye kullanımı önlemek için bildirim göndermeden önce giriş yapmanız gerekir."
+            onPress={() => router.push('/giris')}
+          />
         ) : null}
-        {!online ? <Banner icon="cloud-offline-outline" tone="warning" text="Çevrimdışısınız. Bildiriminiz cihazda bekletilip bağlantı gelince gönderilir." /> : null}
+        {!online ? (
+          <Banner
+            icon="cloud-offline-outline"
+            tone="warning"
+            text="Çevrimdışısınız. Bildiriminiz cihazda bekletilip bağlantı gelince gönderilir."
+          />
+        ) : null}
 
         <View style={{ gap: spacing.sm }}>
           <AppText variant="heading">Ne bildirmek istiyorsunuz?</AppText>
@@ -182,23 +203,40 @@ export default function NewReport() {
             {photos.map((uri, i) => (
               <View key={uri}>
                 <Image source={{ uri }} style={styles.photo} contentFit="cover" />
-                <Pressable onPress={() => setPhotos((p) => p.filter((_, j) => j !== i))} style={styles.removePhoto} accessibilityRole="button" accessibilityLabel="Fotoğrafı kaldır">
+                <Pressable
+                  onPress={() => setPhotos((p) => p.filter((_, j) => j !== i))}
+                  style={styles.removePhoto}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fotoğrafı kaldır"
+                >
                   <Ionicons name="close" size={16} color="#fff" />
                 </Pressable>
               </View>
             ))}
             {photos.length < MAX_PHOTOS ? (
               <>
-                <Pressable onPress={() => addPhoto(true)} style={styles.addPhoto} accessibilityRole="button" accessibilityLabel="Fotoğraf çek">
+                <Pressable
+                  onPress={() => addPhoto(true)}
+                  style={styles.addPhoto}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fotoğraf çek"
+                >
                   <Ionicons name="camera-outline" size={24} color={colors.textSecondary} />
                 </Pressable>
-                <Pressable onPress={() => addPhoto(false)} style={styles.addPhoto} accessibilityRole="button" accessibilityLabel="Galeriden seç">
+                <Pressable
+                  onPress={() => addPhoto(false)}
+                  style={styles.addPhoto}
+                  accessibilityRole="button"
+                  accessibilityLabel="Galeriden seç"
+                >
                   <Ionicons name="images-outline" size={24} color={colors.textSecondary} />
                 </Pressable>
               </>
             ) : null}
           </View>
-          <AppText variant="caption">Fotoğraflar yeniden kodlanır; konum (EXIF) bilgisi silinir. İnsan yüzü ve plaka içermemesine dikkat edin.</AppText>
+          <AppText variant="caption">
+            Fotoğraflar yeniden kodlanır; konum (EXIF) bilgisi silinir. İnsan yüzü ve plaka içermemesine dikkat edin.
+          </AppText>
         </View>
 
         <Card style={{ gap: spacing.sm }}>
@@ -207,7 +245,12 @@ export default function NewReport() {
               <AppText variant="heading">Yaklaşık konumu ekle</AppText>
               <AppText variant="caption">Konum ~1 km’ye yuvarlanarak yayınlanır. Kesin konumunuz paylaşılmaz.</AppText>
             </View>
-            <Switch value={attachLocation} onValueChange={setAttachLocation} trackColor={{ true: colors.primary, false: colors.borderStrong }} accessibilityLabel="Yaklaşık konumu ekle" />
+            <Switch
+              value={attachLocation}
+              onValueChange={setAttachLocation}
+              trackColor={{ true: colors.primary, false: colors.borderStrong }}
+              accessibilityLabel="Yaklaşık konumu ekle"
+            />
           </View>
           {attachLocation && !userCoords ? (
             <Button
@@ -231,8 +274,8 @@ export default function NewReport() {
         </Card>
 
         <AppText variant="caption">
-          Gönderdiğiniz bildirim; kategori, açıklama, fotoğraf, bölge adı ve yaklaşık konumla birlikte herkese açık görünür. Hesabınız ve kimliğiniz gösterilmez. Yanlış
-          bildirimler topluluk tarafından işaretlenip gizlenebilir.
+          Gönderdiğiniz bildirim; kategori, açıklama, fotoğraf, bölge adı ve yaklaşık konumla birlikte herkese açık görünür. Hesabınız ve
+          kimliğiniz gösterilmez. Yanlış bildirimler topluluk tarafından işaretlenip gizlenebilir.
         </AppText>
 
         <Button
@@ -285,7 +328,17 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   photo: { width: 84, height: 84, borderRadius: radius.md },
-  removePhoto: { position: 'absolute', top: 4, right: 4, backgroundColor: 'rgba(0,0,0,0.7)', borderRadius: 12, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  removePhoto: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   addPhoto: {
     width: 84,
     height: 84,

@@ -19,14 +19,26 @@ export default function EmergencyScreen() {
   const [info, setInfo] = useState(settings.emergencyInfo);
 
   const toggleKit = (id: string) =>
-    updateSettings({ kitChecked: settings.kitChecked.includes(id) ? settings.kitChecked.filter((x) => x !== id) : [...settings.kitChecked, id] });
+    updateSettings({
+      kitChecked: settings.kitChecked.includes(id) ? settings.kitChecked.filter((x) => x !== id) : [...settings.kitChecked, id],
+    });
 
   return (
-    <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.md, padding: spacing.lg, gap: spacing.lg, paddingBottom: tabBarHeight + spacing.xl }} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={{
+        paddingTop: insets.top + spacing.md,
+        padding: spacing.lg,
+        gap: spacing.lg,
+        paddingBottom: tabBarHeight + spacing.xl,
+      }}
+      keyboardShouldPersistTaps="handled"
+    >
       <AppText variant="title" style={{ fontSize: 24 }}>
         Acil Durum
       </AppText>
-      {!online ? <Banner icon="cloud-offline-outline" tone="warning" text="Çevrimdışısınız. Bu sayfadaki bilgiler internetsiz kullanılabilir." /> : null}
+      {!online ? (
+        <Banner icon="cloud-offline-outline" tone="warning" text="Çevrimdışısınız. Bu sayfadaki bilgiler internetsiz kullanılabilir." />
+      ) : null}
 
       <Card style={{ gap: spacing.sm, borderColor: colors.dangerBorder, backgroundColor: colors.dangerSurface }}>
         <AppText variant="heading">112 Acil Çağrı Merkezi</AppText>
@@ -37,8 +49,20 @@ export default function EmergencyScreen() {
       </Card>
 
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-        <Button style={{ flex: 1 }} variant="secondary" icon="people-outline" label="Toplanma alanları" onPress={() => router.push('/toplanma')} />
-        <Button style={{ flex: 1 }} variant="secondary" icon="shield-checkmark-outline" label="Güvendeyim" onPress={() => router.push('/ailem')} />
+        <Button
+          style={{ flex: 1 }}
+          variant="secondary"
+          icon="people-outline"
+          label="Toplanma alanları"
+          onPress={() => router.push('/toplanma')}
+        />
+        <Button
+          style={{ flex: 1 }}
+          variant="secondary"
+          icon="shield-checkmark-outline"
+          label="Güvendeyim"
+          onPress={() => router.push('/ailem')}
+        />
       </View>
 
       <View style={{ gap: spacing.sm }}>
@@ -77,9 +101,7 @@ export default function EmergencyScreen() {
           );
         })}
         <Pressable onPress={() => Linking.openURL(CONTENT_SOURCE.url)} accessibilityRole="link">
-          <AppText variant="caption">
-            Kaynak: {CONTENT_SOURCE.name}. Güncel ve tam metin için afad.gov.tr ↗
-          </AppText>
+          <AppText variant="caption">Kaynak: {CONTENT_SOURCE.name}. Güncel ve tam metin için afad.gov.tr ↗</AppText>
         </Pressable>
       </View>
 
@@ -88,7 +110,11 @@ export default function EmergencyScreen() {
           <AppText variant="heading" style={{ flex: 1 }}>
             Acil durum bilgilerim
           </AppText>
-          <Pressable onPress={() => (editing ? (updateSettings({ emergencyInfo: info }), setEditing(false)) : setEditing(true))} accessibilityRole="button" style={{ padding: 6 }}>
+          <Pressable
+            onPress={() => (editing ? (updateSettings({ emergencyInfo: info }), setEditing(false)) : setEditing(true))}
+            accessibilityRole="button"
+            style={{ padding: 6 }}
+          >
             <AppText variant="label" color={colors.primary}>
               {editing ? 'Kaydet' : 'Düzenle'}
             </AppText>
@@ -130,7 +156,13 @@ export default function EmergencyScreen() {
         {KIT_ITEMS.map((k) => {
           const checked = settings.kitChecked.includes(k.id);
           return (
-            <Pressable key={k.id} onPress={() => toggleKit(k.id)} accessibilityRole="checkbox" accessibilityState={{ checked }} style={styles.kitRow}>
+            <Pressable
+              key={k.id}
+              onPress={() => toggleKit(k.id)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked }}
+              style={styles.kitRow}
+            >
               <Ionicons name={checked ? 'checkbox' : 'square-outline'} size={22} color={checked ? colors.safe : colors.textMuted} />
               <AppText variant="body" style={{ flex: 1, color: checked ? colors.textSecondary : colors.text }}>
                 {k.label}
@@ -145,6 +177,15 @@ export default function EmergencyScreen() {
 
 const styles = StyleSheet.create({
   guideHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, minHeight: 56 },
-  input: { minHeight: 44, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.bg, color: colors.text, padding: spacing.sm, fontSize: 15 },
+  input: {
+    minHeight: 44,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    padding: spacing.sm,
+    fontSize: 15,
+  },
   kitRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 44 },
 });

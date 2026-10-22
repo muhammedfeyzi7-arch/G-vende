@@ -65,7 +65,9 @@ export default function EarthquakeDetail() {
         <View style={{ flex: 1, gap: 4 }}>
           <AppText variant="title">{placeTitle(event)}</AppText>
           <AppText variant="label">{formatDateTimeTr(p.occurredAt)} TSİ</AppText>
-          <AppText variant="caption">{relativeTimeTr(p.occurredAt)} · UTC {p.occurredAt.slice(0, 19).replace('T', ' ')}</AppText>
+          <AppText variant="caption">
+            {relativeTimeTr(p.occurredAt)} · UTC {p.occurredAt.slice(0, 19).replace('T', ' ')}
+          </AppText>
         </View>
       </View>
 
@@ -74,9 +76,15 @@ export default function EarthquakeDetail() {
         <Row label="Koordinat" value={`${p.latitude.toFixed(4)}° K, ${p.longitude.toFixed(4)}° D`} />
         <Row
           label="Size uzaklık"
-          value={userCoords ? `${formatDistance(distanceKm(userCoords, p))}${location.status === 'manual' ? ' (il merkezine göre)' : ''}` : 'Konum bilinmiyor'}
+          value={
+            userCoords
+              ? `${formatDistance(distanceKm(userCoords, p))}${location.status === 'manual' ? ' (il merkezine göre)' : ''}`
+              : 'Konum bilinmiyor'
+          }
         />
-        <AppText variant="caption">Büyüklük depremin açığa çıkardığı enerjiyi ifade eder; bulunduğunuz yerde hissedilen şiddet değildir.</AppText>
+        <AppText variant="caption">
+          Büyüklük depremin açığa çıkardığı enerjiyi ifade eder; bulunduğunuz yerde hissedilen şiddet değildir.
+        </AppText>
       </Card>
 
       <View style={styles.mapBox}>
@@ -95,7 +103,9 @@ export default function EarthquakeDetail() {
       <View style={{ gap: spacing.sm }}>
         <AppText variant="heading">Kaynaklara göre ölçümler</AppText>
         {spread >= 0.3 ? (
-          <AppText variant="caption">Kaynaklar arasında {spread.toFixed(1)} birimlik büyüklük farkı var. Bu, farklı ölçüm yöntemlerinden kaynaklanabilir.</AppText>
+          <AppText variant="caption">
+            Kaynaklar arasında {spread.toFixed(1)} birimlik büyüklük farkı var. Bu, farklı ölçüm yöntemlerinden kaynaklanabilir.
+          </AppText>
         ) : null}
         {event.readings.map((r) => (
           <Card key={r.source} style={{ gap: 6 }}>
@@ -105,7 +115,9 @@ export default function EarthquakeDetail() {
               </AppText>
               {r === event.primary ? <Pill label="Birincil" color={colors.primary} /> : null}
               <Pill
-                label={r.reviewStatus === 'reviewed' ? 'Revize' : r.reviewStatus === 'automatic' ? 'Otomatik / ilksel' : 'Durum belirtilmemiş'}
+                label={
+                  r.reviewStatus === 'reviewed' ? 'Revize' : r.reviewStatus === 'automatic' ? 'Otomatik / ilksel' : 'Durum belirtilmemiş'
+                }
                 color={r.reviewStatus === 'reviewed' ? colors.safe : colors.textMuted}
               />
             </View>
@@ -116,7 +128,11 @@ export default function EarthquakeDetail() {
             <Row label="Uygulamaya alındı" value={formatDateTimeTr(r.fetchedAt)} />
             <AppText variant="caption">{SOURCES[r.source].attribution}</AppText>
             {r.url ? (
-              <Pressable onPress={() => Linking.openURL(r.url!)} accessibilityRole="link" style={{ minHeight: 36, justifyContent: 'center' }}>
+              <Pressable
+                onPress={() => Linking.openURL(r.url!)}
+                accessibilityRole="link"
+                style={{ minHeight: 36, justifyContent: 'center' }}
+              >
                 <AppText variant="label" color={colors.primary}>
                   Kaynakta görüntüle ↗
                 </AppText>
@@ -128,7 +144,9 @@ export default function EarthquakeDetail() {
 
       <View style={{ gap: spacing.sm }}>
         <AppText variant="heading">Bölgesel kullanıcı bildirimleri ({regional.length})</AppText>
-        <AppText variant="caption">Merkez üssüne {REGION_KM} km içinde, depremden sonra paylaşılan bildirimler. Doğrulanmamış olabilir.</AppText>
+        <AppText variant="caption">
+          Merkez üssüne {REGION_KM} km içinde, depremden sonra paylaşılan bildirimler. Doğrulanmamış olabilir.
+        </AppText>
         {regional.length === 0 ? (
           <AppText variant="label">Bu deprem için bildirim yok.</AppText>
         ) : (

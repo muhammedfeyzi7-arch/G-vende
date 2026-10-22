@@ -14,10 +14,7 @@ import { assemblyToGeoJSON, quakesToGeoJSON, reportsToGeoJSON, ringsToGeoJSON } 
 export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean };
 export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true };
 
-export type MapSelection =
-  | { kind: 'quake'; id: string }
-  | { kind: 'report'; id: string }
-  | { kind: 'assembly'; id: string };
+export type MapSelection = { kind: 'quake'; id: string } | { kind: 'report'; id: string } | { kind: 'assembly'; id: string };
 
 export interface QuakeMapHandle {
   flyTo: (p: LatLng, zoom?: number) => void;
@@ -60,7 +57,11 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
   const assemblyShown = useMemo(() => assemblyPoints.slice(0, MAX_ASSEMBLY_MARKERS), [assemblyPoints]);
   const assemblyData = useMemo(() => assemblyToGeoJSON(assemblyPoints), [assemblyPoints]);
 
-  const initialCenter: [number, number] = focus ? [focus.primary.longitude, focus.primary.latitude] : user ? [user.longitude, user.latitude] : TURKEY_CENTER;
+  const initialCenter: [number, number] = focus
+    ? [focus.primary.longitude, focus.primary.latitude]
+    : user
+      ? [user.longitude, user.latitude]
+      : TURKEY_CENTER;
 
   if (failed) {
     return (
@@ -169,7 +170,12 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
             />
           </GeoJSONSource>
           {assemblyShown.slice(0, 12).map((p) => (
-            <Marker key={p.id} id={`ap-${p.id}`} lngLat={[p.longitude, p.latitude]} onPress={() => onSelect({ kind: 'assembly', id: p.id })}>
+            <Marker
+              key={p.id}
+              id={`ap-${p.id}`}
+              lngLat={[p.longitude, p.latitude]}
+              onPress={() => onSelect({ kind: 'assembly', id: p.id })}
+            >
               <View style={styles.assemblyMarker} accessibilityLabel={`Toplanma alanı: ${p.name}`}>
                 <Ionicons name="people" size={16} color={colors.safe} />
               </View>
@@ -181,7 +187,9 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
       {user ? (
         <Marker id="me" lngLat={[user.longitude, user.latitude]}>
           <View style={styles.userOuter} accessibilityLabel={userIsPrecise ? 'Konumunuz' : 'Seçtiğiniz il (yaklaşık)'}>
-            <View style={[styles.userInner, !userIsPrecise && { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.primary }]} />
+            <View
+              style={[styles.userInner, !userIsPrecise && { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.primary }]}
+            />
           </View>
         </Marker>
       ) : null}

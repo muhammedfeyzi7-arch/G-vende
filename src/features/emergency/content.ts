@@ -11,7 +11,12 @@ export const CONTENT_SOURCE = {
   reviewedAt: null as string | null, // Resmî metinle karşılaştırma tarihi girilmeli
 };
 
-export type GuideSection = { id: string; title: string; icon: 'shield-half-outline' | 'walk-outline' | 'home-outline' | 'car-outline' | 'water-outline'; steps: string[] };
+export type GuideSection = {
+  id: string;
+  title: string;
+  icon: 'shield-half-outline' | 'walk-outline' | 'home-outline' | 'car-outline' | 'water-outline';
+  steps: string[];
+};
 
 export const GUIDES: GuideSection[] = [
   {

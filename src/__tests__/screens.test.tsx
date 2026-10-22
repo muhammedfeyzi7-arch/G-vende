@@ -32,7 +32,16 @@ jest.mock('@maplibre/maplibre-react-native', () => {
 describe('QuakeMap', () => {
   it('harita yüklenemezse hata ve tekrar dene gösterir; tekrar denemede haritayı yeniden kurar', async () => {
     await render(
-      <QuakeMap events={[]} focus={null} reports={[]} assemblyPoints={[]} user={null} userIsPrecise={false} layers={DEFAULT_LAYERS} onSelect={() => {}} />,
+      <QuakeMap
+        events={[]}
+        focus={null}
+        reports={[]}
+        assemblyPoints={[]}
+        user={null}
+        userIsPrecise={false}
+        layers={DEFAULT_LAYERS}
+        onSelect={() => {}}
+      />,
     );
     expect(screen.getByText('Harita yüklenemedi')).toBeTruthy();
     await fireEvent.press(screen.getByText('Tekrar dene'));
@@ -73,7 +82,22 @@ describe('LiveFeedTab', () => {
   });
 
   it('bekleyen gönderiler yayınlanmış gibi gösterilmez', async () => {
-    const pending = [{ clientId: 'x', category: 'safe' as const, feltIntensity: null, description: '', location: null, areaLabel: null, earthquakeEventId: null, photos: [], createdAt: new Date().toISOString(), attempts: 1, lastError: 'Bağlantı yok', serverId: null }];
+    const pending = [
+      {
+        clientId: 'x',
+        category: 'safe' as const,
+        feltIntensity: null,
+        description: '',
+        location: null,
+        areaLabel: null,
+        earthquakeEventId: null,
+        photos: [],
+        createdAt: new Date().toISOString(),
+        attempts: 1,
+        lastError: 'Bağlantı yok',
+        serverId: null,
+      },
+    ];
     await render(<LiveFeedTab {...feedProps} reports={[]} pending={pending} />);
     expect(screen.getByText('1 bildirim gönderilmeyi bekliyor (henüz yayınlanmadı).')).toBeTruthy();
     expect(screen.getByText('Bu kategoride bildirim yok')).toBeTruthy();

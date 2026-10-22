@@ -50,8 +50,16 @@ export default function FamilyScreen() {
     const go = (note: string | null) =>
       run(
         status,
-        () => checkin(groups.map((g) => g.id), status, note, sharesAny && location.status === 'granted' && userCoords ? coarsen(userCoords, 0.001) : null),
-        status === 'safe' ? 'Ailenize güvende olduğunuz bildirildi.' : 'Ailenize yardıma ihtiyacınız olduğu bildirildi. Hayati tehlike varsa 112’yi arayın.',
+        () =>
+          checkin(
+            groups.map((g) => g.id),
+            status,
+            note,
+            sharesAny && location.status === 'granted' && userCoords ? coarsen(userCoords, 0.001) : null,
+          ),
+        status === 'safe'
+          ? 'Ailenize güvende olduğunuz bildirildi.'
+          : 'Ailenize yardıma ihtiyacınız olduğu bildirildi. Hayati tehlike varsa 112’yi arayın.',
       );
     if (status === 'need_help') {
       Alert.alert('Yardım bildirimi', 'Bu bildirim yalnızca aile grubunuza gider; acil çağrı değildir.', [
@@ -77,19 +85,47 @@ export default function FamilyScreen() {
   } else if (state.status === 'loading') {
     body = <StateMessage icon="hourglass-outline" title="Yükleniyor…" compact />;
   } else if (state.status === 'error' && !state.cached) {
-    body = <StateMessage icon="cloud-offline-outline" tone="error" title="Aile bilgileri alınamadı" message={state.error} actionLabel="Tekrar dene" onAction={reload} />;
+    body = (
+      <StateMessage
+        icon="cloud-offline-outline"
+        tone="error"
+        title="Aile bilgileri alınamadı"
+        message={state.error}
+        actionLabel="Tekrar dene"
+        onAction={reload}
+      />
+    );
   } else {
     const groups = state.status === 'ready' ? state.groups : state.cached!.groups;
     const me = state.status === 'ready' ? state.me : null;
     body = (
       <>
         {state.status === 'error' ? (
-          <Banner icon="cloud-offline-outline" tone="warning" text={`Güncellenemedi. Cihazda kayıtlı bilgiler (${relativeTimeTr(state.cached!.at)}) gösteriliyor.`} />
+          <Banner
+            icon="cloud-offline-outline"
+            tone="warning"
+            text={`Güncellenemedi. Cihazda kayıtlı bilgiler (${relativeTimeTr(state.cached!.at)}) gösteriliyor.`}
+          />
         ) : null}
         {groups.length && me ? (
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-            <Button style={{ flex: 1 }} label="Güvendeyim" icon="shield-checkmark" loading={busy === 'safe'} disabled={!online} onPress={() => sendStatus(groups, me, 'safe')} />
-            <Button style={{ flex: 1 }} label="Yardım lazım" icon="alert-circle" variant="danger" loading={busy === 'need_help'} disabled={!online} onPress={() => sendStatus(groups, me, 'need_help')} />
+            <Button
+              style={{ flex: 1 }}
+              label="Güvendeyim"
+              icon="shield-checkmark"
+              loading={busy === 'safe'}
+              disabled={!online}
+              onPress={() => sendStatus(groups, me, 'safe')}
+            />
+            <Button
+              style={{ flex: 1 }}
+              label="Yardım lazım"
+              icon="alert-circle"
+              variant="danger"
+              loading={busy === 'need_help'}
+              disabled={!online}
+              onPress={() => sendStatus(groups, me, 'need_help')}
+            />
           </View>
         ) : null}
         {groups.map((g) => (
@@ -102,7 +138,12 @@ export default function FamilyScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingTop: insets.top + spacing.md, padding: spacing.lg, gap: spacing.lg, paddingBottom: tabBarHeight + spacing.xl }}
+      contentContainerStyle={{
+        paddingTop: insets.top + spacing.md,
+        padding: spacing.lg,
+        gap: spacing.lg,
+        paddingBottom: tabBarHeight + spacing.xl,
+      }}
       keyboardShouldPersistTaps="handled"
     >
       <AppText variant="title" style={{ fontSize: 24 }}>
@@ -168,7 +209,12 @@ function GroupCard({
               {c ? <AppText variant="caption">Güncelleme: {formatDateTimeTr(c.at)}</AppText> : null}
             </View>
             {c?.location ? (
-              <Pressable onPress={() => openDirections({ ...c.location!, name: m.displayName })} accessibilityRole="button" accessibilityLabel={`${m.displayName} konumuna yol tarifi`} style={{ padding: 8 }}>
+              <Pressable
+                onPress={() => openDirections({ ...c.location!, name: m.displayName })}
+                accessibilityRole="button"
+                accessibilityLabel={`${m.displayName} konumuna yol tarifi`}
+                style={{ padding: 8 }}
+              >
                 <Ionicons name="navigate-outline" size={20} color={colors.primary} />
               </Pressable>
             ) : null}
@@ -199,7 +245,14 @@ function GroupCard({
         </AppText>
         {editMp && isOwner ? (
           <>
-            <TextInput value={mpName} onChangeText={setMpName} placeholder="ör. Okul bahçesi" placeholderTextColor={colors.textMuted} maxLength={80} style={styles.input} />
+            <TextInput
+              value={mpName}
+              onChangeText={setMpName}
+              placeholder="ör. Okul bahçesi"
+              placeholderTextColor={colors.textMuted}
+              maxLength={80}
+              style={styles.input}
+            />
             <View style={{ flexDirection: 'row', gap: spacing.sm }}>
               <Button
                 style={{ flex: 1 }}
@@ -208,7 +261,12 @@ function GroupCard({
                 disabled={!mpName.trim() || !userCoords}
                 onPress={() => run('mp', () => setMeetingPoint(group.id, mpName.trim(), userCoords).then(() => setEditMp(false)))}
               />
-              <Button style={{ flex: 1 }} label="Adıyla kaydet" disabled={!mpName.trim()} onPress={() => run('mp', () => setMeetingPoint(group.id, mpName.trim(), null).then(() => setEditMp(false)))} />
+              <Button
+                style={{ flex: 1 }}
+                label="Adıyla kaydet"
+                disabled={!mpName.trim()}
+                onPress={() => run('mp', () => setMeetingPoint(group.id, mpName.trim(), null).then(() => setEditMp(false)))}
+              />
             </View>
           </>
         ) : (
@@ -221,7 +279,13 @@ function GroupCard({
                 variant="ghost"
                 icon="walk-outline"
                 label="Rota"
-                onPress={() => openDirections({ latitude: group.meetingPoint!.latitude!, longitude: group.meetingPoint!.longitude!, name: group.meetingPoint!.name })}
+                onPress={() =>
+                  openDirections({
+                    latitude: group.meetingPoint!.latitude!,
+                    longitude: group.meetingPoint!.longitude!,
+                    name: group.meetingPoint!.name,
+                  })
+                }
               />
             ) : null}
             {isOwner ? <Button variant="ghost" label="Düzenle" onPress={() => setEditMp(true)} /> : null}
@@ -230,7 +294,16 @@ function GroupCard({
       </View>
 
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-        {isOwner ? <Button style={{ flex: 1 }} variant="secondary" icon="person-add-outline" label="Davet et" loading={busy === 'invite-' + group.id} onPress={invite} /> : null}
+        {isOwner ? (
+          <Button
+            style={{ flex: 1 }}
+            variant="secondary"
+            icon="person-add-outline"
+            label="Davet et"
+            loading={busy === 'invite-' + group.id}
+            onPress={invite}
+          />
+        ) : null}
         <Button
           style={{ flex: 1 }}
           variant="ghost"
@@ -248,7 +321,15 @@ function GroupCard({
   );
 }
 
-function CreateOrJoin({ run, busy, hasGroups }: { run: (key: string, fn: () => Promise<unknown>, success?: string) => Promise<void>; busy: string | null; hasGroups: boolean }) {
+function CreateOrJoin({
+  run,
+  busy,
+  hasGroups,
+}: {
+  run: (key: string, fn: () => Promise<unknown>, success?: string) => Promise<void>;
+  busy: string | null;
+  hasGroups: boolean;
+}) {
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [code, setCode] = useState('');
@@ -256,8 +337,24 @@ function CreateOrJoin({ run, busy, hasGroups }: { run: (key: string, fn: () => P
     <Card style={{ gap: spacing.sm }}>
       <AppText variant="heading">{hasGroups ? 'Yeni grup veya davet' : 'Aile grubu oluşturun'}</AppText>
       <AppText variant="caption">Aile üyeleri yalnızca davet bağlantısıyla katılabilir. Grup bilgilerini yalnızca üyeler görür.</AppText>
-      <TextInput value={displayName} onChangeText={setDisplayName} placeholder="Grupta görünecek adınız" placeholderTextColor={colors.textMuted} maxLength={40} style={styles.input} accessibilityLabel="Görünen adınız" />
-      <TextInput value={name} onChangeText={setName} placeholder="Grup adı (ör. Yılmaz Ailesi)" placeholderTextColor={colors.textMuted} maxLength={40} style={styles.input} accessibilityLabel="Grup adı" />
+      <TextInput
+        value={displayName}
+        onChangeText={setDisplayName}
+        placeholder="Grupta görünecek adınız"
+        placeholderTextColor={colors.textMuted}
+        maxLength={40}
+        style={styles.input}
+        accessibilityLabel="Görünen adınız"
+      />
+      <TextInput
+        value={name}
+        onChangeText={setName}
+        placeholder="Grup adı (ör. Yılmaz Ailesi)"
+        placeholderTextColor={colors.textMuted}
+        maxLength={40}
+        style={styles.input}
+        accessibilityLabel="Grup adı"
+      />
       <Button
         label="Grup oluştur"
         icon="add-circle-outline"
@@ -291,8 +388,25 @@ function CreateOrJoin({ run, busy, hasGroups }: { run: (key: string, fn: () => P
 
 const styles = StyleSheet.create({
   member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  avatar: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceRaised },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceRaised,
+  },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  input: { minHeight: 44, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.bg, color: colors.text, paddingHorizontal: spacing.md, fontSize: 15 },
+  input: {
+    minHeight: 44,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    paddingHorizontal: spacing.md,
+    fontSize: 15,
+  },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: spacing.sm },
 });

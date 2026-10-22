@@ -84,7 +84,9 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!session || !isBackendConfigured()) return setHelpful(new Set());
-    fetchMyReactions().then(setHelpful).catch(() => {});
+    fetchMyReactions()
+      .then(setHelpful)
+      .catch(() => {});
   }, [session]);
 
   const attempt = useCallback(
@@ -126,8 +128,10 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
         refresh();
         return { sent: true, message: 'Bildiriminiz yayınlandı.' };
       }
-      if (outcome.kind === 'partial') return { sent: false, message: `Bildirim yayınlandı ancak ${outcome.error.toLocaleLowerCase('tr-TR')} Tekrar denenecek.` };
-      if (outcome.kind === 'retry') return { sent: false, message: `Gönderilemedi (${outcome.error}). Bildiriminiz bekleyen gönderiler arasında.` };
+      if (outcome.kind === 'partial')
+        return { sent: false, message: `Bildirim yayınlandı ancak ${outcome.error.toLocaleLowerCase('tr-TR')} Tekrar denenecek.` };
+      if (outcome.kind === 'retry')
+        return { sent: false, message: `Gönderilemedi (${outcome.error}). Bildiriminiz bekleyen gönderiler arasında.` };
       return { sent: false, message: `Gönderilemedi: ${friendlyError({ message: outcome.error })}` };
     },
     [online, attempt, refresh, savePending],
@@ -157,16 +161,13 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     [helpful, refresh],
   );
 
-  const flag = useCallback(
-    async (id: string, reason: FlagReason) => {
-      try {
-        await flagReport(id, reason);
-      } catch (e) {
-        throw new Error(friendlyError(e));
-      }
-    },
-    [],
-  );
+  const flag = useCallback(async (id: string, reason: FlagReason) => {
+    try {
+      await flagReport(id, reason);
+    } catch (e) {
+      throw new Error(friendlyError(e));
+    }
+  }, []);
 
   const value = useMemo(
     () => ({ reports, status, error, lastSyncedAt, refresh, pending, submit, retryPending, discardPending, helpful, toggleHelpful, flag }),
