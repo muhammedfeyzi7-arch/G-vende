@@ -257,7 +257,7 @@ create table public.family_members (
   primary key (group_id, user_id)
 );
 create table public.family_invites (
-  token text primary key default encode(gen_random_bytes(18), 'base64'),
+  token text primary key default encode(gen_random_bytes(16), 'hex'),
   group_id uuid not null references public.family_groups (id) on delete cascade,
   created_by uuid not null default auth.uid() references auth.users (id) on delete cascade,
   expires_at timestamptz not null default now() + interval '48 hours',

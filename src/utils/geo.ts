@@ -25,7 +25,7 @@ export function isValidCoordinate(lat: unknown, lon: unknown): boolean {
 }
 
 /** Merkez etrafında yaklaşık dairesel bir GeoJSON poligonu üretir (mesafe halkaları için). */
-export function circlePolygon(center: LatLng, radiusKm: number, steps = 64): GeoJSON.Polygon {
+export function circlePolygon(center: LatLng, radiusKm: number, steps = 64): { type: 'Polygon'; coordinates: [number, number][][] } {
   const coords: [number, number][] = [];
   const latR = toRad(center.latitude);
   const lonR = toRad(center.longitude);

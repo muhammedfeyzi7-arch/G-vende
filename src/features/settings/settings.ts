@@ -17,6 +17,8 @@ export interface Settings {
   emergencyInfo: { bloodType: string; conditions: string; medications: string; contacts: string };
   /** Afet çantası kontrol listesinde işaretli maddeler */
   kitChecked: string[];
+  /** Aile grubu bilgilerini (ad, son durum) çevrimdışı erişim için cihazda sakla — kullanıcı izniyle */
+  cacheFamilyOffline: boolean;
   onboardingSeen: boolean;
 }
 
@@ -31,5 +33,6 @@ export const DEFAULT_SETTINGS: Settings = {
   attachLocationByDefault: true,
   emergencyInfo: { bloodType: '', conditions: '', medications: '', contacts: '' },
   kitChecked: [],
+  cacheFamilyOffline: false,
   onboardingSeen: false,
 };
