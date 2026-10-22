@@ -4,5 +4,5 @@ jest.mock('@react-native-async-storage/async-storage', () => require('@react-nat
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
   const Icon = ({ name }: { name: string }) => <Text>{`icon:${name}`}</Text>;
-  return { Ionicons: Icon };
+  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
 });

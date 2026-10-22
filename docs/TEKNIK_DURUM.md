@@ -49,7 +49,11 @@ Tarih: 22 Ekim 2026 · Sürüm 0.1.0
    bir kamu API sözleşmesi veya yazılı kullanım şartı bulunamadı. Kandilli verisi bir API değil, düz metin sayfasıdır
    (yalnızca HTTP). Her ikisi için de **yayın öncesi kurumlardan yazılı izin/teyit alınmalıdır.** USGS FDSN belgeli ve
    kamu malıdır. AFAD `date` alanının UTC olduğu varsayıldı (bilinen geçmiş olaylarla tutarlı) — canlı veriyle teyit edilmeli.
-2. **Harita:** MapLibre katmanları, işaretçiler ve kamera davranışı cihazda denenmedi. OpenFreeMap stil adresine erişilemedi.
+2. **Harita:** Referans görsele göre özel bir koyu stil (`src/features/map/mapStyle.ts`: lacivert kara, koyu deniz, büyük
+   şehir adları) ve parlayan kaplama katmanları (`layers.ts`) yazıldı. Kaplama katmanları web önizlemesinde maplibre-gl ile
+   gerçekten çizdirilerek kontrol edildi; **taban harita karoları ve yazı tipleri bu ortamdan indirilemediği için koyu stilin
+   kendisi görülemedi.** Stil yüklenemezse uygulama otomatik olarak OpenFreeMap `dark` stiline, o da olmazsa hata ekranına geçer.
+   Native MapLibre davranışı cihazda denenmedi.
 3. **Toplanma alanları:** Resmî veri içe aktarılmadı. AFAD'ın sorgu hizmeti e-Devlet girişli olduğundan toplu veri
    olarak alınamıyor; belediye açık veri portalları (ör. İBB) il bazında değerlendirilmeli.
 4. **Push bildirimleri:** Uçtan uca (EAS projectId, Expo Push, zamanlayıcı) test edilmedi. Sunucu işlevleri uygulamanın

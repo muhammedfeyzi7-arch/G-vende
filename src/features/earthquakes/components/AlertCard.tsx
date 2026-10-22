@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { colors, radius, spacing } from '@/theme';
@@ -25,8 +26,8 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
   let title: string;
   let subtitle: string;
   if (alert) {
-    title = state.distanceKm != null && state.distanceKm < 100 ? 'Yakınınızda deprem kaydedildi' : 'Önemli deprem kaydedildi';
-    subtitle = 'Artçı sarsıntılar olabilir, güvenli konumda kalın.';
+    title = 'Deprem kaydedildi';
+    subtitle = `${state.minutesAgo <= 1 ? 'Az önce' : `${state.minutesAgo} dk önce`} · Artçılar olabilir, güvenli konumda kalın.`;
   } else if (event) {
     title = 'Son depremler ve bölgesel durum';
     subtitle = `Son kayıt: ${placeTitle(event)} · ${relativeTimeTr(event.primary.occurredAt)}`;
@@ -46,6 +47,9 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
       (state.kind !== 'none' && state.distanceKm != null ? ` Size uzaklığı ${formatDistance(state.distanceKm)}.` : '')
     : title;
 
+  const accent = alert ? colors.danger : colors.primary;
+  const soft = alert ? '#F3C3C9' : colors.textSecondary;
+
   return (
     <Pressable
       onPress={onPress}
@@ -53,30 +57,36 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
       accessibilityRole={onPress ? 'button' : 'summary'}
       accessibilityLabel={a11y}
       accessibilityLiveRegion={alert ? 'assertive' : 'polite'}
-      style={({ pressed }) => [styles.card, alert ? styles.cardAlert : styles.cardCalm, pressed && { opacity: 0.9 }]}
+      style={({ pressed }) => [styles.shell, alert ? styles.shellAlert : styles.shellCalm, pressed && { opacity: 0.92 }]}
     >
-      <Ionicons name="pulse" size={40} color={alert ? colors.danger : colors.primary} style={styles.wave} />
-      <View style={{ flex: 1, gap: 2 }}>
-        <AppText variant="title" numberOfLines={2} style={{ fontSize: 19 }}>
+      <LinearGradient
+        colors={alert ? ['#55101C', '#3A0C15', '#2A0911'] : ['#0D1D2D', '#081522']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <Ionicons name="pulse" size={44} color={accent} style={[styles.wave, { textShadowColor: accent + 'CC' }]} />
+      <View style={{ flex: 1, gap: 3 }}>
+        <AppText variant="title" numberOfLines={alert ? 1 : 2} style={{ fontSize: alert ? 19 : 17, letterSpacing: -0.2 }}>
           {title}
         </AppText>
-        <AppText variant="label" numberOfLines={2} color={alert ? '#F6C9CE' : colors.textSecondary}>
+        <AppText variant="label" numberOfLines={2} color={soft} style={{ fontSize: 13 }}>
           {subtitle}
         </AppText>
       </View>
       {event ? (
-        <View style={[styles.magBox, { borderColor: alert ? colors.danger + 'AA' : colors.borderStrong }]}>
-          <AppText variant="caption" color={alert ? '#F6C9CE' : colors.textSecondary}>
-            Büyüklük
+        <View style={[styles.magBox, { borderColor: alert ? colors.danger + 'B3' : colors.borderStrong }]}>
+          <AppText variant="caption" color={soft} style={{ fontSize: 11 }}>
+            Büyüklük {event.primary.magnitudeType ? `(${event.primary.magnitudeType})` : ''}
           </AppText>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <AppText variant="display" style={{ fontSize: 30 }}>
+            <AppText variant="display" style={{ fontSize: 28, lineHeight: 32 }}>
               {formatMagnitude(event.primary.magnitude)}
             </AppText>
-            <Ionicons name="pulse" size={16} color={alert ? colors.danger : colors.primary} />
+            <Ionicons name="pulse" size={16} color={accent} />
           </View>
-          <AppText variant="caption" color={alert ? '#F6C9CE' : colors.textMuted}>
-            {event.primary.magnitudeType ?? 'tür ?'} · {sourceLabel(event.primary)}
+          <AppText variant="caption" color={alert ? '#F3C3C9' : colors.textMuted} style={{ fontSize: 10 }}>
+            {sourceLabel(event.primary)}
           </AppText>
         </View>
       ) : null}
@@ -85,7 +95,7 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: {
+  shell: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
@@ -94,16 +104,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingLeft: spacing.lg,
     paddingRight: spacing.md,
+    overflow: 'hidden',
   },
-  cardAlert: { backgroundColor: colors.dangerSurface, borderColor: colors.dangerBorder },
-  cardCalm: { backgroundColor: colors.surface, borderColor: colors.border },
-  wave: { marginRight: -2 },
+  shellAlert: { borderColor: '#7A1C2A', boxShadow: '0 6px 22px rgba(255,53,72,0.22)' },
+  shellCalm: { borderColor: colors.border },
+  wave: { marginRight: -2, textShadowRadius: 14, textShadowOffset: { width: 0, height: 0 } },
   magBox: {
     borderWidth: 1,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 6,
     alignItems: 'center',
-    minWidth: 96,
+    minWidth: 92,
+    backgroundColor: 'rgba(0,0,0,0.18)',
   },
 });

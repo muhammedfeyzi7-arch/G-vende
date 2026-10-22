@@ -6,19 +6,26 @@ import { buildSampleReports } from '@/features/reports/sampleReports';
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn() } }));
 jest.mock('@/services/supabase', () => ({ requireSupabase: jest.fn(), friendlyError: (e: Error) => e.message }));
 
-let mockFailNext = true;
+let mockFailAll = true;
+let mockMountedStyles: unknown[] = [];
 jest.mock('@maplibre/maplibre-react-native', () => {
   const { View } = require('react-native');
   const { forwardRef } = require('react');
   return {
-    Map: ({ onDidFailLoadingMap, children }: { onDidFailLoadingMap: () => void; children: React.ReactNode }) => {
-      // İlk yüklemede hata simülasyonu, tekrar denemede başarı
+    Map: ({
+      onDidFailLoadingMap,
+      mapStyle,
+      children,
+    }: {
+      onDidFailLoadingMap: () => void;
+      mapStyle: unknown;
+      children: React.ReactNode;
+    }) => {
+      // mockFailAll iken her stil yüklemesi başarısız olur
       const { useEffect: ue } = require('react');
       ue(() => {
-        if (mockFailNext) {
-          mockFailNext = false;
-          onDidFailLoadingMap();
-        }
+        mockMountedStyles.push(mapStyle);
+        if (mockFailAll) onDidFailLoadingMap();
       }, []);
       return <View testID="maplibre-map">{children}</View>;
     },
@@ -30,7 +37,7 @@ jest.mock('@maplibre/maplibre-react-native', () => {
 });
 
 describe('QuakeMap', () => {
-  it('harita yüklenemezse hata ve tekrar dene gösterir; tekrar denemede haritayı yeniden kurar', async () => {
+  it('önce yedek stili dener; hepsi başarısızsa hata ve tekrar dene gösterir', async () => {
     await render(
       <QuakeMap
         events={[]}
@@ -44,6 +51,11 @@ describe('QuakeMap', () => {
       />,
     );
     expect(screen.getByText('Harita yüklenemedi')).toBeTruthy();
+    // GÜVENDE koyu stil (nesne) ardından OpenFreeMap URL'si denendi
+    expect(mockMountedStyles).toHaveLength(2);
+    expect(typeof mockMountedStyles[0]).toBe('object');
+    expect(mockMountedStyles[1]).toBe('https://tiles.openfreemap.org/styles/dark');
+    mockFailAll = false;
     await fireEvent.press(screen.getByText('Tekrar dene'));
     expect(screen.getByTestId('maplibre-map')).toBeTruthy();
     expect(screen.queryByText('Harita yüklenemedi')).toBeNull();

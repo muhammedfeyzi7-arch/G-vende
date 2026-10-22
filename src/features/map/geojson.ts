@@ -6,7 +6,7 @@ import { CATEGORY_META, feltColor } from '../reports/categories';
 import { magnitudeColor } from '../earthquakes/format';
 
 /** Mesafe halkaları (km). Sarsıntı alanı değildir; yalnızca uzaklığı görselleştirir. */
-export const DISTANCE_RINGS_KM = [25, 50, 100] as const;
+export const DISTANCE_RINGS_KM = [8, 15, 25, 35, 50, 75] as const;
 
 export function quakesToGeoJSON(events: EarthquakeEvent[], focusId: string | null): GeoJSON.FeatureCollection {
   return {

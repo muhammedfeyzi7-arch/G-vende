@@ -20,8 +20,8 @@ export function MapControls({
 }) {
   return (
     <View style={styles.controls}>
-      <IconButton icon="layers-outline" label="Harita katmanları" onPress={onLayers} active={layersOpen} />
-      <IconButton icon="navigate-outline" label="Konumuma git" onPress={onLocate} />
+      <IconButton icon="layers-outline" label="Harita katmanları" onPress={onLayers} active={layersOpen} size={50} />
+      <IconButton icon="navigate-outline" label="Konumuma git" onPress={onLocate} size={50} />
       {onFullscreen ? (
         <IconButton
           icon={fullscreenIcon}
@@ -57,7 +57,7 @@ export function LayerPanel({ layers, onChange }: { layers: MapLayers; onChange: 
         </View>
       ))}
       <AppText variant="caption" style={{ marginTop: 4 }}>
-        Halkalar merkez üssüne 25 / 50 / 100 km uzaklığı gösterir; ölçülmüş sarsıntı alanı değildir.
+        Halkalar merkez üssüne 25 / 50 / 75 km uzaklığı gösterir; renkler görseldir, ölçülmüş sarsıntı alanı değildir.
       </AppText>
     </View>
   );
@@ -71,18 +71,21 @@ export function MapLegend() {
       accessibilityLabel="Lejant: kullanıcıların bildirdiği hissedilen sarsıntı. Çok güçlü kırmızı, güçlü turuncu, orta sarı, hafif gri."
     >
       <AppText variant="caption" color={colors.textSecondary}>
-        Bildirilen hissedilme
+        Sarsıntı hissedilen bölgeler
       </AppText>
       <View style={styles.legendRow}>
         {FELT_LEVELS.map((l) => (
           <View key={l.value} style={styles.legendItem}>
             <View style={[styles.dot, { backgroundColor: l.color }]} />
-            <AppText variant="caption" color={colors.text}>
+            <AppText variant="caption" color={colors.text} style={{ fontSize: 11.5 }}>
               {l.label}
             </AppText>
           </View>
         ))}
       </View>
+      <AppText variant="caption" style={{ fontSize: 10 }}>
+        Halkalar: merkeze 25/50/75 km uzaklık, ölçüm değil
+      </AppText>
     </View>
   );
 }
@@ -126,7 +129,7 @@ const styles = StyleSheet.create({
   layerRow: { flexDirection: 'row', alignItems: 'center', minHeight: 40 },
   legend: {
     flexShrink: 1,
-    backgroundColor: 'rgba(3,11,20,0.82)',
+    backgroundColor: 'rgba(3,11,20,0.7)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs + 2,
@@ -140,7 +143,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: 'rgba(7,21,34,0.94)',
+    backgroundColor: 'rgba(5,15,25,0.9)',
+    boxShadow: '0 4px 18px rgba(0,0,0,0.45)',
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.borderStrong,
@@ -152,9 +156,10 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   assemblyIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    boxShadow: '0 0 12px rgba(20,217,154,0.55)',
     borderWidth: 2,
     borderColor: colors.safe,
     alignItems: 'center',

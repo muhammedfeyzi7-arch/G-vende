@@ -34,9 +34,11 @@ describe('AlertCard', () => {
 
   it('önemli olayda kaynak ve büyüklük türüyle uyarı gösterir', async () => {
     await render(<AlertCard state={{ kind: 'recent-significant', event, distanceKm: 38, minutesAgo: 4 }} loading={false} error={null} />);
-    expect(screen.getByText('Yakınınızda deprem kaydedildi')).toBeTruthy();
+    expect(screen.getByText('Deprem kaydedildi')).toBeTruthy();
+    expect(screen.getByText(/4 dk önce · Artçılar/)).toBeTruthy();
     expect(screen.getByText('4,8')).toBeTruthy();
-    expect(screen.getByText('ML · AFAD')).toBeTruthy();
+    expect(screen.getByText('Büyüklük (ML)')).toBeTruthy();
+    expect(screen.getByText('AFAD')).toBeTruthy();
     // Büyüklük, "şiddet" olarak etiketlenmez
     expect(screen.queryByText(/şiddet/i)).toBeNull();
   });

@@ -3,6 +3,7 @@ import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AppText } from '@/components/ui';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { CategoryChips, type ReportFilter } from '@/features/reports/components/CategoryChips';
@@ -56,7 +57,12 @@ export default function MapScreen() {
         }}
         bottomInset={tabBarHeight}
       />
-      <View style={[styles.top, { paddingTop: insets.top + spacing.sm }]} pointerEvents="box-none">
+      <LinearGradient
+        colors={[colors.bg, 'rgba(3,11,20,0.85)', 'rgba(3,11,20,0)']}
+        locations={[0, 0.7, 1]}
+        style={[styles.top, { paddingTop: insets.top + spacing.sm, paddingBottom: spacing.xl }]}
+        pointerEvents="box-none"
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -81,7 +87,7 @@ export default function MapScreen() {
           })}
         </ScrollView>
         <CategoryChips value={filter} onChange={setFilter} />
-      </View>
+      </LinearGradient>
       <View style={{ position: 'absolute', top: insets.top + 110, right: 0, left: 0 }} pointerEvents="box-none">
         <MapControls
           layersOpen={layersOpen}
@@ -125,5 +131,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   bottom: { position: 'absolute', left: spacing.md, right: spacing.md, gap: spacing.xs },
-  count: { backgroundColor: 'rgba(3,11,20,0.8)', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  count: {
+    overflow: 'hidden',
+    backgroundColor: 'rgba(3,11,20,0.8)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
 });

@@ -6,7 +6,7 @@ Backend: Supabase (Postgres + RLS + Storage + Edge Functions). Harita: MapLibre 
 > Projenin güncel durumu, doğrulanan/doğrulanamayan noktalar: [`docs/TEKNIK_DURUM.md`](docs/TEKNIK_DURUM.md)
 
 ![Ana ekran düzen önizlemesi](docs/ana-ekran-onizleme.png)
-_(Web düzen önizlemesi; harita yalnızca iOS/Android'de çizilir. Deprem kaydı test verisidir, akıştaki kayıtlar “ÖRNEK VERİ” etiketlidir.)_
+_(Web önizlemesi: kaplama katmanları gerçek çizimdir, taban harita karoları bu ortamdan yüklenemediği için zemin düzdür. Deprem kaydı test verisidir; akıştaki kayıtlar “ÖRNEK VERİ” etiketlidir.)_
 
 ## Windows'ta kurulum
 
