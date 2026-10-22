@@ -146,8 +146,9 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
     paddingTop: spacing.md,
-    gap: 4,
+    flexWrap: 'wrap',
+    rowGap: spacing.sm,
   },
-  metric: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 },
+  metric: { flexBasis: '50%', flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 },
   metricIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
 });

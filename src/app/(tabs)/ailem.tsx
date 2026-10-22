@@ -24,15 +24,15 @@ import { formatTimeTr, relativeTimeTr } from '@/utils/time';
 function StatTile({ icon, color, value, label }: { icon: string; color: string; value: number; label: string }) {
   return (
     <View style={styles.stat} accessible accessibilityLabel={`${value} ${label}`}>
-      <IconTile icon={icon} color={color} size={36} solid={color !== accent.gray} />
-      <View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <IconTile icon={icon} color={color} size={28} solid={color !== accent.gray} />
         <AppText variant="title" style={{ fontSize: 18, lineHeight: 22 }}>
           {value}
         </AppText>
-        <AppText variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>
-          {label}
-        </AppText>
       </View>
+      <AppText variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>
+        {label}
+      </AppText>
     </View>
   );
 }
@@ -478,9 +478,8 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', gap: spacing.xs + 2 },
   stat: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+    minWidth: 0,
+    gap: 4,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.sm,
