@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui';
 import { Avatar, BellButton, ListRow, QuickCard, RowGroup, ScreenHeader, SectionCard, ToggleRow, accent } from '@/components/ds';
@@ -27,6 +27,8 @@ export default function SettingsScreen() {
   const { profile } = useProfile();
   const area = useAreaLabel();
   const [contactCount, setContactCount] = useState(0);
+  // İki sütunlu satır grupları yalnızca geniş ekranlarda; dar telefonda alt alta.
+  const wide = useWindowDimensions().width >= 430;
 
   useEffect(() => {
     loadContacts().then((c) => setContactCount(c.length));
@@ -78,13 +80,13 @@ export default function SettingsScreen() {
       {/* Profil kartı */}
       <View style={styles.profile}>
         <Pressable onPress={() => router.push('/profil')} accessibilityRole="button" accessibilityLabel="Profil fotoğrafını düzenle">
-          <Avatar name={displayName || '?'} uri={profile.photoUri} size={84} />
+          <Avatar name={displayName || '?'} uri={profile.photoUri} size={72} />
           <View style={styles.editBadge}>
             <Ionicons name="pencil" size={14} color={colors.text} />
           </View>
         </Pressable>
         <View style={{ flex: 1, gap: 2 }}>
-          <AppText variant="title" numberOfLines={1} style={{ fontSize: 21 }}>
+          <AppText variant="title" numberOfLines={2} style={{ fontSize: 19 }}>
             {displayName || 'Profilinizi oluşturun'}
           </AppText>
           {profile.phone ? (
@@ -104,7 +106,7 @@ export default function SettingsScreen() {
           accessibilityRole="button"
           style={({ pressed }) => [styles.editBtn, pressed && { opacity: 0.85 }]}
         >
-          <AppText variant="label" color={colors.text} style={{ fontSize: 14 }}>
+          <AppText variant="label" color={colors.text} style={{ fontSize: 13 }}>
             Profil Düzenle
           </AppText>
           <Ionicons name="chevron-forward" size={16} color={colors.text} />
@@ -180,8 +182,8 @@ export default function SettingsScreen() {
         subtitle="Hesabınızın güvenliğini sağlayın."
         onPress={() => router.push('/guvenlik')}
       >
-        <View style={styles.twoCol}>
-          <RowGroup style={{ flex: 1 }}>
+        <View style={wide ? styles.twoCol : styles.oneCol}>
+          <RowGroup style={wide ? { flex: 1 } : undefined}>
             <ListRow first icon="key-outline" title="Giriş ve şifre" subtitle="E-posta kodu" onPress={() => router.push('/guvenlik')} />
             <ListRow
               icon="phone-portrait-outline"
@@ -190,7 +192,7 @@ export default function SettingsScreen() {
               onPress={() => router.push('/guvenlik')}
             />
           </RowGroup>
-          <RowGroup style={{ flex: 1 }}>
+          <RowGroup style={wide ? { flex: 1 } : undefined}>
             <ToggleRow
               first
               icon="finger-print"
@@ -210,12 +212,12 @@ export default function SettingsScreen() {
         subtitle="Görünüm, harita ve dil ayarlarını düzenleyin."
         onPress={() => router.push('/tercihler')}
       >
-        <View style={styles.twoCol}>
-          <RowGroup style={{ flex: 1 }}>
+        <View style={wide ? styles.twoCol : styles.oneCol}>
+          <RowGroup style={wide ? { flex: 1 } : undefined}>
             <ListRow first icon="moon-outline" title="Tema" value="Koyu" onPress={() => router.push('/tercihler')} />
             <ListRow icon="map-outline" title="Harita" value={mapLabel} onPress={() => router.push('/tercihler')} />
           </RowGroup>
-          <RowGroup style={{ flex: 1 }}>
+          <RowGroup style={wide ? { flex: 1 } : undefined}>
             <ListRow first icon="globe-outline" title="Dil" value="Türkçe" onPress={() => router.push('/tercihler')} />
           </RowGroup>
         </View>
@@ -247,7 +249,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
-    padding: spacing.lg,
+    padding: spacing.md,
   },
   editBadge: {
     position: 'absolute',
@@ -269,9 +271,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderStrong,
     borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    minHeight: 40,
+    paddingHorizontal: spacing.sm + 2,
+    minHeight: 38,
   },
   quickRow: { flexDirection: 'row', gap: spacing.sm },
   twoCol: { flexDirection: 'row', gap: spacing.sm },
+  oneCol: { gap: spacing.sm },
 });

@@ -49,7 +49,9 @@ export function Button({
   disabled,
   style,
   accessibilityHint,
+  size = 'md',
 }: {
+  size?: 'md' | 'sm';
   label: string;
   onPress: () => void;
   icon?: IconName;
@@ -71,13 +73,18 @@ export function Button({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
+        size === 'sm' && styles.buttonSm,
         { backgroundColor: bg, opacity: disabled ? 0.45 : pressed ? 0.85 : 1 },
         variant === 'secondary' && { borderWidth: 1, borderColor: colors.borderStrong },
         style,
       ]}
     >
-      {loading ? <ActivityIndicator color={fg} /> : icon ? <Ionicons name={icon} size={20} color={fg} /> : null}
-      <Text style={[styles.buttonText, { color: fg }]} maxFontSizeMultiplier={1.4}>
+      {loading ? <ActivityIndicator color={fg} /> : icon ? <Ionicons name={icon} size={size === 'sm' ? 16 : 20} color={fg} /> : null}
+      <Text
+        style={[styles.buttonText, size === 'sm' && { fontSize: 13 }, { color: fg }]}
+        numberOfLines={size === 'sm' ? 1 : undefined}
+        maxFontSizeMultiplier={1.4}
+      >
         {label}
       </Text>
     </Pressable>
@@ -221,6 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
+  buttonSm: { minHeight: 40, paddingHorizontal: spacing.sm, gap: 4, borderRadius: radius.md },
   buttonText: { fontSize: font.size.md, fontWeight: font.weight.semibold },
   iconButton: {
     borderRadius: 14,

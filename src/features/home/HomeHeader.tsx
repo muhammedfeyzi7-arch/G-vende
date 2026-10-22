@@ -72,6 +72,6 @@ export function HomeHeader() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 56 },
-  loc: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  right: { flex: 1, alignItems: 'flex-end' },
+  loc: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 },
+  right: { width: 50, alignItems: 'flex-end' },
 });

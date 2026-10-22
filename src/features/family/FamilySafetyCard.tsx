@@ -60,10 +60,10 @@ export function FamilySafetyCard({ groups, myUserId }: { groups: FamilyGroup[]; 
               status={p.status}
               ring={p.color}
             />
-            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 15, marginTop: 6 }}>
+            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14, marginTop: 6 }}>
               {p.name}
             </AppText>
-            <AppText variant="label" color={p.color} numberOfLines={1} style={{ fontSize: 13 }}>
+            <AppText variant="label" color={p.color} numberOfLines={1} style={{ fontSize: 12 }}>
               {p.label}
             </AppText>
             <AppText variant="caption" numberOfLines={1}>
@@ -101,5 +101,5 @@ const styles = StyleSheet.create({
   },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg },
   list: { paddingHorizontal: spacing.md, gap: spacing.sm },
-  person: { width: 86, alignItems: 'center' },
+  person: { width: 74, alignItems: 'center' },
 });

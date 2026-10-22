@@ -41,10 +41,10 @@ function ActionTile({
       style={({ pressed }) => [styles.action, pressed && { opacity: 0.85 }]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <IconTile icon={icon} color={color} size={44} solid />
-        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+        <IconTile icon={icon} color={color} size={40} solid />
+        <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
       </View>
-      <AppText variant="heading" numberOfLines={1} style={{ fontSize: 15, marginTop: spacing.sm }}>
+      <AppText variant="heading" numberOfLines={2} style={{ fontSize: 14, lineHeight: 17, marginTop: spacing.sm }}>
         {title}
       </AppText>
       <AppText variant="caption" numberOfLines={3} style={{ fontSize: 12, lineHeight: 15 }}>
@@ -62,6 +62,7 @@ export default function EmergencyScreen() {
   const fam = useFamilyActions();
   const nearby = useNearbyAssembly(userCoords);
   const wide = width >= 380;
+  const stepIcon = Math.min(100, (width - 2 * spacing.md - 2 * spacing.sm - 3 * 6) / 4 - 4);
 
   const point = nearby.myPoint ?? (nearby.official[0] ? { ...nearby.official[0] } : null);
   const kitDone = settings.kitChecked.filter((id) => KIT_ITEMS.some((k) => k.id === id)).length;
@@ -128,16 +129,12 @@ export default function EmergencyScreen() {
           <AppText variant="label" color="#F6C9CE">
             Acil Çağrı
           </AppText>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-            <AppText variant="display" style={{ fontSize: 40, lineHeight: 46 }}>
-              112
-            </AppText>
-            {wide ? (
-              <AppText variant="caption" color="#F6C9CE" style={{ fontSize: 11.5, lineHeight: 15 }}>
-                {'Sağlık · İtfaiye · Polis\nAFAD · Jandarma'}
-              </AppText>
-            ) : null}
-          </View>
+          <AppText variant="display" style={{ fontSize: 40, lineHeight: 44 }}>
+            112
+          </AppText>
+          <AppText variant="caption" color="#F6C9CE" style={{ fontSize: 11.5, lineHeight: 15 }}>
+            {'Sağlık · İtfaiye · Polis\nAFAD · Jandarma'}
+          </AppText>
         </View>
         <Pressable
           onPress={() => Linking.openURL('tel:112')}
@@ -190,11 +187,7 @@ export default function EmergencyScreen() {
             </AppText>
           </Pressable>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: spacing.sm, paddingHorizontal: spacing.md }}
-        >
+        <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: spacing.sm }}>
           {DCH_STEPS.map(({ n, title, text, Icon }) => (
             <Pressable
               key={n}
@@ -204,29 +197,29 @@ export default function EmergencyScreen() {
               accessibilityLabel={`${n}. ${title}: ${text}`}
             >
               <View style={styles.stepImg}>
-                <Icon size={92} />
+                <Icon size={stepIcon} />
                 <View style={styles.stepNum}>
                   <AppText variant="label" color="#fff" style={{ fontWeight: '800' }}>
                     {n}
                   </AppText>
                 </View>
               </View>
-              <AppText variant="heading" style={{ fontSize: 16, fontWeight: '800', marginTop: 6 }}>
+              <AppText variant="heading" style={{ fontSize: 15, fontWeight: '800', marginTop: 6 }}>
                 {title}
               </AppText>
-              <AppText variant="caption" style={{ fontSize: 12.5, lineHeight: 16 }}>
+              <AppText variant="caption" style={{ fontSize: 11.5, lineHeight: 15 }}>
                 {text}
               </AppText>
             </Pressable>
           ))}
-        </ScrollView>
+        </View>
       </View>
 
       {/* Toplanma noktamız + Afet çantası */}
       <View style={[styles.pair, !wide && { flexDirection: 'column' }]}>
         <View style={[styles.card, styles.halfCard, { borderColor: colors.safe + '88' }]}>
           <Pressable onPress={() => router.push('/toplanma')} style={styles.halfHead} accessibilityRole="button">
-            <IconTile icon="flag" color={accent.green} size={40} />
+            <IconTile icon="flag" color={accent.green} size={34} />
             <View style={{ flex: 1 }}>
               <AppText variant="label" color={colors.safe} style={{ fontWeight: '700' }}>
                 Toplanma Noktamız
@@ -262,17 +255,19 @@ export default function EmergencyScreen() {
                   interactive={false}
                 />
               </View>
-              <View style={{ flexDirection: 'row', gap: spacing.xs }}>
+              <View style={{ flexDirection: wide && width >= 430 ? 'row' : 'column', gap: spacing.xs }}>
                 <Button
-                  style={{ flex: 1, minHeight: 42 }}
+                  size="sm"
+                  style={{ flex: 1 }}
                   variant="secondary"
                   icon="map-outline"
-                  label="Haritada"
+                  label="Haritada Göster"
                   onPress={() => router.push('/toplanma')}
                 />
                 <Button
-                  style={{ flex: 1, minHeight: 42 }}
-                  variant="secondary"
+                  size="sm"
+                  style={{ flex: 1 }}
+                  variant="primary"
                   icon="navigate-outline"
                   label="Yola Çık"
                   onPress={() => openDirections(point)}
@@ -283,7 +278,7 @@ export default function EmergencyScreen() {
             <View style={{ gap: spacing.sm }}>
               <AppText variant="caption">e-Devlet’ten öğrendiğiniz toplanma alanınızı işaretleyin; internetsiz de yol tarifi alın.</AppText>
               <Button
-                style={{ minHeight: 42 }}
+                size="sm"
                 variant="secondary"
                 icon="flag-outline"
                 label="Alanımı işaretle"
@@ -295,7 +290,7 @@ export default function EmergencyScreen() {
 
         <View style={[styles.card, styles.halfCard]}>
           <Pressable onPress={() => router.push('/canta')} style={styles.halfHead} accessibilityRole="button">
-            <IconTile icon="mci:bag-personal" color={accent.red} size={40} />
+            <IconTile icon="mci:bag-personal" color={accent.red} size={34} />
             <View style={{ flex: 1 }}>
               <AppText variant="heading" style={{ fontSize: 15 }}>
                 Acil Durum Çantası
@@ -306,7 +301,7 @@ export default function EmergencyScreen() {
           </Pressable>
           <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
             <View style={{ alignItems: 'center', gap: 4 }}>
-              <ProgressRing value={kitDone} total={KIT_ITEMS.length} size={78}>
+              <ProgressRing value={kitDone} total={KIT_ITEMS.length} size={70}>
                 <AppText variant="heading" style={{ fontSize: 17 }}>
                   {kitDone}/{KIT_ITEMS.length}
                 </AppText>
@@ -335,13 +330,7 @@ export default function EmergencyScreen() {
               })}
             </View>
           </View>
-          <Button
-            style={{ minHeight: 42 }}
-            variant="secondary"
-            icon="list-outline"
-            label="Listeyi Görüntüle"
-            onPress={() => router.push('/canta')}
-          />
+          <Button size="sm" variant="secondary" icon="list-outline" label="Listeyi Görüntüle" onPress={() => router.push('/canta')} />
         </View>
       </View>
 
@@ -468,9 +457,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md },
-  step: { width: 150, gap: 2 },
+  step: { flex: 1, flexBasis: 0, minWidth: 0, gap: 2 },
   stepImg: {
-    height: 104,
+    overflow: 'hidden',
+    height: 80,
     borderRadius: radius.md,
     backgroundColor: '#0B1928',
     borderWidth: StyleSheet.hairlineWidth,

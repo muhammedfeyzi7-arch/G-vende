@@ -58,10 +58,10 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
         sub={relativeTimeTr(event.primary.occurredAt)}
         flex={1}
       />
-      <Item icon="location-outline" label="Merkez üssü" value={placeTitle(event)} flex={1.2} lines={2} />
+      <Item icon="location-outline" label="Merkez" value={placeTitle(event)} flex={1.15} lines={2} />
       <Item icon="locate-outline" label="Derinlik" value={formatDepth(event.primary.depthKm)} flex={0.85} />
       <Pressable
-        style={[styles.item, { flex: 0.95 }]}
+        style={[styles.item, { flex: 1 }]}
         hitSlop={hitSlop}
         accessibilityRole="button"
         accessibilityLabel={`Size uzaklık ${formatDistance(d)}`}
@@ -93,7 +93,7 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: spacing.sm, paddingVertical: spacing.md, paddingHorizontal: spacing.xs },
+  row: { flexDirection: 'row', gap: 6, paddingVertical: spacing.md, paddingHorizontal: spacing.xs },
   item: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' },
   value: { fontSize: 15 },
 });

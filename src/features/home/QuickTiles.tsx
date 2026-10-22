@@ -34,7 +34,7 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
               {t.title}
             </AppText>
           ) : (
-            <AppText variant="label" color={t.color === '#8B5CF6' ? '#C4B5FD' : t.color} numberOfLines={2} style={styles.title}>
+            <AppText variant="label" color={t.color === '#8B5CF6' ? '#C4B5FD' : t.color} numberOfLines={3} style={styles.title}>
               {t.title}
             </AppText>
           )}
@@ -50,7 +50,7 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: spacing.xs + 2 },
+  row: { flexDirection: 'row', gap: spacing.xs },
   tile: {
     flex: 1,
     minHeight: 112,
@@ -59,10 +59,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
     paddingVertical: spacing.sm,
     gap: 2,
   },
-  title: { textAlign: 'center', fontSize: 13, fontWeight: '700', lineHeight: 16 },
+  title: { textAlign: 'center', fontSize: 12, fontWeight: '700', lineHeight: 15 },
   sub: { textAlign: 'center', fontSize: 11, lineHeight: 14 },
 });

@@ -82,21 +82,21 @@ export function MapLegend() {
       accessible
       accessibilityLabel="Lejant: kullanıcıların bildirdiği hissedilen sarsıntı. Çok güçlü kırmızı, güçlü turuncu, orta sarı, hafif gri."
     >
-      <AppText variant="caption" color={colors.textSecondary}>
+      <AppText variant="caption" color={colors.textSecondary} numberOfLines={1} style={{ fontSize: 11.5 }}>
         Sarsıntı hissedilen bölgeler
       </AppText>
       <View style={styles.legendRow}>
         {FELT_LEVELS.map((l) => (
           <View key={l.value} style={styles.legendItem}>
             <View style={[styles.dot, { backgroundColor: l.color }]} />
-            <AppText variant="caption" color={colors.text} style={{ fontSize: 11.5 }}>
+            <AppText variant="caption" color={colors.text} style={{ fontSize: 11 }}>
               {l.label}
             </AppText>
           </View>
         ))}
       </View>
       <AppText variant="caption" style={{ fontSize: 10 }}>
-        Halkalar: merkeze 25/50/75 km uzaklık, ölçüm değil
+        Halkalar: 25/50/75 km uzaklık, ölçüm değil
       </AppText>
     </View>
   );
@@ -166,9 +166,9 @@ const styles = StyleSheet.create({
     gap: 4,
     alignSelf: 'flex-start',
   },
-  legendRow: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.sm, rowGap: 2 },
+  legendRow: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 6, rowGap: 2 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
+  dot: { width: 9, height: 9, borderRadius: 5 },
   assemblyBtn: {
     flexDirection: 'row',
     alignItems: 'center',

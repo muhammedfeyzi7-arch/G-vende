@@ -79,3 +79,27 @@ Tarih: 22 Ekim 2026 · Sürüm 0.1.0
 - Arka plan konumu hiç istenmez (Android'de manifest'ten çıkarılır). Aile konumu yalnızca üye açarsa ve durum bildirildiği anda paylaşılır.
 - Oturum belirteçleri Keychain/Keystore'da (expo-secure-store). Servis anahtarı yalnızca sunucu işlevlerinde.
 - Hesap silme (`delete-account`) ve veri dışa aktarma (`export_my_data`) mevcuttur.
+
+## 7. Güncelleme — referans ekranlar (Ana Sayfa, Acil Durum, Ayarlar) ve tüm sekmeler
+
+**Yapılanlar**
+- Ortak tasarım sistemi (`src/components/ds.tsx`): ekran başlığı, simge kutusu, bölüm kartı, satır/anahtar satırı, avatar (durum rozetli), ilerleme halkası, bildirim zili, hızlı kart. Ortası yükseltilmiş kırmızı Acil Durum düğmeli alt menü.
+- **Ana Sayfa:** konum + logo + bildirim zili başlığı, alarm kartı, bilgi kartı, etiketli harita kontrolleri (Katmanlar/Konumum/Tam Ekran), 5 hızlı kutu (112, Ailem x/y güvende, Toplanma, Çanta, Rehber), “Ailem Güvende mi?”, “Son Bildirimler”, “Son Depremler”.
+- **Acil Durum:** Acil Durum Modu, 112 kartı, Acil SMS / Konum Paylaş / Aileye Bildir / Acil Duyurular, ÇÖK–KAPAN–TUTUN–SONRA çizimleri (SVG, uygulamaya ait), Toplanma Noktamız (mini harita + yol tarifi), çanta ilerleme halkası, resmî kayıtlar.
+- **Ayarlar:** profil kartı (fotoğraf/ad/telefon yalnızca cihazda), hızlı kartlar, 4 bildirim türü (kalıcı + sunucuya eşitleme), konum ve gizlilik, güvenlik (biyometrik uygulama kilidi, oturumlar), tercihler (harita görünümü Koyu/Uydu/Açık), destek, hakkında.
+- Yeni alt ekranlar: bildirim merkezi, deprem geçmişi (zaman/büyüklük/mesafe filtreleri, sıralama), tüm bildirimler, aile üyesi detayı, acil SMS şablonları, resmî bilgiler, çanta listesi, rehberler (yangın, ilk yardım, tahliye dahil), sağlık bilgilerim, profil, hesap, gizlilik, konumumu gizle, güvenlik, tercihler, bildirim ayarları, yardım merkezi, geri bildirim.
+- Harita sekmesi: büyüklük filtresi, harita/liste geçişi, izinli aile konumları katmanı (eskiyse “eski” işaretli).
+
+**Gerçekten çalışanlar (sunucu olmadan):** deprem verisi (cihazda), harita, bildirim merkezi (uygulama açıkken eşleşen depremler), SMS ile durum bildirimi ve durum sorma, konum paylaşımı tercihi ve kişi bazlı gizleme, buluşma noktası, kendi toplanma alanı, düdük, SOS ışığı, Acil Durum Modu, çanta, rehberler, sağlık bilgileri, profil, biyometrik kilit (cihaz destekliyorsa), harita görünümü, tüm tercihlerin kalıcılığı.
+
+**Sunucu gerektirenler:** herkese açık bildirimler, çevrimiçi aile grubu ve aile konumları, push bildirimleri, geri bildirimin uygulama içinden gönderilmesi (sunucu yokken metin paylaşılır), hesap/oturum işlemleri.
+
+**Bilerek uygulanmayanlar / dürüstlük notları**
+- Açık ve “sistem” teması yok: renkler tek koyu palete bağlı; seçenekler “bu sürümde yok” olarak kapalı gösterilir. Dil yalnızca Türkçe.
+- Şifre değiştir yok: giriş e-posta koduyla, parola saklanmaz; yerine e-posta değiştirme sunulur.
+- Aktif cihaz listesi yok: Supabase istemciye oturum listesi vermez; “diğer cihazlardan çıkış” çalışır.
+- Ücretli üyelik yok: hızlı kartta yalnızca hesap durumu (Misafir / Hesap bağlı).
+- Referanstaki “Şu an deprem oluyor” ve “Tahmini şiddet” yerine “Deprem kaydedildi” ve “Büyüklük” kullanılır.
+- Kişilerin durumu kendiliğinden bilinmez: “Yanıt bekleniyor” siz sorduğunuzda, diğer durumlar siz işaretlediğinizde kaydedilir; yanıt vermeyen kişi tehlikede sayılmaz.
+
+**Doğrulama:** `tsc` (tipli rotalarla — tüm yönlendirmeler var olan ekranlara gidiyor), Jest 109/109, yerel Postgres RLS testleri (geri bildirim tablosu dahil), Deno 7/7, `expo prebuild` (Face ID, rehber, biyometrik izinleri; arka plan konumu ve kayıt izni kaldırılmış), `expo export` iOS + Android. Web önizlemesiyle üç referans ekranla görsel karşılaştırma yapıldı. **Gerçek cihazda/emülatörde test edilmedi.**

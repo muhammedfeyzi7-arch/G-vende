@@ -40,18 +40,18 @@ export const accent = {
 
 export function ScreenHeader({ title, subtitle, right }: { title: string; subtitle?: string; right?: ReactNode }) {
   return (
-    <View style={styles.header}>
-      <View style={{ flex: 1, gap: 4 }}>
-        <AppText variant="display" accessibilityRole="header" style={{ fontSize: 32, lineHeight: 38 }}>
+    <View style={{ gap: 4 }}>
+      <View style={styles.header}>
+        <AppText variant="display" accessibilityRole="header" style={{ fontSize: 32, lineHeight: 38, flex: 1 }}>
           {title}
         </AppText>
-        {subtitle ? (
-          <AppText variant="label" style={{ fontSize: 15, lineHeight: 20 }}>
-            {subtitle}
-          </AppText>
-        ) : null}
+        {right}
       </View>
-      {right}
+      {subtitle ? (
+        <AppText variant="label" style={{ fontSize: 15, lineHeight: 20 }}>
+          {subtitle}
+        </AppText>
+      ) : null}
     </View>
   );
 }
@@ -383,22 +383,21 @@ export function QuickCard({
       accessibilityLabel={`${label}: ${value}`}
       style={({ pressed }) => [styles.quick, pressed && { opacity: 0.85 }]}
     >
-      <IconTile icon={icon} color={color} size={42} solid />
+      <IconTile icon={icon} color={color} size={30} solid />
       <View style={{ flex: 1 }}>
-        <AppText variant="caption" numberOfLines={1} style={{ fontSize: 12 }}>
+        <AppText variant="caption" numberOfLines={2} style={{ fontSize: 11, lineHeight: 13 }}>
           {label}
         </AppText>
-        <AppText variant="heading" color={valueColor ?? colors.text} numberOfLines={1} style={{ fontSize: 15 }}>
+        <AppText variant="heading" color={valueColor ?? colors.text} numberOfLines={1} style={{ fontSize: 14 }}>
           {value}
         </AppText>
       </View>
-      <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   bell: {
     width: 50,
     height: 50,
@@ -472,13 +471,14 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 6,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
-    padding: spacing.sm + 2,
-    minHeight: 68,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: 8,
+    minHeight: 64,
   },
 });
 

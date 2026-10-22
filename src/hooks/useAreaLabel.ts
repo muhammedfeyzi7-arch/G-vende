@@ -1,6 +1,8 @@
 import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
+import { PROVINCES } from '@/features/settings/provinces';
 import { useApp } from '@/providers/AppProvider';
+import { distanceKm } from '@/utils/geo';
 
 /**
  * Kullanıcının bulunduğu yerin okunur adı ("Düzce · Merkez"). Yalnızca cihazda gösterilir.
@@ -27,7 +29,12 @@ export function useAreaLabel(): { label: string | null; source: 'gps' | 'manual'
     };
   }, [lat, lon]);
 
-  if (location.status === 'granted') return { label: gpsLabel, source: 'gps' };
+  if (location.status === 'granted') {
+    if (gpsLabel) return { label: gpsLabel, source: 'gps' };
+    // Ters coğrafi kodlama sonuç vermezse (çevrimdışı vb.) en yakın il merkezinin adı
+    const nearest = PROVINCES.reduce((a, b) => (distanceKm(location.coords, a) <= distanceKm(location.coords, b) ? a : b));
+    return { label: nearest.name, source: 'gps' };
+  }
   if (location.status === 'manual') return { label: location.label.split(' (')[0] ?? null, source: 'manual' };
   return { label: null, source: null };
 }
