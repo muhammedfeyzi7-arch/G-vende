@@ -48,10 +48,12 @@ export default function RootLayout() {
             <Stack.Screen name="rapor/yeni" options={{ title: 'Bildirim Ekle', presentation: 'modal' }} />
             <Stack.Screen name="rapor/[id]" options={{ title: 'Bildirim' }} />
             <Stack.Screen name="rapor/bekleyen" options={{ title: 'Bekleyen Gönderiler' }} />
-            <Stack.Screen name="toplanma" options={{ title: 'Toplanma Alanları' }} />
+            <Stack.Screen name="toplanma/index" options={{ title: 'Toplanma Alanları' }} />
+            <Stack.Screen name="toplanma/sec" options={{ title: 'Toplanma Alanımı İşaretle' }} />
             <Stack.Screen name="konum" options={{ title: 'Konum', presentation: 'modal' }} />
             <Stack.Screen name="giris" options={{ title: 'Giriş Yap', presentation: 'modal' }} />
             <Stack.Screen name="aile/davet/[token]" options={{ title: 'Aile Daveti' }} />
+            <Stack.Screen name="isik" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
           </Stack>
         </ReportsProvider>
       </AppProvider>

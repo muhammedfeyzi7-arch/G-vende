@@ -29,7 +29,7 @@ const config: ExpoConfig = {
       'android.permission.CAMERA',
       'android.permission.POST_NOTIFICATIONS',
     ],
-    blockedPermissions: ['android.permission.ACCESS_BACKGROUND_LOCATION'],
+    blockedPermissions: ['android.permission.ACCESS_BACKGROUND_LOCATION', 'android.permission.WRITE_CONTACTS', 'android.permission.RECORD_AUDIO'],
   },
   web: { favicon: './assets/favicon.png' },
   plugins: [
@@ -53,6 +53,9 @@ const config: ExpoConfig = {
       },
     ],
     ['expo-notifications', { color: '#1683FF' }],
+    ['expo-contacts', { contactsPermission: 'Acil durum kişilerinizi rehberden seçebilmeniz için. Kişiler yalnızca bu cihazda saklanır.' }],
+    // Düdük, ekran kilitliyken de çalabilsin; mikrofon kullanılmaz.
+    ['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: true }],
     './plugins/withKandilliCleartext',
   ],
   experiments: { typedRoutes: true },

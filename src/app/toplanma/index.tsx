@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Banner, Button, Card, StateMessage } from '@/components/ui';
 import { EDEVLET_ASSEMBLY_URL, getSaved, openDirections, toggleSaved } from '@/features/assembly-points/api';
+import { saveMyPoint } from '@/features/assembly-points/mine';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { useApp } from '@/providers/AppProvider';
 import { colors, radius, spacing } from '@/theme';
@@ -18,7 +19,7 @@ export default function AssemblyScreen() {
   const insets = useSafeAreaInsets();
   const { userCoords, location } = useApp();
   const [radiusKm, setRadiusKm] = useState(5);
-  const { state, reload } = useNearbyAssembly(userCoords, radiusKm);
+  const { state, reload, myPoint } = useNearbyAssembly(userCoords, radiusKm);
   const [saved, setSaved] = useState<AssemblyPoint[]>([]);
   useEffect(() => {
     getSaved().then(setSaved);
@@ -65,6 +66,59 @@ export default function AssemblyScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
+      <Card style={[{ gap: spacing.sm }, myPoint ? styles.myCard : null]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          <View style={[styles.apIcon, { borderWidth: 3 }]}>
+            <Ionicons name="flag" size={18} color={colors.safe} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <AppText variant="heading">{myPoint ? myPoint.name : 'Size atanan toplanma alanı'}</AppText>
+            <AppText variant="caption">
+              {myPoint
+                ? `${myPoint.address ? myPoint.address + ' · ' : ''}${Number.isFinite(myPoint.distanceKm) ? formatDistance(myPoint.distanceKm) + ' · ' : ''}Kendi kaydınız, bu cihazda`
+                : 'e-Devlet’teki AFAD sorgusundan öğrendiğiniz alanı haritada işaretleyin; internet olmasa da yol tarifi alabilirsiniz.'}
+            </AppText>
+          </View>
+          {myPoint ? (
+            <Pressable
+              onPress={() =>
+                Alert.alert('Kaydı sil', 'Kaydettiğiniz toplanma alanı silinsin mi?', [
+                  { text: 'Vazgeç', style: 'cancel' },
+                  { text: 'Sil', style: 'destructive', onPress: () => saveMyPoint(null).then(reload) },
+                ])
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Kaydı sil"
+              style={{ padding: 8 }}
+            >
+              <Ionicons name="trash-outline" size={20} color={colors.textSecondary} />
+            </Pressable>
+          ) : null}
+        </View>
+        {myPoint ? (
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <Button style={{ flex: 1 }} label="Yol tarifi" icon="walk-outline" onPress={() => openDirections(myPoint)} />
+            <Button
+              style={{ flex: 1 }}
+              label="Düzenle"
+              icon="create-outline"
+              variant="secondary"
+              onPress={() => router.push('/toplanma/sec')}
+            />
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <Button
+              style={{ flex: 1 }}
+              label="e-Devlet’te sorgula"
+              icon="open-outline"
+              variant="secondary"
+              onPress={() => Linking.openURL(EDEVLET_ASSEMBLY_URL)}
+            />
+            <Button style={{ flex: 1 }} label="Haritada işaretle" icon="flag-outline" onPress={() => router.push('/toplanma/sec')} />
+          </View>
+        )}
+      </Card>
       <Banner
         icon="information-circle-outline"
         text="Rota uygulaması yolların afet sonrası durumunu bilmez. Kapalı yol ve hasarlı yapılara dikkat edin."
@@ -129,12 +183,6 @@ export default function AssemblyScreen() {
         />
       )}
 
-      <Card style={{ gap: spacing.sm }}>
-        <AppText variant="heading">Size atanan alanı resmî kaynaktan sorgulayın</AppText>
-        <AppText variant="label">AFAD’ın Acil Toplanma Alanı Sorgulama hizmeti e-Devlet üzerinden adresinize göre sonuç verir.</AppText>
-        <Button label="e-Devlet’te sorgula" icon="open-outline" variant="secondary" onPress={() => Linking.openURL(EDEVLET_ASSEMBLY_URL)} />
-      </Card>
-
       {saved.length ? (
         <View style={{ gap: spacing.sm }}>
           <AppText variant="heading">Kaydedilenler (çevrimdışı erişilebilir)</AppText>
@@ -146,6 +194,7 @@ export default function AssemblyScreen() {
 }
 
 const styles = StyleSheet.create({
+  myCard: { borderColor: colors.safe + '66' },
   apIcon: {
     width: 36,
     height: 36,

@@ -74,7 +74,8 @@ export function SelectionCard({
     body = (
       <>
         <AppText variant="label" color={colors.safe}>
-          Resmî toplanma alanı{user ? ` · ${formatDistance(distanceKm(user, p))}` : ''}
+          {p.isUserSaved ? 'Size atanan alan (kendi kaydınız)' : 'Resmî toplanma alanı'}
+          {user ? ` · ${formatDistance(distanceKm(user, p))}` : ''}
         </AppText>
         <AppText variant="heading">{p.name}</AppText>
         {p.address ? (

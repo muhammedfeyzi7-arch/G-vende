@@ -1,4 +1,4 @@
-import { Camera, GeoJSONSource, Layer, Map, Marker, type CameraRef, type LayerProps } from '@maplibre/maplibre-react-native';
+import { Camera, GeoJSONSource, Layer, Map, Marker, type CameraRef, type LayerProps, type MapRef } from '@maplibre/maplibre-react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -20,6 +20,8 @@ export type MapSelection = { kind: 'quake'; id: string } | { kind: 'report'; id:
 
 export interface QuakeMapHandle {
   flyTo: (p: LatLng, zoom?: number) => void;
+  /** Haritanın görünen merkezi (konum seçimi için) */
+  getCenter: () => Promise<LatLng | null>;
 }
 
 type Props = {
@@ -35,6 +37,9 @@ type Props = {
   /** Haritanın üst/alt kısmındaki kaplamalar için görünüm boşluğu */
   topInset?: number;
   bottomInset?: number;
+  /** Açılış görünümü (verilmezse odak olay / kullanıcı / Türkiye) */
+  initialCenter?: LatLng;
+  initialZoom?: number;
 };
 
 const TURKEY_CENTER: [number, number] = [35.2, 39.0];
@@ -48,16 +53,34 @@ const STYLES = [...(process.env.EXPO_PUBLIC_MAP_STYLE_URL ? [env.mapStyleUrl] : 
 const renderLayers = (defs: { id: string }[]) => defs.map((d) => <Layer key={d.id} {...(d as LayerProps)} />);
 
 export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
-  { events, focus, reports, assemblyPoints, user, userIsPrecise, layers, onSelect, topInset = 0, bottomInset = 0 },
+  {
+    events,
+    focus,
+    reports,
+    assemblyPoints,
+    user,
+    userIsPrecise,
+    layers,
+    onSelect,
+    topInset = 0,
+    bottomInset = 0,
+    initialCenter: startAt,
+    initialZoom,
+  },
   ref,
 ) {
   const camera = useRef<CameraRef>(null);
+  const mapRef = useRef<MapRef>(null);
   const [styleIndex, setStyleIndex] = useState(0);
   const [attempt, setAttempt] = useState(0);
   const failed = styleIndex >= STYLES.length;
 
   useImperativeHandle(ref, () => ({
     flyTo: (p, zoom = 10) => camera.current?.flyTo({ center: [p.longitude, p.latitude], zoom, duration: 800 }),
+    getCenter: async () => {
+      const c = await mapRef.current?.getCenter();
+      return c ? { longitude: c[0], latitude: c[1] } : null;
+    },
   }));
 
   const quakeData = useMemo(() => quakesToGeoJSON(events, focus?.id ?? null), [events, focus]);
@@ -65,11 +88,13 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
   const reportData = useMemo(() => reportsToGeoJSON(reports), [reports]);
   const assemblyData = useMemo(() => assemblyToGeoJSON(assemblyPoints), [assemblyPoints]);
 
-  const initialCenter: [number, number] = focus
-    ? [focus.primary.longitude, focus.primary.latitude]
-    : user
-      ? [user.longitude, user.latitude]
-      : TURKEY_CENTER;
+  const initialCenter: [number, number] = startAt
+    ? [startAt.longitude, startAt.latitude]
+    : focus
+      ? [focus.primary.longitude, focus.primary.latitude]
+      : user
+        ? [user.longitude, user.latitude]
+        : TURKEY_CENTER;
 
   if (failed) {
     return (
@@ -98,6 +123,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
 
   return (
     <Map
+      ref={mapRef}
       key={`${attempt}-${styleIndex}`}
       style={StyleSheet.absoluteFill}
       mapStyle={STYLES[styleIndex]!}
@@ -110,7 +136,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
       contentInset={{ top: topInset, left: 0, right: 0, bottom: bottomInset }}
       accessibilityLabel="Deprem haritası"
     >
-      <Camera ref={camera} initialViewState={{ center: initialCenter, zoom: focus ? 6.3 : 5 }} minZoom={3} maxZoom={16} />
+      <Camera ref={camera} initialViewState={{ center: initialCenter, zoom: initialZoom ?? (focus ? 6.3 : 5) }} minZoom={3} maxZoom={16} />
 
       {layers.rings ? (
         <GeoJSONSource id="rings" data={ringData}>
@@ -144,8 +170,11 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
               lngLat={[p.longitude, p.latitude]}
               onPress={() => onSelect({ kind: 'assembly', id: p.id })}
             >
-              <View style={styles.assemblyMarker} accessibilityLabel={`Toplanma alanı: ${p.name}`}>
-                <Ionicons name="people" size={18} color={colors.safe} />
+              <View
+                style={[styles.assemblyMarker, p.isUserSaved && styles.myMarker]}
+                accessibilityLabel={p.isUserSaved ? `Kaydettiğiniz toplanma alanı: ${p.name}` : `Toplanma alanı: ${p.name}`}
+              >
+                <Ionicons name={p.isUserSaved ? 'flag' : 'people'} size={18} color={colors.safe} />
               </View>
             </Marker>
           ))
@@ -177,6 +206,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     boxShadow: '0 0 14px rgba(20,217,154,0.65)',
   },
+  myMarker: { borderWidth: 3, boxShadow: '0 0 18px rgba(20,217,154,0.9)' },
   userHalo: {
     width: 64,
     height: 64,

@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { AppText, Banner, Button } from '@/components/ui';
+import { AppText, Button, StateMessage } from '@/components/ui';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError, requireSupabase } from '@/services/supabase';
@@ -15,7 +15,16 @@ export default function SignIn() {
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [busy, setBusy] = useState(false);
 
-  if (!isBackendConfigured()) return <Banner icon="server-outline" tone="warning" text="Sunucu yapılandırılmadığı için giriş yapılamaz." />;
+  if (!isBackendConfigured())
+    return (
+      <StateMessage
+        icon="server-outline"
+        title="Bu kurulumda hesap gerekmiyor"
+        message="Sunucu bağlantısı yapılandırılmadığı için giriş yapılamaz. Deprem verileri, harita, Acil Durum araçları, SMS ile aile bildirimi ve kendi toplanma alanınız giriş olmadan çalışır."
+        actionLabel="Geri dön"
+        onAction={() => router.back()}
+      />
+    );
   if (session)
     return (
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>

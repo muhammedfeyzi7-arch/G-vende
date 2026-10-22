@@ -200,9 +200,50 @@ export default function SettingsScreen() {
         <SourceHealthCard snapshot={quakes.snapshot} />
       </Section>
 
+      <Section title="Yerel veriler">
+        <Row
+          icon="trash-bin-outline"
+          label="Bu cihazdaki tüm GÜVENDE verilerini sil"
+          sub="Ayarlar, acil kişiler, buluşma noktası, kayıtlı alanlar, önbellek ve bekleyen gönderiler"
+          danger
+          onPress={() =>
+            Alert.alert(
+              'Yerel verileri sil',
+              'Bu cihazdaki tüm GÜVENDE verileri silinecek. Hesabınız ve sunucudaki kayıtlarınız etkilenmez.',
+              [
+                { text: 'Vazgeç', style: 'cancel' },
+                {
+                  text: 'Sil',
+                  style: 'destructive',
+                  onPress: async () => {
+                    await clearAll();
+                    Alert.alert('Silindi', 'Değişikliklerin tümüyle uygulanması için uygulamayı yeniden başlatın.');
+                  },
+                },
+              ],
+            )
+          }
+        />
+      </Section>
+
       <Section title="Görünüm ve dil">
-        <Row icon="moon-outline" label="Tema" sub="Koyu (afet anında düşük parlaklık ve okunabilirlik için)" />
-        <Row icon="language-outline" label="Dil" sub="Türkçe" />
+        <Row
+          icon="moon-outline"
+          label="Tema"
+          sub="Koyu"
+          onPress={() =>
+            Alert.alert(
+              'Tema',
+              'Şu an yalnızca koyu tema var: gece ve elektrik kesintisinde göz yormaz, pil tüketimini azaltır. Açık tema sonraki sürümde.',
+            )
+          }
+        />
+        <Row
+          icon="language-outline"
+          label="Dil"
+          sub="Türkçe"
+          onPress={() => Alert.alert('Dil', 'Şu an yalnızca Türkçe. İngilizce sonraki sürümde.')}
+        />
       </Section>
 
       <Section title="Hakkında">

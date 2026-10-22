@@ -90,7 +90,7 @@ export function MapLegend() {
   );
 }
 
-export function NearbyAssemblyButton({ onPress, count }: { onPress: () => void; count: number | null }) {
+export function NearbyAssemblyButton({ onPress, count, mine }: { onPress: () => void; count: number | null; mine?: string | null }) {
   return (
     <Pressable
       onPress={onPress}
@@ -105,7 +105,13 @@ export function NearbyAssemblyButton({ onPress, count }: { onPress: () => void; 
         <AppText variant="label" color={colors.text} numberOfLines={2}>
           Yakınımdaki toplanma alanları
         </AppText>
-        {count != null ? <AppText variant="caption">{count > 0 ? `${count} resmî alan` : 'Resmî veri yok'}</AppText> : null}
+        {mine ? (
+          <AppText variant="caption" color={colors.safe} numberOfLines={1}>
+            Alanınız: {mine}
+          </AppText>
+        ) : count != null ? (
+          <AppText variant="caption">{count > 0 ? `${count} resmî alan` : 'Resmî veri yok'}</AppText>
+        ) : null}
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.text} />
     </Pressable>

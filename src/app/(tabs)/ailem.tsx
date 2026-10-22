@@ -18,6 +18,7 @@ import {
   type CheckinStatus,
   type FamilyGroup,
 } from '@/features/family/api';
+import { LocalFamilyCard } from '@/features/family/LocalFamilyCard';
 import { useFamily } from '@/features/family/useFamily';
 import { useApp } from '@/providers/AppProvider';
 import { friendlyError } from '@/services/supabase';
@@ -71,7 +72,15 @@ export default function FamilyScreen() {
 
   let body: React.ReactNode;
   if (state.status === 'not-configured') {
-    body = <StateMessage icon="server-outline" title="Aile ağı henüz bağlı değil" message="Bu özellik için sunucu yapılandırılmalı." />;
+    body = (
+      <Card style={{ gap: 6 }}>
+        <AppText variant="heading">Çevrimiçi aile grubu</AppText>
+        <AppText variant="label">
+          Aile üyelerinin durumunu uygulama içinde görmek için sunucu bağlantısı gerekir; bu kurulumda henüz yapılandırılmadı. Yukarıdaki
+          SMS ile durum bildirimi sunucu olmadan çalışır.
+        </AppText>
+      </Card>
+    );
   } else if (state.status === 'signed-out') {
     body = (
       <StateMessage
@@ -149,6 +158,12 @@ export default function FamilyScreen() {
       <AppText variant="title" style={{ fontSize: 24 }}>
         Ailem
       </AppText>
+      <LocalFamilyCard />
+      {state.status !== 'not-configured' ? (
+        <AppText variant="label" style={{ textTransform: 'uppercase', letterSpacing: 0.6 }}>
+          Çevrimiçi aile grubu
+        </AppText>
+      ) : null}
       {body}
     </ScrollView>
   );

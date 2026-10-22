@@ -6,6 +6,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Banner, Button, Card } from '@/components/ui';
 import { CONTENT_SOURCE, GUIDES, KIT_ITEMS } from '@/features/emergency/content';
+import { EmergencyTools } from '@/features/emergency/EmergencyTools';
 import { call112 } from '@/features/home/tabs';
 import { useApp } from '@/providers/AppProvider';
 import { colors, radius, spacing } from '@/theme';
@@ -47,6 +48,8 @@ export default function EmergencyScreen() {
         </AppText>
         <Button label="112’yi ara" icon="call" variant="danger" onPress={call112} />
       </Card>
+
+      <EmergencyTools />
 
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
         <Button

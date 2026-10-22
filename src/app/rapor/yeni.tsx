@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Banner, Button, Card } from '@/components/ui';
+import { buildStatusMessage, sendStatusSms } from '@/features/family/local';
+import { useLocalFamily } from '@/features/family/useLocalFamily';
 import { call112 } from '@/features/home/tabs';
 import { CATEGORY_META, FELT_LEVELS } from '@/features/reports/categories';
 import { MAX_DESCRIPTION, MAX_PHOTOS, validateReport } from '@/features/reports/validation';
@@ -25,6 +27,7 @@ export default function NewReport() {
   const { location, userCoords, requestLocation, settings, session, online } = useApp();
   const events = useVisibleQuakes();
   const { submit } = useReports();
+  const family = useLocalFamily();
   const [category, setCategory] = useState<ReportCategory | null>(null);
   const [felt, setFelt] = useState<FeltIntensity | null>(null);
   const [description, setDescription] = useState('');
@@ -98,6 +101,25 @@ export default function NewReport() {
   };
 
   const signedIn = !!session;
+  const canPublish = isBackendConfigured() && signedIn;
+
+  const smsFamily = async () => {
+    if (category !== 'safe' && category !== 'help') return;
+    if (!family.contacts.length) {
+      return Alert.alert('Kişi yok', 'Önce Ailem sekmesinden acil durum kişilerinizi ekleyin.', [
+        { text: 'Vazgeç', style: 'cancel' },
+        { text: 'Ailem’e git', onPress: () => router.push('/ailem') },
+      ]);
+    }
+    const gps = attachLocation && location.status === 'granted' ? coarsen(location.coords, 0.001) : null;
+    const msg = buildStatusMessage(category === 'safe' ? 'safe' : 'need_help', {
+      location: gps,
+      meetingPoint: family.meetingPoint,
+      note: description,
+    });
+    const r = await sendStatusSms(family.contacts, msg);
+    if (!r.ok) Alert.alert('Gönderilemedi', r.reason);
+  };
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={80}>
       <ScrollView
@@ -105,7 +127,11 @@ export default function NewReport() {
         keyboardShouldPersistTaps="handled"
       >
         {!isBackendConfigured() ? (
-          <Banner icon="server-outline" tone="warning" text="Sunucu yapılandırılmadığı için bildirim gönderilemez (geliştirme ortamı)." />
+          <Banner
+            icon="server-outline"
+            tone="warning"
+            text="Herkese açık yayın için sunucu gerekli (bu kurulumda yok). “Güvendeyim” ve “Yardım” için acil kişilerinize SMS gönderebilirsiniz."
+          />
         ) : !signedIn ? (
           <Banner
             icon="person-circle-outline"
@@ -278,13 +304,29 @@ export default function NewReport() {
           kimliğiniz gösterilmez. Yanlış bildirimler topluluk tarafından işaretlenip gizlenebilir.
         </AppText>
 
+        {category === 'safe' || category === 'help' ? (
+          <Button
+            label={`Acil kişilerime SMS gönder${family.contacts.length ? ` (${family.contacts.length})` : ''}`}
+            icon="chatbubble-ellipses-outline"
+            variant={canPublish ? 'secondary' : 'primary'}
+            onPress={smsFamily}
+            accessibilityHint="İnternet gerekmez; telefonunuzun SMS uygulaması açılır"
+          />
+        ) : null}
         <Button
-          label={sending ? 'Gönderiliyor…' : 'Bildirimi gönder'}
+          label={sending ? 'Gönderiliyor…' : 'Bildirimi herkese yayınla'}
           icon="send"
           onPress={onSubmit}
           loading={sending}
-          disabled={!category || (category === 'other' && !description.trim()) || !isBackendConfigured() || !signedIn}
+          disabled={!category || (category === 'other' && !description.trim()) || !canPublish}
         />
+        {!canPublish ? (
+          <AppText variant="caption" style={{ textAlign: 'center' }}>
+            {!isBackendConfigured()
+              ? 'Herkese açık yayın için sunucu bağlantısı gerekli (bu kurulumda yok).'
+              : 'Herkese açık yayın için giriş yapmalısınız.'}
+          </AppText>
+        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );

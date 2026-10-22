@@ -12,4 +12,6 @@ export interface AssemblyPoint {
   sourceUrl: string;
   sourcePublishedAt: string | null;
   importedAt: string;
+  /** Kullanıcının kendi kaydettiği alan (resmî veri tabanından değil) */
+  isUserSaved?: boolean;
 }

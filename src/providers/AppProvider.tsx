@@ -21,7 +21,8 @@ interface AppContextValue {
   updateSettings: (patch: Partial<Settings>) => void;
   location: LocationState;
   userCoords: LatLng | null;
-  requestLocation: () => Promise<void>;
+  /** İzin ister ve güncel konum durumunu döndürür. */
+  requestLocation: () => Promise<LocationState>;
   setManualProvince: (name: string | null) => void;
   quakes: QuakeState;
   refreshQuakes: () => Promise<void>;
@@ -66,7 +67,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .catch(() => setGpsLocation({ status: 'unavailable', message: 'Konum servisine erişilemedi' }));
   }, []);
   const requestLocation = useCallback(async () => {
-    setGpsLocation(await requestAndGetLocation());
+    const next = await requestAndGetLocation();
+    setGpsLocation(next);
+    return next;
   }, []);
   const setManualProvince = useCallback((name: string | null) => updateSettings({ manualProvince: name }), [updateSettings]);
 

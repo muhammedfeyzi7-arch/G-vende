@@ -11,6 +11,7 @@ import { CategoryChips, type ReportFilter } from '@/features/reports/components/
 import { ReportRow } from '@/features/reports/components/ReportRow';
 import { env } from '@/services/env';
 import { colors, radius, spacing } from '@/theme';
+import type { AssemblyPoint } from '@/types/assembly';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import type { PendingReport, UserReport } from '@/types/report';
 import { formatDistance, type LatLng } from '@/utils/geo';
@@ -207,7 +208,7 @@ export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapsho
   );
 }
 
-export function AssemblyTab({
+function AssemblyList({
   state,
   onRetry,
   onShowAll,
@@ -282,6 +283,55 @@ export function AssemblyTab({
         </Card>
       ))}
       <Button label="Tüm toplanma alanları" variant="secondary" icon="list-outline" onPress={onShowAll} />
+    </View>
+  );
+}
+
+export function AssemblyTab(props: {
+  state: NearbyState;
+  myPoint: (AssemblyPoint & { distanceKm: number }) | null;
+  onRetry: () => void;
+  onShowAll: () => void;
+  needsLocation: () => void;
+}) {
+  const { myPoint } = props;
+  return (
+    <View>
+      <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
+        {myPoint ? (
+          <Card
+            style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderColor: colors.safe + '66' }}
+          >
+            <View style={[styles.apIcon, { borderWidth: 3 }]}>
+              <Ionicons name="flag" size={18} color={colors.safe} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <AppText variant="heading" numberOfLines={1} style={{ fontSize: 16 }}>
+                {myPoint.name}
+              </AppText>
+              <AppText variant="caption" numberOfLines={1}>
+                {Number.isFinite(myPoint.distanceKm) ? `${formatDistance(myPoint.distanceKm)} · ` : ''}Size atanan alan (kendi kaydınız)
+              </AppText>
+            </View>
+            <Pressable
+              onPress={() => openDirections(myPoint)}
+              accessibilityRole="button"
+              accessibilityLabel={`${myPoint.name} için yol tarifi`}
+              style={styles.routeBtn}
+            >
+              <Ionicons name="walk" size={20} color={colors.primary} />
+            </Pressable>
+          </Card>
+        ) : (
+          <Button
+            label="Size atanan alanı işaretleyin"
+            icon="flag-outline"
+            variant="secondary"
+            onPress={() => router.push('/toplanma/sec')}
+          />
+        )}
+      </View>
+      <AssemblyList state={props.state} onRetry={props.onRetry} onShowAll={props.onShowAll} needsLocation={props.needsLocation} />
     </View>
   );
 }

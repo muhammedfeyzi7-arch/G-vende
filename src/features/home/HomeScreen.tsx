@@ -163,6 +163,7 @@ export function HomeScreen() {
               <>
                 <MapLegend />
                 <NearbyAssemblyButton
+                  mine={nearby.myPoint?.name ?? null}
                   count={nearby.state.status === 'ready' ? nearby.state.points.length : nearby.state.status === 'not-configured' ? 0 : null}
                   onPress={() => router.push('/toplanma')}
                 />
@@ -206,6 +207,7 @@ export function HomeScreen() {
           ) : tab === 'assembly' ? (
             <AssemblyTab
               state={nearby.state}
+              myPoint={nearby.myPoint}
               onRetry={nearby.reload}
               onShowAll={() => router.push('/toplanma')}
               needsLocation={() => router.push('/konum')}
@@ -221,7 +223,7 @@ export function HomeScreen() {
         </View>
       </ScrollView>
 
-      {tab === 'feed' || tab === 'help' ? (
+      {tab === 'feed' ? (
         <Pressable
           onPress={() => router.push('/rapor/yeni')}
           accessibilityRole="button"
