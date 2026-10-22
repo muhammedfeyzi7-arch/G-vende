@@ -43,7 +43,7 @@ export function ReportRow({
         <AppText variant="heading" numberOfLines={2} style={{ fontSize: 16 }}>
           {headline}
         </AppText>
-        {report.description ? (
+        {report.description && report.description.trim() !== headline ? (
           <AppText variant="label" numberOfLines={2}>
             {report.description}
           </AppText>
