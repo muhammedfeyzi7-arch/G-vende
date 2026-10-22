@@ -53,7 +53,6 @@ export default function Preferences() {
     if (next.length === 0) return Alert.alert('En az bir kaynak açık olmalı');
     updateSettings({ enabledSources: next });
   };
-  const notYet = (what: string) => Alert.alert(`${what} bu sürümde yok`, 'Bu seçenek henüz uygulanmadı; seçilemez.');
 
   return (
     <Page>
@@ -74,9 +73,8 @@ export default function Preferences() {
       <GroupTitle>Tema</GroupTitle>
       <View style={{ gap: spacing.sm }}>
         <Choice label="Koyu" description="Gece ve elektrik kesintisinde göz yormaz, pil tasarrufu sağlar" selected onPress={() => {}} />
-        <Choice label="Açık" description="Bu sürümde yok" selected={false} disabled onPress={() => notYet('Açık tema')} />
-        <Choice label="Sistemle aynı" description="Bu sürümde yok" selected={false} disabled onPress={() => notYet('Sistem teması')} />
       </View>
+      <AppText variant="caption">Uygulama şu an yalnızca koyu temayla çalışır.</AppText>
 
       <GroupTitle>Dil</GroupTitle>
       <View style={{ gap: spacing.sm }}>
