@@ -11,7 +11,8 @@ import type { UserReport } from '@/types/report';
 import type { LatLng } from '@/utils/geo';
 import { assemblyToGeoJSON, quakesToGeoJSON, reportsToGeoJSON, ringsToGeoJSON } from './geojson';
 import { ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './layers';
-import { FALLBACK_STYLE_URL, GUVENDE_DARK_STYLE } from './mapStyle';
+import type { MapStyleId } from '@/features/settings/settings';
+import { FALLBACK_STYLE_URL, GUVENDE_DARK_STYLE, LIGHT_STYLE_URL, SATELLITE_STYLE } from './mapStyle';
 
 export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean };
 export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true };
@@ -40,6 +41,10 @@ type Props = {
   /** Açılış görünümü (verilmezse odak olay / kullanıcı / Türkiye) */
   initialCenter?: LatLng;
   initialZoom?: number;
+  /** Kullanıcının Ayarlar'da seçtiği harita görünümü */
+  mapStyle?: MapStyleId;
+  /** false ise harita yalnızca gösterim amaçlıdır (kaydırma/yakınlaştırma kapalı) */
+  interactive?: boolean;
 };
 
 const TURKEY_CENTER: [number, number] = [35.2, 39.0];
@@ -47,8 +52,11 @@ const TURKEY_CENTER: [number, number] = [35.2, 39.0];
 const MAX_ASSEMBLY_MARKERS = 12;
 const HITBOX = { top: 14, right: 14, bottom: 14, left: 14 };
 
-// Sırayla denenecek stiller: ortam değişkeni (varsa) → GÜVENDE koyu stil → OpenFreeMap dark.
-const STYLES = [...(process.env.EXPO_PUBLIC_MAP_STYLE_URL ? [env.mapStyleUrl] : []), GUVENDE_DARK_STYLE, FALLBACK_STYLE_URL];
+// Sırayla denenecek stiller: ortam değişkeni (varsa) → seçilen görünüm → GÜVENDE koyu → OpenFreeMap dark.
+function styleChain(id: MapStyleId) {
+  const preferred = id === 'satellite' ? [SATELLITE_STYLE] : id === 'light' ? [LIGHT_STYLE_URL] : [];
+  return [...(process.env.EXPO_PUBLIC_MAP_STYLE_URL ? [env.mapStyleUrl] : []), ...preferred, GUVENDE_DARK_STYLE, FALLBACK_STYLE_URL];
+}
 
 const renderLayers = (defs: { id: string }[]) => defs.map((d) => <Layer key={d.id} {...(d as LayerProps)} />);
 
@@ -66,12 +74,19 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
     bottomInset = 0,
     initialCenter: startAt,
     initialZoom,
+    mapStyle = 'dark',
+    interactive = true,
   },
   ref,
 ) {
   const camera = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
-  const [styleIndex, setStyleIndex] = useState(0);
+  const STYLES = useMemo(() => styleChain(mapStyle), [mapStyle]);
+  // Görünüm değişince yedek zinciri baştan başlar.
+  const [fallback, setFallback] = useState({ style: mapStyle, index: 0 });
+  const styleIndex = fallback.style === mapStyle ? fallback.index : 0;
+  const setStyleIndex = (f: (i: number) => number) =>
+    setFallback((prev) => ({ style: mapStyle, index: f(prev.style === mapStyle ? prev.index : 0) }));
   const [attempt, setAttempt] = useState(0);
   const failed = styleIndex >= STYLES.length;
 
@@ -106,7 +121,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
           message="Harita sunucusuna ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin. Deprem listesi ve toplanma alanları harita olmadan da kullanılabilir."
           actionLabel="Tekrar dene"
           onAction={() => {
-            setStyleIndex(0);
+            setStyleIndex(() => 0);
             setAttempt((a) => a + 1);
           }}
         />
@@ -124,7 +139,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
   return (
     <Map
       ref={mapRef}
-      key={`${attempt}-${styleIndex}`}
+      key={`${attempt}-${mapStyle}-${styleIndex}`}
       style={StyleSheet.absoluteFill}
       mapStyle={STYLES[styleIndex]!}
       onDidFailLoadingMap={() => setStyleIndex((i) => i + 1)}
@@ -133,6 +148,10 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
       attributionPosition={{ bottom: bottomInset + 4, left: 8 }}
       compass={false}
       touchPitch={false}
+      dragPan={interactive}
+      touchZoom={interactive}
+      doubleTapZoom={interactive}
+      touchRotate={interactive}
       contentInset={{ top: topInset, left: 0, right: 0, bottom: bottomInset }}
       accessibilityLabel="Deprem haritası"
     >

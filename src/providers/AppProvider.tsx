@@ -18,6 +18,7 @@ type QuakeState = { snapshot: QuakeSnapshot | null; loading: boolean; error: str
 
 interface AppContextValue {
   settings: Settings;
+  settingsLoaded: boolean;
   updateSettings: (patch: Partial<Settings>) => void;
   location: LocationState;
   userCoords: LatLng | null;
@@ -133,6 +134,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppContextValue>(
     () => ({
       settings,
+      settingsLoaded,
       updateSettings,
       location,
       userCoords: coordsOf(location),
@@ -143,7 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       online,
       session,
     }),
-    [settings, updateSettings, location, requestLocation, setManualProvince, quakes, refreshQuakes, online, session],
+    [settings, settingsLoaded, updateSettings, location, requestLocation, setManualProvince, quakes, refreshQuakes, online, session],
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

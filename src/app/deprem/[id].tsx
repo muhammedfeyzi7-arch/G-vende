@@ -18,7 +18,7 @@ const REGION_KM = 150;
 export default function EarthquakeDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const { quakes, userCoords, location } = useApp();
+  const { quakes, userCoords, location, settings } = useApp();
   const { reports, helpful, toggleHelpful } = useReports();
   const event = quakes.snapshot?.events.find((e) => e.id === id) ?? null;
 
@@ -89,6 +89,7 @@ export default function EarthquakeDetail() {
 
       <View style={styles.mapBox}>
         <QuakeMap
+          mapStyle={settings.mapStyle}
           events={[event]}
           focus={event}
           reports={regional}

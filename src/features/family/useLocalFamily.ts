@@ -3,29 +3,40 @@ import { useCallback, useState } from 'react';
 import {
   loadContacts,
   loadMeetingPoint,
+  loadMyStatus,
   MAX_LOCAL_CONTACTS,
   normalizePhone,
   saveContacts,
   saveMeetingPoint,
+  saveMyStatus,
+  type ContactStatusKind,
   type LocalContact,
   type LocalMeetingPoint,
+  type MyStatus,
 } from './local';
 
 export function useLocalFamily() {
   const [contacts, setContacts] = useState<LocalContact[]>([]);
   const [meetingPoint, setMeetingPoint] = useState<LocalMeetingPoint | null>(null);
+  const [myStatus, setMyStatusState] = useState<MyStatus | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   // Ekran her odaklandığında diğer ekranlarda yapılan değişiklikleri yükle.
   useFocusEffect(
     useCallback(() => {
-      Promise.all([loadContacts(), loadMeetingPoint()]).then(([c, m]) => {
+      Promise.all([loadContacts(), loadMeetingPoint(), loadMyStatus()]).then(([c, m, s]) => {
         setContacts(c);
         setMeetingPoint(m);
+        setMyStatusState(s);
         setLoaded(true);
       });
     }, []),
   );
+
+  const persist = useCallback((next: LocalContact[]) => {
+    setContacts(next);
+    saveContacts(next);
+  }, []);
 
   const addContact = useCallback(
     (name: string, phoneRaw: string, relation: string | null): string | null => {
@@ -34,21 +45,20 @@ export function useLocalFamily() {
       if (!phone) return 'Telefon numarası geçersiz.';
       if (contacts.length >= MAX_LOCAL_CONTACTS) return `En fazla ${MAX_LOCAL_CONTACTS} kişi eklenebilir.`;
       if (contacts.some((c) => c.phone === phone)) return 'Bu numara zaten listede.';
-      const next = [...contacts, { id: `${Date.now()}`, name: name.trim(), phone, relation: relation?.trim() || null }];
-      setContacts(next);
-      saveContacts(next);
+      persist([...contacts, { id: `${Date.now()}`, name: name.trim(), phone, relation: relation?.trim() || null, status: null }]);
       return null;
     },
-    [contacts],
+    [contacts, persist],
   );
 
-  const removeContact = useCallback(
-    (id: string) => {
-      const next = contacts.filter((c) => c.id !== id);
-      setContacts(next);
-      saveContacts(next);
+  const removeContact = useCallback((id: string) => persist(contacts.filter((c) => c.id !== id)), [contacts, persist]);
+
+  const setContactStatus = useCallback(
+    (ids: string[], kind: ContactStatusKind | null) => {
+      const at = new Date().toISOString();
+      persist(contacts.map((c) => (ids.includes(c.id) ? { ...c, status: kind ? { kind, at } : null } : c)));
     },
-    [contacts],
+    [contacts, persist],
   );
 
   const updateMeetingPoint = useCallback((m: LocalMeetingPoint | null) => {
@@ -56,5 +66,10 @@ export function useLocalFamily() {
     saveMeetingPoint(m);
   }, []);
 
-  return { contacts, meetingPoint, loaded, addContact, removeContact, updateMeetingPoint };
+  const setMyStatus = useCallback((s: MyStatus | null) => {
+    setMyStatusState(s);
+    saveMyStatus(s);
+  }, []);
+
+  return { contacts, meetingPoint, myStatus, loaded, addContact, removeContact, setContactStatus, updateMeetingPoint, setMyStatus };
 }

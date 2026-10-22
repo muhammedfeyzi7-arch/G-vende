@@ -57,6 +57,8 @@ export async function syncPreferences(s: Settings, region: LatLng | null): Promi
     region_lat: r?.latitude ?? null,
     region_lon: r?.longitude ?? null,
     family_enabled: s.familyNotifications,
+    official_enabled: s.officialNotifications,
+    community_enabled: s.communityNotifications,
     min_interval_minutes: s.notifyIntervalMinutes,
     updated_at: new Date().toISOString(),
   });

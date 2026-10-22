@@ -219,5 +219,28 @@ reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select pg_temp.ok((select jsonb_array_length(public.export_my_data() -> 'reports') = 3), 'dışa aktarma yalnızca kendi bildirimlerini içerir');
 select pg_temp.ok((select not (public.export_my_data() -> 'reports' -> 0 ? 'author_id')), 'dışa aktarımda author_id yok');
+-- 13) Geri bildirim: yazılabilir, okunamaz; günlük sınır
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.feedback (message, platform) values ('Harika uygulama', 'ios');
+do $$ begin
+  perform count(*) from public.feedback;
+  raise exception 'BAŞARISIZ: geri bildirim okunabildi';
+exception when insufficient_privilege then raise notice 'OK: geri bildirimler kullanıcıya okunamaz';
+end $$;
+insert into public.feedback (message) values ('iki'), ('üçüncü'), ('dördüncü'), ('beşinci');
+do $$ begin
+  insert into public.feedback (message) values ('altıncı');
+  raise exception 'BAŞARISIZ: geri bildirim sınırı yok';
+exception when raise_exception then
+  if sqlerrm = 'rate_limited' then raise notice 'OK: geri bildirim günlük sınırı'; else raise; end if;
+end $$;
+reset role;
+select pg_temp.as_user('');
+do $$ begin
+  insert into public.feedback (message) values ('anonim');
+  raise exception 'BAŞARISIZ: anonim geri bildirim';
+exception when insufficient_privilege then raise notice 'OK: anonim geri bildirim yazamaz';
+end $$;
 reset role;
 \echo 'TÜM RLS TESTLERİ GEÇTİ'

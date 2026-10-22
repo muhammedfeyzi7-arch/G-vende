@@ -3,6 +3,8 @@ import { distanceKm } from '@/utils/geo';
 export type Pref = {
   user_id: string;
   quakes_enabled: boolean;
+  /** Türkiye geneli M5+ resmî kayıtlar ("Acil durum duyuruları") */
+  official_enabled: boolean;
   min_magnitude: number;
   region_lat: number | null;
   region_lon: number | null;
@@ -14,8 +16,8 @@ export const NATIONWIDE_MAGNITUDE = 5.0;
 
 /**
  * Bir olay için bildirim alacak kullanıcıları seçer.
- * - Kullanıcının eşiğinin altındaki olaylar gönderilmez.
- * - Bölge tanımlıysa yalnızca yarıçap içindeki olaylar; tanımlı değilse yalnızca M5+.
+ * - "Deprem bildirimleri": bölge yarıçapı içindeki, kullanıcı eşiğinin üzerindeki olaylar.
+ * - "Acil durum duyuruları": Türkiye geneli M5+ resmî kayıtlar (bölgeden bağımsız).
  * - Kullanıcıya son gönderimden bu yana min_interval_minutes geçmediyse gönderilmez.
  */
 export function selectRecipients(
@@ -28,12 +30,14 @@ export function selectRecipients(
   const m = event.magnitude;
   return prefs
     .filter((p) => {
-      if (!p.quakes_enabled || m < Number(p.min_magnitude)) return false;
-      if (p.region_lat == null || p.region_lon == null) {
-        if (m < NATIONWIDE_MAGNITUDE) return false;
-      } else if (distanceKm({ latitude: p.region_lat, longitude: p.region_lon }, event) > p.region_radius_km) {
-        return false;
-      }
+      const nationwide = p.official_enabled && m >= NATIONWIDE_MAGNITUDE;
+      const inRegion =
+        p.quakes_enabled &&
+        m >= Number(p.min_magnitude) &&
+        p.region_lat != null &&
+        p.region_lon != null &&
+        distanceKm({ latitude: p.region_lat, longitude: p.region_lon }, event) <= p.region_radius_km;
+      if (!nationwide && !inRegion) return false;
       const last = lastSent.get(p.user_id);
       if (last && now.getTime() - Date.parse(last) < p.min_interval_minutes * 60_000) return false;
       return true;

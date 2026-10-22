@@ -58,7 +58,10 @@ Deno.serve(async (req) => {
     const { error: claimErr } = await sb.from('notified_events').insert(keys.map((k) => ({ event_key: k, magnitude: e.primary.magnitude })));
     if (claimErr) continue; // eşzamanlı başka çalıştırma almış
 
-    const { data: prefs } = await sb.from('notification_preferences').select('user_id, quakes_enabled, min_magnitude, region_lat, region_lon, region_radius_km, min_interval_minutes').eq('quakes_enabled', true).lte('min_magnitude', e.primary.magnitude!);
+    const { data: prefs } = await sb
+      .from('notification_preferences')
+      .select('user_id, quakes_enabled, official_enabled, min_magnitude, region_lat, region_lon, region_radius_km, min_interval_minutes')
+      .or('quakes_enabled.eq.true,official_enabled.eq.true');
     const { data: last } = await sb.from('push_deliveries').select('user_id, last_sent_at');
     const lastMap = new Map((last ?? []).map((l) => [l.user_id as string, l.last_sent_at as string]));
     const users = selectRecipients(e.primary, (prefs ?? []) as Pref[], lastMap, now);

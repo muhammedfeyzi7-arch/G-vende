@@ -1,26 +1,21 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
-import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing } from '@/theme';
 
-type Item = { label: string; icon: (color: string, focused: boolean) => ReactNode; emergency?: boolean };
-
-const SIZE = 27;
-const ITEMS: Record<string, Item> = {
-  index: { label: 'Ana Sayfa', icon: (c, f) => <Ionicons name={f ? 'home' : 'home-outline'} size={SIZE} color={c} /> },
-  harita: { label: 'Harita', icon: (c, f) => <Ionicons name={f ? 'map' : 'map-outline'} size={SIZE} color={c} /> },
-  acil: {
-    label: 'Acil Durum',
-    icon: (c, f) => <MaterialCommunityIcons name={f ? 'alarm-light' : 'alarm-light-outline'} size={SIZE + 1} color={c} />,
-    emergency: true,
-  },
-  ailem: { label: 'Ailem', icon: (c, f) => <Ionicons name={f ? 'people' : 'people-outline'} size={SIZE} color={c} /> },
-  ayarlar: { label: 'Ayarlar', icon: (c, f) => <Ionicons name={f ? 'settings' : 'settings-outline'} size={SIZE - 1} color={c} /> },
+const ITEMS: Record<string, { label: string; icon: string; iconActive: string; center?: boolean }> = {
+  index: { label: 'Ana Sayfa', icon: 'home-outline', iconActive: 'home' },
+  harita: { label: 'Harita', icon: 'map-outline', iconActive: 'map' },
+  acil: { label: 'Acil Durum', icon: 'warning-outline', iconActive: 'warning', center: true },
+  ailem: { label: 'Ailem', icon: 'people-outline', iconActive: 'people' },
+  ayarlar: { label: 'Ayarlar', icon: 'settings-outline', iconActive: 'settings' },
 };
 
-/** Referans görseldeki beş bölümlü alt navigasyon. Acil Durum sabit vurgu rengindedir (alarm değildir). */
+/**
+ * Referans tasarımdaki beş bölümlü alt navigasyon. Ortadaki Acil Durum düğmesi her zaman
+ * kırmızı ve yükseltilmiştir; bu bir alarm göstergesi değil, hızlı erişim düğmesidir.
+ */
 export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   return (
@@ -29,24 +24,45 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
         const item = ITEMS[route.name];
         if (!item) return null;
         const focused = state.index === index;
-        const color = item.emergency ? colors.danger : focused ? colors.primary : colors.textSecondary;
+        const onPress = () => {
+          const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+        };
+        if (item.center) {
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: focused }}
+              accessibilityLabel={item.label}
+              onPress={onPress}
+              style={styles.item}
+            >
+              <View style={[styles.centerBtn, focused && styles.centerBtnActive]}>
+                <Ionicons name="warning-outline" size={30} color="#fff" />
+              </View>
+              <Text
+                style={[styles.label, { color: focused ? colors.danger : colors.text, fontWeight: '700', marginTop: 2 }]}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.3}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        }
+        const color = focused ? colors.primary : colors.textSecondary;
         return (
           <Pressable
             key={route.key}
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
             accessibilityLabel={item.label}
-            onPress={() => {
-              const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-              if (!focused && !event.defaultPrevented) navigateToTab(route.key);
-            }}
+            onPress={onPress}
             style={styles.item}
           >
-            <View style={[styles.indicator, focused && { backgroundColor: color }]} />
-            <View
-              style={focused ? { filter: [{ dropShadow: { offsetX: 0, offsetY: 0, standardDeviation: 6, color: color + '88' } }] } : null}
-            >
-              {item.icon(color, focused || !!item.emergency)}
+            <View style={styles.iconWrap}>
+              <Ionicons name={(focused ? item.iconActive : item.icon) as never} size={27} color={color} />
             </View>
             <Text style={[styles.label, { color, fontWeight: focused ? '700' : '500' }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
               {item.label}
@@ -64,15 +80,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#040D17',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.borderStrong,
+    paddingTop: 6,
   },
-  item: { flex: 1, alignItems: 'center', gap: 3, minHeight: 58, justifyContent: 'flex-start' },
-  indicator: {
-    width: 34,
-    height: 3,
-    borderBottomLeftRadius: 3,
-    borderBottomRightRadius: 3,
-    marginBottom: 8,
-    backgroundColor: 'transparent',
+  item: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 3, minHeight: 56 },
+  iconWrap: { height: 32, justifyContent: 'center' },
+  centerBtn: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    marginTop: -28,
+    backgroundColor: colors.danger,
+    borderWidth: 3,
+    borderColor: '#FF6B78',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 0 22px rgba(255,53,72,0.55)',
   },
+  centerBtnActive: { borderColor: '#FFFFFF' },
   label: { fontSize: 12.5 },
 });

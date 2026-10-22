@@ -128,3 +128,46 @@ export const GUVENDE_DARK_STYLE = {
     },
   ],
 } as unknown as StyleSpecification;
+
+/**
+ * Uydu görünümü: EOX "Sentinel-2 cloudless 2016" mozaiği (CC BY 4.0, ücretsiz; atıf zorunlu)
+ * üzerine GÜVENDE sınır/yol/yer adı katmanları. Görüntü koyulaştırılarak kaplamalar öne çıkarılır.
+ * Not: Karo adresi bu geliştirme ortamından doğrulanamadı.
+ */
+const overlayLayers = (GUVENDE_DARK_STYLE.layers as { id: string }[]).filter((l) =>
+  ['boundary-state', 'boundary-country', 'roads-major', 'water-name', 'place-town', 'place-city'].includes(l.id),
+);
+
+export const SATELLITE_STYLE = {
+  ...GUVENDE_DARK_STYLE,
+  name: 'GÜVENDE Uydu',
+  sources: {
+    ...GUVENDE_DARK_STYLE.sources,
+    s2: {
+      type: 'raster',
+      tiles: ['https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg'],
+      tileSize: 256,
+      maxzoom: 14,
+      attribution: 'Sentinel-2 cloudless – https://s2maps.eu, EOX IT Services GmbH (Copernicus Sentinel verisi 2016 & 2017 içerir)',
+    },
+  },
+  layers: [
+    { id: 'bg', type: 'background', paint: { 'background-color': '#030B14' } },
+    {
+      id: 'satellite',
+      type: 'raster',
+      source: 's2',
+      paint: { 'raster-brightness-max': 0.55, 'raster-saturation': -0.35, 'raster-contrast': 0.1 },
+    },
+    ...overlayLayers,
+  ],
+} as unknown as StyleSpecification;
+
+/** Açık görünüm: OpenFreeMap "liberty" hazır stili. */
+export const LIGHT_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
+
+export const MAP_STYLE_OPTIONS: { id: 'dark' | 'satellite' | 'light'; label: string; description: string }[] = [
+  { id: 'dark', label: 'Koyu', description: 'Gece ve kesintide göz yormayan koyu harita (OpenStreetMap)' },
+  { id: 'satellite', label: 'Uydu', description: 'Sentinel-2 uydu görüntüsü + yer adları (EOX, CC BY 4.0)' },
+  { id: 'light', label: 'Açık', description: 'Gündüz kullanımına uygun açık harita (OpenStreetMap)' },
+];

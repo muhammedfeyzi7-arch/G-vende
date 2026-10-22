@@ -25,7 +25,7 @@ export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { focus: focusParam } = useLocalSearchParams<{ focus?: string }>();
-  const { userCoords, location } = useApp();
+  const { userCoords, location, settings } = useApp();
   const events = useVisibleQuakes();
   const { reports } = useReports();
   const nearby = useNearbyAssembly(userCoords, 10);
@@ -43,6 +43,7 @@ export default function MapScreen() {
   return (
     <View style={styles.screen}>
       <QuakeMap
+        mapStyle={settings.mapStyle}
         ref={mapRef}
         events={shown}
         focus={focus}

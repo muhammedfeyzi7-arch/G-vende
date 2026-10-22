@@ -35,7 +35,7 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { height } = useWindowDimensions();
-  const { quakes, refreshQuakes, userCoords, location, online } = useApp();
+  const { quakes, refreshQuakes, userCoords, location, online, settings } = useApp();
   const events = useVisibleQuakes();
   const feed = useReports();
   const nearby = useNearbyAssembly(userCoords);
@@ -112,6 +112,7 @@ export function HomeScreen() {
         {/* Harita: bilgi satırı üst kısma, lejant alt kısma gradyanla biner (referans düzeni) */}
         <View style={[styles.mapCard, { height: mapHeight + INFO_HEIGHT }]}>
           <QuakeMap
+            mapStyle={settings.mapStyle}
             ref={mapRef}
             events={mapEvents}
             focus={focus}

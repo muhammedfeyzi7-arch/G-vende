@@ -11,7 +11,9 @@ export function AppText({
   color,
   style,
   numberOfLines,
+  accessibilityRole,
 }: {
+  accessibilityRole?: 'header' | 'text';
   children: ReactNode;
   variant?: 'display' | 'title' | 'heading' | 'body' | 'label' | 'caption';
   color?: string;

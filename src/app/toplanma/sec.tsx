@@ -14,7 +14,7 @@ import { Linking } from 'react-native';
 /** Kullanıcının kendisine atanmış toplanma alanını haritadan seçip bu cihaza kaydetmesi. */
 export default function PickAssemblyPoint() {
   const insets = useSafeAreaInsets();
-  const { userCoords, location } = useApp();
+  const { userCoords, location, settings } = useApp();
   const mapRef = useRef<QuakeMapHandle>(null);
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -49,6 +49,7 @@ export default function PickAssemblyPoint() {
       <View style={styles.mapBox}>
         {start !== undefined ? (
           <QuakeMap
+            mapStyle={settings.mapStyle}
             ref={mapRef}
             events={[]}
             focus={null}

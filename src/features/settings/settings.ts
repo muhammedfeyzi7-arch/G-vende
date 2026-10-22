@@ -1,6 +1,22 @@
 import type { QuakeSourceId } from '@/types/earthquake';
 
+export type MapStyleId = 'dark' | 'satellite' | 'light';
+
 export interface Settings {
+  /** Resmî kurum kaynaklı deprem kayıtları için bildirim (M eşiğinin üzerinde) */
+  officialNotifications: boolean;
+  /** Yakındaki kullanıcı bildirimleri (topluluk) */
+  communityNotifications: boolean;
+  /**
+   * Konum paylaşımı (yalnızca ailem): açıkken durum mesajlarına ve aile grubu bildirimlerine
+   * konum eklenir. Kapalıyken hiçbir yere konum gönderilmez; arka planda konum toplanmaz.
+   */
+  locationSharing: boolean;
+  /** Konum gönderilmeyecek yerel kişi kimlikleri */
+  hideLocationFrom: string[];
+  mapStyle: MapStyleId;
+  /** Uygulama açılırken Face ID / parmak izi iste */
+  biometricLock: boolean;
   /** Konum izni yoksa kullanıcının elle seçtiği il */
   manualProvince: string | null;
   quakeNotifications: boolean;
@@ -23,6 +39,12 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  officialNotifications: true,
+  communityNotifications: false,
+  locationSharing: false,
+  hideLocationFrom: [],
+  mapStyle: 'dark',
+  biometricLock: false,
   manualProvince: null,
   quakeNotifications: true,
   familyNotifications: true,

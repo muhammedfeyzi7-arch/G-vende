@@ -53,6 +53,7 @@ const config: ExpoConfig = {
       },
     ],
     ['expo-notifications', { color: '#1683FF' }],
+    ['expo-local-authentication', { faceIDPermission: 'GÜVENDE uygulama kilidini Face ID ile açmanız için.' }],
     ['expo-contacts', { contactsPermission: 'Acil durum kişilerinizi rehberden seçebilmeniz için. Kişiler yalnızca bu cihazda saklanır.' }],
     // Düdük, ekran kilitliyken de çalabilsin; mikrofon kullanılmaz.
     ['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: true }],
