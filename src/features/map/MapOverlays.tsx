@@ -52,9 +52,72 @@ const LAYER_LABELS: { key: keyof MapLayers; label: string }[] = [
   { key: 'family', label: 'Aile konumları (izinli)' },
 ];
 
-export function LayerPanel({ layers, onChange }: { layers: MapLayers; onChange: (l: MapLayers) => void }) {
+export type MapFilters = { hours: number; minMag: number };
+const PERIODS = [
+  { key: 6, label: '6 sa' },
+  { key: 24, label: '24 sa' },
+  { key: 72, label: '3 gün' },
+  { key: 168, label: '7 gün' },
+];
+const MAGS = [0, 3, 4, 5];
+
+function MiniChip({ label, active, onPress, a11y }: { label: string; active: boolean; onPress: () => void; a11y: string }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={a11y}
+      style={[styles.miniChip, active && { backgroundColor: colors.primary, borderColor: colors.primary }]}
+    >
+      <AppText variant="caption" color={active ? '#fff' : colors.text} style={{ fontSize: 12 }}>
+        {label}
+      </AppText>
+    </Pressable>
+  );
+}
+
+export function LayerPanel({
+  layers,
+  onChange,
+  filters,
+  onFilters,
+}: {
+  layers: MapLayers;
+  onChange: (l: MapLayers) => void;
+  filters?: MapFilters;
+  onFilters?: (f: MapFilters) => void;
+}) {
   return (
     <View style={styles.layerPanel}>
+      {filters && onFilters ? (
+        <View style={{ gap: 6, marginBottom: 6 }}>
+          <AppText variant="caption">Zaman</AppText>
+          <View style={styles.chipRow}>
+            {PERIODS.map((p) => (
+              <MiniChip
+                key={p.key}
+                label={p.label}
+                active={filters.hours === p.key}
+                onPress={() => onFilters({ ...filters, hours: p.key })}
+                a11y={`Son ${p.label} depremleri`}
+              />
+            ))}
+          </View>
+          <AppText variant="caption">Büyüklük</AppText>
+          <View style={styles.chipRow}>
+            {MAGS.map((m) => (
+              <MiniChip
+                key={m}
+                label={m ? `M${m}+` : 'Tümü'}
+                active={filters.minMag === m}
+                onPress={() => onFilters({ ...filters, minMag: m })}
+                a11y={m ? `Büyüklük ${m} ve üzeri` : 'Tüm büyüklükler'}
+              />
+            ))}
+          </View>
+        </View>
+      ) : null}
       {LAYER_LABELS.map(({ key, label }) => (
         <View key={key} style={styles.layerRow}>
           <AppText variant="label" color={colors.text} style={{ flex: 1 }}>
@@ -155,6 +218,15 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     padding: spacing.md,
     gap: 2,
+  },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  miniChip: {
+    minHeight: 32,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    justifyContent: 'center',
   },
   layerRow: { flexDirection: 'row', alignItems: 'center', minHeight: 40 },
   legend: {

@@ -20,7 +20,7 @@ export interface PersonSummary {
 export const STATUS_LABEL: Record<Exclude<AvatarStatus, null>, { label: string; color: string }> = {
   safe: { label: 'Güvende', color: colors.safe },
   help: { label: 'Yardım istiyor', color: colors.danger },
-  waiting: { label: 'Yanıt bekleniyor', color: colors.warning },
+  waiting: { label: 'Cevap yok', color: colors.warning },
   home: { label: 'Evde', color: colors.info },
   unknown: { label: 'Bilinmiyor', color: colors.textMuted },
 };
@@ -85,6 +85,20 @@ export function buildPeople(
   return out;
 }
 
+/** "Ailende N kişiden M'i güvende" — kullanıcının kendisi sayılmaz. */
 export function safeCount(people: PersonSummary[]) {
-  return { safe: people.filter((p) => p.status === 'safe').length, total: people.length };
+  const others = people.filter((p) => p.source !== 'me');
+  return {
+    safe: others.filter((p) => p.status === 'safe').length,
+    waiting: others.filter((p) => p.status === 'waiting').length,
+    help: others.filter((p) => p.status === 'help').length,
+    home: others.filter((p) => p.status === 'home').length,
+    total: others.length,
+    lastAt:
+      people
+        .map((p) => p.at)
+        .filter((t): t is string => !!t)
+        .sort()
+        .at(-1) ?? null,
+  };
 }

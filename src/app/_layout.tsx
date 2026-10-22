@@ -102,7 +102,10 @@ export default function RootLayout() {
                 <Stack.Screen name="rehber/index" options={{ title: 'Afet Rehberleri' }} />
                 <Stack.Screen name="rehber/[id]" options={{ title: 'Rehber' }} />
                 <Stack.Screen name="saglik-bilgilerim" options={{ title: 'Sağlık Bilgilerim' }} />
+                <Stack.Screen name="aile/ekle" options={{ title: 'Üye Ekle', presentation: 'modal' }} />
+                <Stack.Screen name="aile/bulusma" options={{ title: 'Toplanma Noktası' }} />
                 <Stack.Screen name="aile/kisi/[id]" options={{ title: 'Aile Üyesi' }} />
+                <Stack.Screen name="harita-tam" options={{ headerShown: false }} />
                 <Stack.Screen name="isik" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
               </Stack>
             </BiometricGate>

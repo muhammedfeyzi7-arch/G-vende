@@ -120,12 +120,33 @@ describe('alt sekmeler', () => {
     expect(router.push).toHaveBeenCalledWith('/bildirimler');
   });
 
-  it('Harita: dönem/büyüklük filtresi ve liste görünümü', async () => {
+  it('Harita: deprem paneli sekmeleri, katman filtreleri ve Bildirim Ekle', async () => {
     const Map = require('@/app/(tabs)/harita').default;
+    const { router } = require('expo-router');
     await open(<Map />);
+    expect(screen.getByText(/Canlı akış henüz bağlı değil/)).toBeTruthy();
+    expect(screen.getByLabelText('Bildirim ekle')).toBeTruthy();
+    const checks: [string, RegExp][] = [
+      ['Resmî Veriler', /Veri kaynakları/],
+      ['Toplanma Alanları', /Size atanan alanı işaretleyin/],
+      ['Yardım', /Hayati tehlike varsa 112/],
+      ['Detaylar', /Seçili deprem yok/],
+    ];
+    for (const [tab, expected] of checks) {
+      await fireEvent.press(screen.getByRole('tab', { name: tab }));
+      expect(screen.getByText(expected)).toBeTruthy();
+    }
+    expect(screen.queryByLabelText('Bildirim ekle')).toBeNull();
+    await fireEvent.press(screen.getByLabelText('Katmanlar'));
     await fireEvent.press(screen.getByLabelText('Son 7 gün depremleri'));
     expect(screen.getByLabelText('Son 7 gün depremleri').props.accessibilityState).toMatchObject({ selected: true });
-    await fireEvent.press(screen.getByLabelText('Büyüklük 4 ve üzeri'));
+    await fireEvent.press(screen.getByLabelText('Tam Ekran'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/harita-tam', params: {} });
+  });
+
+  it('Tam ekran harita: liste görünümü', async () => {
+    const Screen = require('@/app/harita-tam').default;
+    await open(<Screen />);
     await fireEvent.press(screen.getByRole('tab', { name: 'Liste' }));
     expect(screen.getByText('Kayıt yok')).toBeTruthy();
   });
@@ -149,28 +170,59 @@ describe('alt sekmeler', () => {
     expect(router.push).toHaveBeenCalledWith('/acil-mod');
   });
 
-  it('Ailem: sunucu olmadan kişi eklenir ve Güvendeyim SMS’i (konumsuz) hazırlanır', async () => {
+  it('Ailem: üye eklenir, listede durumuyla görünür ve Güvendeyim SMS’i (konumsuz) hazırlanır', async () => {
     const SMS = require('expo-sms');
+    await require('@react-native-async-storage/async-storage').setItem(
+      'guvende:v1:local-contacts',
+      JSON.stringify([{ id: '1', name: 'Ayşe', phone: '+905321234567', relation: 'Annem', status: null }]),
+    );
+    const alert = jest
+      .spyOn(Alert, 'alert')
+      .mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'Güvendeyim gönder')?.onPress?.());
     const Ailem = require('@/app/(tabs)/ailem').default;
     await open(<Ailem />);
-    await fireEvent.press(screen.getByText('Elle ekle'));
+    expect(screen.getAllByText('Annem').length).toBeGreaterThan(0);
+    expect(screen.getByText('Ailende 1 kişiden 0’si güvende')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Ailende 1 kişiden 0’si güvende'));
+    await flush();
+    expect(SMS.sendSMSAsync).toHaveBeenCalledWith(['+905321234567'], expect.stringMatching(/^Ben güvendeyim\./));
+    expect(SMS.sendSMSAsync.mock.calls[0][1]).not.toMatch(/Konumum/);
+    expect(screen.getAllByText('Güvendesin').length).toBeGreaterThan(0);
+    alert.mockRestore();
+  });
+
+  it('Ailem: davet bağlantısı sunucusuz kurulumda açıklama gösterir; Üye Ekle yönlendirir', async () => {
+    const alert = jest.spyOn(Alert, 'alert');
+    const { router } = require('expo-router');
+    const Ailem = require('@/app/(tabs)/ailem').default;
+    await open(<Ailem />);
+    expect(screen.getByText('Henüz aile üyesi eklemediniz')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Davet Linki Oluştur'));
+    expect(alert).toHaveBeenCalledWith('Davet bağlantısı', expect.stringMatching(/sunucu yapılandırılmadı/), expect.any(Array));
+    await fireEvent.press(screen.getByLabelText('Üye ekle'));
+    expect(router.push).toHaveBeenCalledWith('/aile/ekle');
+    await fireEvent.press(screen.getByRole('tab', { name: 'Aile listesi' }));
+  });
+
+  it('Üye ekle: kişiyi cihaza kaydeder', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const { router } = require('expo-router');
+    const Ekle = require('@/app/aile/ekle').default;
+    await open(<Ekle />);
     await fireEvent.changeText(screen.getByLabelText('İsim'), 'Ayşe');
     await fireEvent.changeText(screen.getByLabelText('Telefon'), '0532 123 45 67');
     await fireEvent.changeText(screen.getByLabelText('Yakınlık'), 'Annem');
     await fireEvent.press(screen.getByText('Kaydet'));
-    expect(screen.getByText('Ayşe')).toBeTruthy();
-    await fireEvent.press(screen.getByLabelText('Güvendeyim mesajı gönder'));
     await flush();
-    expect(SMS.sendSMSAsync).toHaveBeenCalledWith(['+905321234567'], expect.stringMatching(/^Ben güvendeyim\./));
-    expect(SMS.sendSMSAsync.mock.calls[0][1]).not.toMatch(/Konumum/);
-    expect(screen.getAllByText(/Güvendeyim/).length).toBeGreaterThan(0);
+    expect(router.back).toHaveBeenCalled();
+    const saved = JSON.parse(await AsyncStorage.getItem('guvende:v1:local-contacts'));
+    expect(saved[0]).toMatchObject({ name: 'Ayşe', phone: '+905321234567', relation: 'Annem' });
   });
 
-  it('Ailem: geçersiz numara reddedilir', async () => {
+  it('Üye ekle: geçersiz numara reddedilir', async () => {
     const spy = jest.spyOn(Alert, 'alert');
-    const Ailem = require('@/app/(tabs)/ailem').default;
-    await open(<Ailem />);
-    await fireEvent.press(screen.getByText('Elle ekle'));
+    const Ekle = require('@/app/aile/ekle').default;
+    await open(<Ekle />);
     await fireEvent.changeText(screen.getByLabelText('İsim'), 'X');
     await fireEvent.changeText(screen.getByLabelText('Telefon'), '123');
     await fireEvent.press(screen.getByText('Kaydet'));
@@ -231,6 +283,7 @@ describe('alt ekranlar', () => {
     ['rehber/index', /Yangın/],
     ['saglik-bilgilerim', /Kan grubu/],
     ['acil-mod', /112’yi Ara/],
+    ['aile/bulusma', /buluşacağınız yeri/],
   ])('%s açılır', async (route, expected) => {
     const Screen = require(`@/app/${route}`).default;
     await open(<Screen />);

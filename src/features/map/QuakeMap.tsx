@@ -26,7 +26,9 @@ export type FamilyPin = {
   longitude: number;
   at: string;
   stale: boolean;
-  status: 'safe' | 'help' | 'unknown';
+  status: 'safe' | 'help' | 'waiting' | 'home' | 'unknown';
+  /** İşaretçinin altında gösterilecek kısa durum etiketi */
+  label?: string;
 };
 
 export type MapSelection = { kind: 'quake'; id: string } | { kind: 'report'; id: string } | { kind: 'assembly'; id: string };
@@ -58,6 +60,8 @@ type Props = {
   /** false ise harita yalnızca gösterim amaçlıdır (kaydırma/yakınlaştırma kapalı) */
   interactive?: boolean;
   family?: FamilyPin[];
+  /** Ölçek çubuğu (sol alt) */
+  scaleBar?: boolean;
 };
 
 const TURKEY_CENTER: [number, number] = [35.2, 39.0];
@@ -90,6 +94,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
     mapStyle = 'dark',
     interactive = true,
     family = [],
+    scaleBar = false,
   },
   ref,
 ) {
@@ -162,6 +167,8 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
       attributionPosition={{ bottom: bottomInset + 4, left: 8 }}
       compass={false}
       touchPitch={false}
+      scaleBar={scaleBar}
+      scaleBarPosition={{ bottom: bottomInset + 6, left: 12 }}
       dragPan={interactive}
       touchZoom={interactive}
       doubleTapZoom={interactive}
@@ -214,29 +221,36 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
         : null}
 
       {layers.family
-        ? family.map((f) => (
-            <Marker key={f.id} id={`fam-${f.id}`} lngLat={[f.longitude, f.latitude]}>
-              <View style={{ alignItems: 'center' }}>
+        ? family.map((f) => {
+            const c =
+              f.status === 'safe'
+                ? colors.safe
+                : f.status === 'help'
+                  ? colors.danger
+                  : f.status === 'waiting'
+                    ? colors.warning
+                    : colors.info;
+            return (
+              <Marker key={f.id} id={`fam-${f.id}`} lngLat={[f.longitude, f.latitude]}>
                 <View
-                  style={[
-                    styles.famPin,
-                    { borderColor: f.status === 'safe' ? colors.safe : f.status === 'help' ? colors.danger : colors.info },
-                    f.stale && { opacity: 0.6 },
-                  ]}
-                  accessibilityLabel={`${f.name} son konumu${f.stale ? ' (eski)' : ''}`}
+                  style={{ alignItems: 'center' }}
+                  accessibilityLabel={`${f.name}: ${f.label ?? ''}, ${relativeTimeTr(f.at)}${f.stale ? ' (eski konum)' : ''}`}
                 >
-                  <AppText variant="label" color={colors.text} style={{ fontWeight: '700' }}>
-                    {f.name.slice(0, 1).toLocaleUpperCase('tr-TR')}
-                  </AppText>
+                  <View style={[styles.famPin, { borderColor: c }, f.stale && { opacity: 0.6 }]}>
+                    <AppText variant="label" color={colors.text} style={{ fontWeight: '700' }}>
+                      {f.name.slice(0, 1).toLocaleUpperCase('tr-TR')}
+                    </AppText>
+                  </View>
+                  <View style={[styles.famLabel, { backgroundColor: c + 'E6' }]}>
+                    <AppText variant="caption" color="#fff" numberOfLines={1} style={{ fontSize: 11, fontWeight: '700' }}>
+                      {f.label ?? f.name}
+                      {f.stale ? ' · eski' : ''}
+                    </AppText>
+                  </View>
                 </View>
-                <View style={styles.famLabel}>
-                  <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: 10 }}>
-                    {f.name} · {relativeTimeTr(f.at)}
-                  </AppText>
-                </View>
-              </View>
-            </Marker>
-          ))
+              </Marker>
+            );
+          })
         : null}
 
       {user ? (
@@ -266,16 +280,16 @@ const styles = StyleSheet.create({
     boxShadow: '0 0 14px rgba(20,217,154,0.65)',
   },
   famPin: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 3,
     backgroundColor: colors.surfaceRaised,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'center',
+    boxShadow: '0 0 12px rgba(0,0,0,0.5)',
   },
-  famLabel: { backgroundColor: colors.overlay, borderRadius: 6, paddingHorizontal: 4, marginTop: 2, alignSelf: 'center' },
+  famLabel: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, marginTop: -6 },
   myMarker: { borderWidth: 3, boxShadow: '0 0 18px rgba(20,217,154,0.9)' },
   userHalo: {
     width: 64,

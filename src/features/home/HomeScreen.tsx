@@ -197,7 +197,7 @@ export function HomeScreen() {
               icon: 'people',
               color: accent.blue,
               title: 'Ailem',
-              subtitle: familyCount.total > 1 ? `${familyCount.safe}/${familyCount.total} güvende` : 'Kişi ekle',
+              subtitle: familyCount.total > 0 ? `${familyCount.safe}/${familyCount.total} güvende` : 'Kişi ekle',
               onPress: () => router.push('/ailem'),
             },
             { key: 'toplanma', icon: 'map', color: accent.green, title: 'Toplanma Alanları', onPress: () => router.push('/toplanma') },
