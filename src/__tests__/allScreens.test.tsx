@@ -4,8 +4,9 @@
  */
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import { AppProvider } from '@/providers/AppProvider';
+import { InboxProvider } from '@/providers/InboxProvider';
 import { ReportsProvider } from '@/providers/ReportsProvider';
 
 jest.mock('@react-native-community/netinfo', () => require('@react-native-community/netinfo/jest/netinfo-mock.js'));
@@ -15,10 +16,11 @@ jest.mock('expo-router', () => {
   return {
     router: { push: jest.fn(), back: jest.fn(), replace: jest.fn() },
     useFocusEffect: (cb: () => void | (() => void)) => React.useEffect(cb, [cb]),
-    useLocalSearchParams: () => ({}),
+    useLocalSearchParams: () => mockParams,
     Stack: { Screen: () => null },
   };
 });
+let mockParams: Record<string, string> = {};
 jest.mock('expo-router/js-tabs', () => ({ useBottomTabBarHeight: () => 60 }));
 jest.mock('expo-location', () => ({
   getForegroundPermissionsAsync: jest.fn(async () => ({ status: 'undetermined', canAskAgain: true, granted: false })),
@@ -38,7 +40,18 @@ jest.mock('expo-haptics', () => ({
 }));
 const mockPlayer = { play: jest.fn(), pause: jest.fn(), seekTo: jest.fn(), loop: false, volume: 0 };
 jest.mock('expo-audio', () => ({ useAudioPlayer: () => mockPlayer, setAudioModeAsync: jest.fn(async () => {}) }));
-jest.mock('expo-notifications', () => ({}));
+jest.mock('expo-notifications', () => ({
+  getPermissionsAsync: jest.fn(async () => ({ granted: true, status: 'granted', canAskAgain: true })),
+  requestPermissionsAsync: jest.fn(async () => ({ granted: true, status: 'granted' })),
+}));
+jest.mock('expo-local-authentication', () => ({
+  hasHardwareAsync: jest.fn(async () => false),
+  isEnrolledAsync: jest.fn(async () => false),
+  authenticateAsync: jest.fn(async () => ({ success: true })),
+}));
+jest.mock('expo-device', () => ({ modelName: 'Test Phone', osName: 'iOS', osVersion: '19.0' }));
+jest.mock('expo-file-system', () => ({ Directory: jest.fn(), File: jest.fn(), Paths: {} }));
+jest.mock('expo-keep-awake', () => ({ useKeepAwake: jest.fn() }));
 jest.mock('expo-secure-store', () => ({}));
 jest.mock('expo-image-picker', () => ({}));
 jest.mock('expo-image-manipulator', () => ({}));
@@ -65,7 +78,9 @@ global.fetch = jest.fn(async () => {
 
 const wrap = (ui: ReactNode) => (
   <AppProvider>
-    <ReportsProvider>{ui}</ReportsProvider>
+    <ReportsProvider>
+      <InboxProvider>{ui}</InboxProvider>
+    </ReportsProvider>
   </AppProvider>
 );
 const flush = () => act(async () => new Promise((r) => setTimeout(r, 30)));
@@ -76,67 +91,79 @@ async function open(ui: ReactNode) {
   return r;
 }
 
-beforeEach(() => jest.clearAllMocks());
+let openURL: jest.SpyInstance;
+beforeEach(async () => {
+  jest.clearAllMocks();
+  await require('@react-native-async-storage/async-storage').clear();
+  mockParams = {};
+  openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined as never);
+});
 
 describe('alt sekmeler', () => {
-  it('Ana Sayfa: beş üst sekme ve her birinin içeriği açılır', async () => {
+  it('Ana Sayfa: başlık, kartlar, hızlı kutular ve bölümler', async () => {
     const { HomeScreen } = require('@/features/home/HomeScreen');
+    const { router } = require('expo-router');
     await open(<HomeScreen />);
+    expect(screen.getByLabelText('GÜVENDE, Afet Anında Yanınızda')).toBeTruthy();
     expect(screen.getByText('Deprem verisi alınamadı')).toBeTruthy();
-    const checks: [string, RegExp][] = [
-      ['Resmî Veriler', /Veri kaynakları/],
-      ['Toplanma Alanları', /Size atanan alanı işaretleyin/],
-      ['Yardım', /Hayati tehlike varsa 112/],
-      ['Detaylar', /Seçili deprem yok/],
-      ['Canlı Akış', /Canlı akış henüz bağlı değil/],
-    ];
-    for (const [tab, expected] of checks) {
-      await fireEvent.press(screen.getByRole('tab', { name: tab }));
-      expect(screen.getByText(expected)).toBeTruthy();
-    }
+    expect(screen.getByText('Ailem Güvende mi?')).toBeTruthy();
+    expect(screen.getByText('Son Bildirimler')).toBeTruthy();
+    expect(screen.getByText(/Topluluk bildirimleri sunucu bağlantısı gerektirir/)).toBeTruthy();
+    expect(screen.getByText('Son Depremler')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('112, Acil Çağrı'));
+    expect(openURL).toHaveBeenCalledWith('tel:112');
+    await fireEvent.press(screen.getByLabelText('Acil Durum Çantası'));
+    expect(router.push).toHaveBeenCalledWith('/canta');
+    await fireEvent.press(screen.getByLabelText('Deprem Rehberi'));
+    expect(router.push).toHaveBeenCalledWith('/rehber');
+    await fireEvent.press(screen.getByLabelText('Bildirimler'));
+    expect(router.push).toHaveBeenCalledWith('/bildirimler');
   });
 
-  it('Ana Sayfa: Bildirim Ekle düğmesi yalnızca Canlı Akış’ta ve Yardım’da 112’yi kapatmaz', async () => {
-    const { HomeScreen } = require('@/features/home/HomeScreen');
-    await open(<HomeScreen />);
-    expect(screen.getByLabelText('Bildirim ekle')).toBeTruthy();
-    await fireEvent.press(screen.getByRole('tab', { name: 'Yardım' }));
-    expect(screen.queryByLabelText('Bildirim ekle')).toBeNull();
-  });
-
-  it('Harita sekmesi açılır, dönem filtresi değişir', async () => {
+  it('Harita: dönem/büyüklük filtresi ve liste görünümü', async () => {
     const Map = require('@/app/(tabs)/harita').default;
     await open(<Map />);
     await fireEvent.press(screen.getByLabelText('Son 7 gün depremleri'));
     expect(screen.getByLabelText('Son 7 gün depremleri').props.accessibilityState).toMatchObject({ selected: true });
+    await fireEvent.press(screen.getByLabelText('Büyüklük 4 ve üzeri'));
+    await fireEvent.press(screen.getByRole('tab', { name: 'Liste' }));
+    expect(screen.getByText('Kayıt yok')).toBeTruthy();
   });
 
-  it('Acil Durum: 112, düdük ve talimatlar çalışır', async () => {
+  it('Acil Durum: 112, hızlı eylemler, çanta ve rehber', async () => {
     const Acil = require('@/app/(tabs)/acil').default;
+    const { router } = require('expo-router');
+    const alert = jest.spyOn(Alert, 'alert');
     await open(<Acil />);
-    expect(screen.getByText('112’yi ara')).toBeTruthy();
-    await fireEvent.press(screen.getByLabelText('Düdük'));
-    expect(mockPlayer.play).toHaveBeenCalled();
-    expect(mockPlayer.loop).toBe(true);
-    await fireEvent.press(screen.getByLabelText('Düdüğü durdur'));
-    expect(mockPlayer.pause).toHaveBeenCalled();
-    await fireEvent.press(screen.getByText('Deprem sonrası'));
-    expect(screen.getByText(/Gaz kokusu varsa/)).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Hemen ara'));
+    expect(openURL).toHaveBeenCalledWith('tel:112');
+    await fireEvent.press(screen.getByLabelText('Acil SMS. Hazır mesaj gönder'));
+    expect(router.push).toHaveBeenCalledWith('/acil-sms');
+    await fireEvent.press(screen.getByLabelText('Aileye Bildir. Herkese durum sor'));
+    expect(alert).toHaveBeenCalledWith('Acil durum kişisi yok', expect.any(String), expect.any(Array));
+    expect(screen.getByText('ÇÖK')).toBeTruthy();
+    expect(screen.getByText('0/15')).toBeTruthy();
+    await fireEvent.press(screen.getAllByRole('checkbox')[0]!);
+    expect(screen.getByText('1/15')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Acil Durum Modu'));
+    expect(router.push).toHaveBeenCalledWith('/acil-mod');
   });
 
-  it('Ailem: sunucu olmadan kişi eklenir ve Güvendeyim SMS’i hazırlanır', async () => {
+  it('Ailem: sunucu olmadan kişi eklenir ve Güvendeyim SMS’i (konumsuz) hazırlanır', async () => {
     const SMS = require('expo-sms');
     const Ailem = require('@/app/(tabs)/ailem').default;
     await open(<Ailem />);
-    expect(screen.getByText('Acil durum kişilerim')).toBeTruthy();
     await fireEvent.press(screen.getByText('Elle ekle'));
-    await fireEvent.changeText(screen.getByLabelText('İsim'), 'Annem');
+    await fireEvent.changeText(screen.getByLabelText('İsim'), 'Ayşe');
     await fireEvent.changeText(screen.getByLabelText('Telefon'), '0532 123 45 67');
+    await fireEvent.changeText(screen.getByLabelText('Yakınlık'), 'Annem');
     await fireEvent.press(screen.getByText('Kaydet'));
-    expect(screen.getByText('0532 123 45 67')).toBeTruthy();
+    expect(screen.getByText('Ayşe')).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('Güvendeyim mesajı gönder'));
     await flush();
     expect(SMS.sendSMSAsync).toHaveBeenCalledWith(['+905321234567'], expect.stringMatching(/^Ben güvendeyim\./));
+    expect(SMS.sendSMSAsync.mock.calls[0][1]).not.toMatch(/Konumum/);
+    expect(screen.getAllByText(/Güvendeyim/).length).toBeGreaterThan(0);
   });
 
   it('Ailem: geçersiz numara reddedilir', async () => {
@@ -150,13 +177,31 @@ describe('alt sekmeler', () => {
     expect(spy).toHaveBeenCalledWith('Eklenemedi', 'Telefon numarası geçersiz.');
   });
 
-  it('Ayarlar açılır ve ayar değişir', async () => {
+  it('Ayarlar: profil kartı, hızlı kartlar, bildirim tercihleri kalıcı', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
     const Ayarlar = require('@/app/(tabs)/ayarlar').default;
+    const { router } = require('expo-router');
     await open(<Ayarlar />);
-    const sw = screen.getByLabelText('Aile bilgilerini çevrimdışı erişim için cihazda sakla');
+    expect(screen.getByText('Profilinizi oluşturun')).toBeTruthy();
+    expect(screen.getByLabelText('Konum Paylaşımı: Kapalı')).toBeTruthy();
+    const sw = screen.getByLabelText('Topluluk bildirimleri');
     expect(sw.props.value).toBe(false);
     await fireEvent(sw, 'valueChange', true);
-    expect(screen.getByLabelText('Aile bilgilerini çevrimdışı erişim için cihazda sakla').props.value).toBe(true);
+    await flush();
+    const saved = JSON.parse(await AsyncStorage.getItem('guvende:v1:settings'));
+    expect(saved.communityNotifications).toBe(true);
+    await fireEvent.press(screen.getByText('Yardım Merkezi'));
+    expect(router.push).toHaveBeenCalledWith('/yardim');
+  });
+
+  it('Ayarlar: biyometrik desteklenmiyorsa açıklama gösterir, açmaz', async () => {
+    const alert = jest.spyOn(Alert, 'alert');
+    const Ayarlar = require('@/app/(tabs)/ayarlar').default;
+    await open(<Ayarlar />);
+    await fireEvent(screen.getByLabelText('Biyometrik giriş'), 'valueChange', true);
+    await flush();
+    expect(alert).toHaveBeenCalledWith('Biyometrik giriş kullanılamıyor', expect.stringMatching(/donanımı yok/));
+    expect(screen.getByLabelText('Biyometrik giriş').props.value).toBe(false);
   });
 });
 
@@ -167,10 +212,65 @@ describe('alt ekranlar', () => {
     ['giris', /Bu kurulumda hesap gerekmiyor/],
     ['rapor/bekleyen', /Bekleyen gönderi yok/],
     ['rapor/yeni', /Ne bildirmek istiyorsunuz/],
+    ['profil', /Profilde konumumu göster/],
+    ['hesap', /Misafir kullanım/],
+    ['gizlilik/index', /Konumumu ailemle paylaş/],
+    ['gizlilik/gizle', /Kişi yok/],
+    ['guvenlik', /Şifre kullanılmıyor/],
+    ['tercihler', /Harita görünümü/],
+    ['bildirim-ayarlari', /erken uyarı sistemi değildir/],
+    ['yardim', /Sık sorulan sorular/],
+    ['geri-bildirim', /Hata, öneri/],
+    ['hakkinda', /Veri kaynakları/],
+    ['bildirimler', /Bildirim yok/],
+    ['akis', /Canlı akış henüz bağlı değil/],
+    ['depremler', /Kayıt yok/],
+    ['acil-sms', /Hazır mesajlar/],
+    ['duyurular', /Resmî deprem kayıtları/],
+    ['canta', /Hazır olma durumunuz/],
+    ['rehber/index', /Yangın/],
+    ['saglik-bilgilerim', /Kan grubu/],
+    ['acil-mod', /112’yi Ara/],
   ])('%s açılır', async (route, expected) => {
     const Screen = require(`@/app/${route}`).default;
     await open(<Screen />);
-    expect(screen.getByText(expected)).toBeTruthy();
+    expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
+  });
+
+  it('rehber detayı açılır', async () => {
+    mockParams = { id: 'fire' };
+    const Screen = require('@/app/rehber/[id]').default;
+    await open(<Screen />);
+    expect(screen.getByText(/Yangını fark ederseniz/)).toBeTruthy();
+  });
+
+  it('Tercihler: harita görünümü seçilir ve kaydedilir', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const Screen = require('@/app/tercihler').default;
+    await open(<Screen />);
+    await fireEvent.press(screen.getByText('Uydu'));
+    await flush();
+    expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:settings')).mapStyle).toBe('satellite');
+  });
+
+  it('Gizlilik: konum paylaşımı onayla açılır ve durdurulur', async () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'Aç')?.onPress?.());
+    const Screen = require('@/app/gizlilik/index').default;
+    await open(<Screen />);
+    await fireEvent(screen.getByLabelText('Konumumu ailemle paylaş'), 'valueChange', true);
+    expect(screen.getByText('Konum paylaşımını durdur')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Konum paylaşımını durdur'));
+    expect(screen.queryByText('Konum paylaşımını durdur')).toBeNull();
+    alert.mockRestore();
+  });
+
+  it('Acil Durum Modu: düdük çalar ve durur', async () => {
+    const Screen = require('@/app/acil-mod').default;
+    await open(<Screen />);
+    await fireEvent.press(screen.getByLabelText('Düdük. Yerini duyur'));
+    expect(mockPlayer.play).toHaveBeenCalled();
+    await fireEvent.press(screen.getByLabelText('Düdüğü durdur. Yerini duyur'));
+    expect(mockPlayer.pause).toHaveBeenCalled();
   });
 
   it('Bildirim Ekle: Güvendeyim seçilince sunucusuz SMS seçeneği çıkar', async () => {

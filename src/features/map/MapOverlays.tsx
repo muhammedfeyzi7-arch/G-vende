@@ -49,6 +49,7 @@ const LAYER_LABELS: { key: keyof MapLayers; label: string }[] = [
   { key: 'rings', label: 'Mesafe halkaları' },
   { key: 'reports', label: 'Kullanıcı bildirimleri' },
   { key: 'assembly', label: 'Toplanma alanları' },
+  { key: 'family', label: 'Aile konumları (izinli)' },
 ];
 
 export function LayerPanel({ layers, onChange }: { layers: MapLayers; onChange: (l: MapLayers) => void }) {

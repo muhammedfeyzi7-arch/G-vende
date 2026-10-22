@@ -2,7 +2,8 @@ import { Camera, GeoJSONSource, Layer, Map, Marker, type CameraRef, type LayerPr
 import { Ionicons } from '@expo/vector-icons';
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { StateMessage } from '@/components/ui';
+import { AppText, StateMessage } from '@/components/ui';
+import { relativeTimeTr } from '@/utils/time';
 import { env } from '@/services/env';
 import { colors } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
@@ -14,8 +15,19 @@ import { ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './lay
 import type { MapStyleId } from '@/features/settings/settings';
 import { FALLBACK_STYLE_URL, GUVENDE_DARK_STYLE, LIGHT_STYLE_URL, SATELLITE_STYLE } from './mapStyle';
 
-export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean };
-export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true };
+export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean; family: boolean };
+export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true, family: true };
+
+/** Aile üyesinin izinli son konumu (yalnızca çevrimiçi grupta ve paylaşım açıksa). */
+export type FamilyPin = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  at: string;
+  stale: boolean;
+  status: 'safe' | 'help' | 'unknown';
+};
 
 export type MapSelection = { kind: 'quake'; id: string } | { kind: 'report'; id: string } | { kind: 'assembly'; id: string };
 
@@ -45,6 +57,7 @@ type Props = {
   mapStyle?: MapStyleId;
   /** false ise harita yalnızca gösterim amaçlıdır (kaydırma/yakınlaştırma kapalı) */
   interactive?: boolean;
+  family?: FamilyPin[];
 };
 
 const TURKEY_CENTER: [number, number] = [35.2, 39.0];
@@ -76,6 +89,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
     initialZoom,
     mapStyle = 'dark',
     interactive = true,
+    family = [],
   },
   ref,
 ) {
@@ -199,6 +213,32 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
           ))
         : null}
 
+      {layers.family
+        ? family.map((f) => (
+            <Marker key={f.id} id={`fam-${f.id}`} lngLat={[f.longitude, f.latitude]}>
+              <View style={{ alignItems: 'center' }}>
+                <View
+                  style={[
+                    styles.famPin,
+                    { borderColor: f.status === 'safe' ? colors.safe : f.status === 'help' ? colors.danger : colors.info },
+                    f.stale && { opacity: 0.6 },
+                  ]}
+                  accessibilityLabel={`${f.name} son konumu${f.stale ? ' (eski)' : ''}`}
+                >
+                  <AppText variant="label" color={colors.text} style={{ fontWeight: '700' }}>
+                    {f.name.slice(0, 1).toLocaleUpperCase('tr-TR')}
+                  </AppText>
+                </View>
+                <View style={styles.famLabel}>
+                  <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: 10 }}>
+                    {f.name} · {relativeTimeTr(f.at)}
+                  </AppText>
+                </View>
+              </View>
+            </Marker>
+          ))
+        : null}
+
       {user ? (
         <Marker id="me" lngLat={[user.longitude, user.latitude]}>
           <View style={styles.userHalo} accessibilityLabel={userIsPrecise ? 'Konumunuz' : 'Seçtiğiniz il (yaklaşık)'}>
@@ -225,6 +265,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     boxShadow: '0 0 14px rgba(20,217,154,0.65)',
   },
+  famPin: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 3,
+    backgroundColor: colors.surfaceRaised,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  famLabel: { backgroundColor: colors.overlay, borderRadius: 6, paddingHorizontal: 4, marginTop: 2, alignSelf: 'center' },
   myMarker: { borderWidth: 3, boxShadow: '0 0 18px rgba(20,217,154,0.9)' },
   userHalo: {
     width: 64,
