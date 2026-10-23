@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { AppText, Card } from '@/components/ui';
+import { AppText, Card, Pill } from '@/components/ui';
 import { GroupTitle, ListRow, Page, RowGroup, Stepper, ToggleRow } from '@/components/ds';
-import { Linking } from 'react-native';
+import { Linking, View } from 'react-native';
 import { useNotificationPermission } from '@/hooks/useNotificationPermission';
 import { notifyLocally } from '@/services/localAlerts';
 import { NotificationToggles } from '@/features/settings/NotificationToggles';
@@ -16,14 +16,31 @@ export default function NotificationSettings() {
   const perm = useNotificationPermission();
   return (
     <Page>
-      <Card style={{ gap: 4, borderColor: colors.dangerBorder }}>
-        <AppText variant="label" color={colors.text}>
-          GÜVENDE erken uyarı sistemi değildir
-        </AppText>
-        <AppText variant="caption">
-          Bildirimler, deprem AFAD/Kandilli/USGS tarafından yayımlandıktan sonra gönderilir ve birkaç dakika gecikebilir. Sarsıntı
-          başlamadan uyarı verilmez.
-        </AppText>
+      <Card style={{ gap: spacing.sm }}>
+        <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' }}>
+          <Pill label="VAR" color={colors.safe} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <AppText variant="label" color={colors.text}>
+              Deprem bildirimi (gerçekleşmiş olay)
+            </AppText>
+            <AppText variant="caption">
+              AFAD, Kandilli, EMSC veya USGS bir depremi kaydedip yayımladıktan sonra gelir; birkaç dakika gecikebilir. Gönderilen
+              bildirimin telefonunuza ulaşması garanti değildir.
+            </AppText>
+          </View>
+        </View>
+        <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' }}>
+          <Pill label="YOK" color={colors.danger} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <AppText variant="label" color={colors.text}>
+              Deprem erken uyarısı
+            </AppText>
+            <AppText variant="caption">
+              Sarsıntı size ulaşmadan önce uyarı verebilen ayrı bir altyapıdır. GÜVENDE’de doğrulanmış bir erken uyarı sağlayıcısı yoktur;
+              uygulama depremi önceden bildirmez veya tahmin etmez.
+            </AppText>
+          </View>
+        </View>
       </Card>
       <NotificationToggles />
       <GroupTitle>Bu telefonda</GroupTitle>

@@ -26,6 +26,7 @@ import { colors, radius, spacing, themedStyles } from '@/theme';
 import { relativeTimeTr } from '@/utils/time';
 import { HomeHeader } from './HomeHeader';
 import { QuickTiles } from './QuickTiles';
+import { SyncStatusLine } from '@/features/earthquakes/components/SyncStatusLine';
 
 function SectionTitle({
   title,
@@ -59,7 +60,7 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { height } = useWindowDimensions();
-  const { quakes, refreshQuakes, userCoords, location, online, settings } = useApp();
+  const { quakes, refreshQuakes, userCoords, location, online, settings, liveStatus } = useApp();
   const events = useVisibleQuakes();
   const feed = useReports();
   const nearby = useNearbyAssembly(userCoords);
@@ -302,10 +303,7 @@ export function HomeScreen() {
               {!quakes.loading ? <Button label="Tekrar dene" variant="secondary" icon="refresh" onPress={refreshQuakes} /> : null}
             </View>
           )}
-          <AppText variant="caption" style={{ paddingHorizontal: spacing.lg }}>
-            Kaynak: AFAD, Kandilli, USGS · Son güncelleme{' '}
-            {quakes.snapshot?.lastSuccessAt ? relativeTimeTr(quakes.snapshot.lastSuccessAt) : 'yok'}
-          </AppText>
+          <SyncStatusLine snapshot={quakes.snapshot} live={liveStatus} style={{ paddingHorizontal: spacing.lg }} />
         </View>
       </ScrollView>
     </View>

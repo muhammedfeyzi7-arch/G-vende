@@ -37,7 +37,7 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
         <AppText variant="caption" numberOfLines={1}>
           {report.areaLabel ?? 'Bölge belirtilmemiş'}
         </AppText>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 'auto' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 'auto' }}>
           <Ionicons name="thumbs-up-outline" size={14} color={colors.textSecondary} />
           <AppText variant="caption">{report.helpfulCount}</AppText>
           <Ionicons name="shield-checkmark-outline" size={14} color={colors.textSecondary} style={{ marginLeft: 6 }} />
@@ -50,7 +50,12 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
       ) : (
         // Fotoğrafsız bildirimde kategori simgeli degrade kutu (referanstaki görsel alanı korunur).
         <View style={[styles.thumb, { overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }]}>
-          <LinearGradient colors={[color + '55', color + '12']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <LinearGradient
+            colors={[color + '55', color + '12']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
           <Ionicons name={meta.icon} size={30} color={color} />
         </View>
       )}

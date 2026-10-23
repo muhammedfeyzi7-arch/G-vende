@@ -12,12 +12,12 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000f7', 'yalanci@example.test'),
   ('00000000-0000-0000-0000-0000000000f8', 'afad@example.test');
 insert into public.profiles (id, identity_verified_at) values
-  ('00000000-0000-0000-0000-0000000000f1', now()),
-  ('00000000-0000-0000-0000-0000000000f3', now()),
-  ('00000000-0000-0000-0000-0000000000f4', now()),
-  ('00000000-0000-0000-0000-0000000000f5', now()),
-  ('00000000-0000-0000-0000-0000000000f6', now()),
-  ('00000000-0000-0000-0000-0000000000f7', now());
+  ('00000000-0000-0000-0000-0000000000f1', now() - interval '2 days'),
+  ('00000000-0000-0000-0000-0000000000f3', now() - interval '2 days'),
+  ('00000000-0000-0000-0000-0000000000f4', now() - interval '2 days'),
+  ('00000000-0000-0000-0000-0000000000f5', now() - interval '2 days'),
+  ('00000000-0000-0000-0000-0000000000f6', now() - interval '2 days'),
+  ('00000000-0000-0000-0000-0000000000f7', now() - interval '2 days');
 insert into public.profiles (id, display_name) values ('00000000-0000-0000-0000-0000000000f2', 'Doğrulanmamış');
 -- Kurumsal rol yalnızca service_role/yönetici tarafından atanır.
 insert into public.profiles (id, role, org_name) values ('00000000-0000-0000-0000-0000000000f8', 'official', 'AFAD Düzce');
@@ -209,5 +209,33 @@ insert into public.report_votes (report_id, vote) select id, 'confirm' from publ
 reset role;
 select pg_temp.ok((select verification = 'community' from public.user_reports where description = 'Enkaz altında ses var'),
   'kurumsal hesabın onayı (ağırlık 3) bildirimi doğrular');
+
+-- 8) Koordineli hesaplara karşı (0011): yeni doğrulanmış hesap oy veremez; aynı yazara 24 saatte en fazla 3 onay
+reset role;
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000f9', 'yeni@example.test');
+insert into public.profiles (id, identity_verified_at) values ('00000000-0000-0000-0000-0000000000f9', now() - interval '1 hour');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f5');
+insert into public.user_reports (client_id, category, description, latitude, longitude, device_latitude, device_longitude, device_accuracy_m)
+  select gen_random_uuid(), 'help', 'Halka ' || i, 41.1000, 31.5000, 41.1001, 31.5001, 5 from generate_series(1, 3) i;
+reset role;
+update public.user_reports set created_at = now() - interval '20 minutes' where description like 'Halka %';
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f5');
+insert into public.user_reports (client_id, category, description, latitude, longitude, device_latitude, device_longitude, device_accuracy_m)
+  values (gen_random_uuid(), 'help', 'Halka 4', 41.1000, 31.5000, 41.1001, 31.5001, 5);
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f9');
+select pg_temp.fails($$insert into public.report_votes (report_id, vote, device_latitude, device_longitude, device_accuracy_m)
+  select id, 'confirm', 41.1000, 31.5000, 5 from public.user_reports where description = 'Halka 1'$$,
+  'identity_too_new', 'kimliği 24 saatten yeni doğrulanmış hesap oy veremez');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f4');
+insert into public.report_votes (report_id, vote, device_latitude, device_longitude, device_accuracy_m)
+  select id, 'confirm', 41.1000, 31.5000, 5 from public.user_reports where description in ('Halka 1', 'Halka 2', 'Halka 3');
+select pg_temp.fails($$insert into public.report_votes (report_id, vote, device_latitude, device_longitude, device_accuracy_m)
+  select id, 'confirm', 41.1000, 31.5000, 5 from public.user_reports where description = 'Halka 4'$$,
+  'collusion_limit', 'aynı yazarın bildirimlerine 24 saatte en fazla 3 onay');
+reset role;
+select pg_temp.ok((select verification = 'unverified' from public.user_reports where description = 'Halka 1'),
+  'tek kişinin onayı topluluk eşiğini (3) doldurmaz');
 
 \echo 'TÜM GÜVEN KATMANI TESTLERİ GEÇTİ'

@@ -23,7 +23,7 @@ set client_min_messages = notice;
 
 -- Güven katmanı (0005): bildirim için kimlik doğrulaması gerekir; bu testlerde herkes doğrulanmış.
 insert into public.profiles (id, identity_verified_at)
-  select id, now() from auth.users;
+  select id, now() - interval '2 days' from auth.users;
 
 -- 1) Bildirim oluşturma, konum yuvarlama, yazar kimliğinin gizliliği
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');

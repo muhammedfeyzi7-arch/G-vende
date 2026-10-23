@@ -142,8 +142,8 @@ export function evaluateGates(i: GateInput): Gate[] {
       ? { key: 'community', title: 'Resmî bilgi', detail: 'Doğrudan doğrulanmış olarak yayınlanır.', state: 'info' }
       : {
           key: 'community',
-          title: 'Önce “Geçici Bilgi”',
-          detail: `Yakındaki ${VERIFY_THRESHOLD} doğrulanmış kişi onaylayınca “Doğrulanmış Bilgi” olur; ${VERIFY_THRESHOLD} “yanlış ihbar” oyu alırsa kaldırılır.`,
+          title: 'Önce “Kullanıcı Bildirimi”',
+          detail: `Yakındaki ${VERIFY_THRESHOLD} doğrulanmış kişi onaylayınca “Topluluk Destekli” olur; ${VERIFY_THRESHOLD} “yanlış ihbar” oyu alırsa kaldırılır.`,
           state: 'info',
         },
   );
@@ -162,6 +162,8 @@ export function trustErrorMessage(message: string | undefined | null): string | 
     ['device_location_required', 'Canlı GPS konumunuz alınamadı.'],
     ['location_inaccurate', `GPS doğruluğu yetersiz (en fazla ${MAX_GPS_ACCURACY_M} m).`],
     ['too_far', 'Bulunduğunuz yere çok uzak bir noktayı bildiremez veya oylayamazsınız.'],
+    ['identity_too_new', 'Kimlik doğrulamasından 24 saat sonra oy verebilirsiniz (sahte hesaplara karşı önlem).'],
+    ['collusion_limit', 'Aynı kişinin bildirimlerini 24 saatte en fazla 3 kez onaylayabilirsiniz.'],
     ['photo_not_live', `Fotoğraf uygulama kamerasıyla son ${LIVE_PHOTO_MAX_AGE_MIN} dakika içinde çekilmiş olmalı.`],
     ['own_report', 'Kendi bildiriminizi oylayamazsınız.'],
     ['official_report', 'Resmî bildirimler oylanamaz.'],

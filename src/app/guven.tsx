@@ -31,7 +31,7 @@ const METHODS = [
     icon: 'people-outline',
     color: accent.green,
     title: 'Topluluk doğrulaması',
-    how: `${VOTE_RADIUS_M} m yakınındaki doğrulanmış kişiler “Doğru, buradayım” veya “Yanlış ihbar” der. ${VERIFY_THRESHOLD} onay → Doğrulanmış Bilgi. ${VERIFY_THRESHOLD} ret → kaldırılır.`,
+    how: `${VOTE_RADIUS_M} m yakınındaki doğrulanmış kişiler “Doğru, buradayım” veya “Yanlış ihbar” der. ${VERIFY_THRESHOLD} onay → Topluluk Destekli. ${VERIFY_THRESHOLD} ret → kaldırılır.`,
     stops: 'Yanlış ihbar haritadan düşer; yazarına ihlal puanı ve süreli bildirim yasağı verilir (1. ihlal 7 gün, sonrası 30 gün).',
   },
   {
@@ -70,8 +70,8 @@ export default function TrustInfoScreen() {
       {[
         '1. Kimlik doğrulanmış mı? → evet',
         '2. GPS konumu bildirilen yere yakın mı? → evet',
-        '3. Gerekiyorsa canlı kamera fotoğrafı çekildi mi? → evet → “Geçici Bilgi” olarak yayın',
-        `4. Yakındaki ${VERIFY_THRESHOLD} doğrulanmış kişi onayladı mı? → “Doğrulanmış Bilgi”`,
+        '3. Gerekiyorsa canlı kamera fotoğrafı çekildi mi? → evet → “Kullanıcı Bildirimi” olarak yayın',
+        `4. Yakındaki ${VERIFY_THRESHOLD} doğrulanmış kişi onayladı mı? → “Topluluk Destekli”`,
       ].map((t) => (
         <AppText key={t} variant="label" color={colors.text}>
           {t}

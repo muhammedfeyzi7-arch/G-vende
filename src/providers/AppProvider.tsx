@@ -3,6 +3,8 @@ import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 import { loadEarthquakes, type CachedSnapshot, type QuakeSnapshot } from '@/features/earthquakes/repository';
+import { rowToReading, type ReadingRow } from '@/features/earthquakes/rows';
+import { buildServerSnapshot, fetchServerReadings, upsertReading, upsertSync, type SyncRow } from '@/features/earthquakes/serverFeed';
 import { DEFAULT_SETTINGS, type Settings } from '@/features/settings/settings';
 import { PROVINCES } from '@/features/settings/provinces';
 import { env } from '@/services/env';
@@ -10,9 +12,15 @@ import { fetchWithTimeout } from '@/services/http';
 import { coordsOf, getPermissionStatus, readCurrent, requestAndGetLocation, type LocationState } from '@/services/location';
 import { getSupabase } from '@/services/supabase';
 import { readJson, writeJson } from '@/services/storage';
+import type { QuakeSourceId, SourceReading } from '@/types/earthquake';
 import type { LatLng } from '@/utils/geo';
 
-const REFRESH_MS = 60_000;
+/** Sunucu yokken (yalnızca bu durumda) kaynaklar cihazdan doğrudan bu aralıkla sorgulanır. */
+const DIRECT_REFRESH_MS = 60_000;
+/** Sunucu varken Realtime asıl güncelleme yoludur; bu aralıkla yalnızca GÜVENDE sunucusu yeniden okunur. */
+const SERVER_REFRESH_MS = 5 * 60_000;
+
+export type LiveStatus = 'off' | 'connecting' | 'connected';
 
 type QuakeState = { snapshot: QuakeSnapshot | null; loading: boolean; error: string | null };
 
@@ -27,6 +35,8 @@ interface AppContextValue {
   setManualProvince: (name: string | null) => void;
   quakes: QuakeState;
   refreshQuakes: () => Promise<void>;
+  /** Realtime (canlı) bağlantı durumu; sunucu yapılandırılmamışsa 'off'. */
+  liveStatus: LiveStatus;
   online: boolean;
   session: Session | null;
 }
@@ -42,6 +52,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const cacheRef = useRef<CachedSnapshot | null>(null);
   const inflight = useRef(false);
+  const serverRef = useRef<{ readings: SourceReading[]; sync: SyncRow[] } | null>(null);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>('off');
 
   // Ayarlar
   useEffect(() => {
@@ -84,33 +96,74 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Ağ durumu
   useEffect(() => NetInfo.addEventListener((s) => setOnline(s.isConnected !== false && s.isInternetReachable !== false)), []);
 
-  // Deprem verisi
+  // Deprem verisi: sunucu (Supabase) varsa oradan okunur ve Realtime ile güncellenir; kaynaklar cihazdan
+  // yalnızca sunucu yapılandırılmamışsa veya sunucuya ulaşılamadığında doğrudan sorgulanır.
+  const sources = useMemo<QuakeSourceId[]>(() => {
+    const s = settings.enabledSources.filter((x) => env.quakeSources.includes(x));
+    return s.length ? s : env.quakeSources;
+  }, [settings.enabledSources]);
+
+  const publishServer = useCallback(() => {
+    const data = serverRef.current;
+    if (!data) return;
+    const readings = data.readings.filter((r) => sources.includes(r.source));
+    const snapshot = buildServerSnapshot(readings, data.sync, sources);
+    cacheRef.current = { readings, health: snapshot.health };
+    writeJson('quake-cache', cacheRef.current);
+    setQuakes({
+      snapshot,
+      loading: false,
+      error: snapshot.stale ? 'Sunucu senkronu gecikti; gösterilen deprem verileri güncel olmayabilir.' : null,
+    });
+  }, [sources]);
+  const publishRef = useRef(publishServer);
+  publishRef.current = publishServer;
+  const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const schedulePublish = useCallback(() => {
+    if (publishTimer.current) clearTimeout(publishTimer.current);
+    publishTimer.current = setTimeout(() => publishRef.current(), 300);
+  }, []);
+
   const refreshQuakes = useCallback(async () => {
     if (inflight.current) return;
     inflight.current = true;
     setQuakes((q) => ({ ...q, loading: true }));
     try {
       if (!cacheRef.current) cacheRef.current = await readJson<CachedSnapshot>('quake-cache');
-      const sources = settings.enabledSources.filter((s) => env.quakeSources.includes(s));
-      const { snapshot, cache } = await loadEarthquakes(sources.length ? sources : env.quakeSources, fetchWithTimeout, cacheRef.current);
+      const sb = getSupabase();
+      if (sb) {
+        try {
+          serverRef.current = await fetchServerReadings(sb, env.quakeSources);
+          publishRef.current();
+          return;
+        } catch {
+          // Sunucuya ulaşılamadı: aşağıda kaynaklardan doğrudan bir kez denenir (sürekli sorgu yapılmaz).
+        }
+      }
+      const { snapshot, cache } = await loadEarthquakes(sources, fetchWithTimeout, cacheRef.current);
       cacheRef.current = cache;
       writeJson('quake-cache', cache);
-      setQuakes({ snapshot, loading: false, error: snapshot.stale ? 'Deprem kaynaklarına şu anda ulaşılamıyor.' : null });
+      setQuakes({
+        snapshot: { ...snapshot, via: 'direct' },
+        loading: false,
+        error: snapshot.stale ? 'Deprem kaynaklarına şu anda ulaşılamıyor.' : null,
+      });
     } catch (e) {
       setQuakes((q) => ({ ...q, loading: false, error: e instanceof Error ? e.message : 'Deprem verisi alınamadı' }));
     } finally {
       inflight.current = false;
     }
-  }, [settings.enabledSources]);
+  }, [sources]);
 
   useEffect(() => {
     if (!settingsLoaded) return;
+    const every = getSupabase() ? SERVER_REFRESH_MS : DIRECT_REFRESH_MS;
     refreshQuakes();
-    let timer: ReturnType<typeof setInterval> | null = setInterval(refreshQuakes, REFRESH_MS);
+    let timer: ReturnType<typeof setInterval> | null = setInterval(refreshQuakes, every);
     const sub = AppState.addEventListener('change', (s) => {
       if (s === 'active') {
         refreshQuakes();
-        if (!timer) timer = setInterval(refreshQuakes, REFRESH_MS);
+        if (!timer) timer = setInterval(refreshQuakes, every);
       } else if (timer) {
         clearInterval(timer);
         timer = null;
@@ -121,6 +174,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (timer) clearInterval(timer);
     };
   }, [settingsLoaded, refreshQuakes]);
+
+  // Canlı güncelleme: yeni/değişen okumalar ve senkron durumu (yalnızca okuma; RLS herkese açık okuma).
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb || !settingsLoaded) return;
+    setLiveStatus('connecting');
+    const channel = sb
+      .channel('guvende-quakes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'earthquake_readings' }, (payload) => {
+        const r = rowToReading(payload.new as ReadingRow);
+        if (!r || !serverRef.current) return;
+        serverRef.current = { ...serverRef.current, readings: upsertReading(serverRef.current.readings, r) };
+        schedulePublish();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quake_sync_state' }, (payload) => {
+        const row = payload.new as SyncRow;
+        if (!row?.source || !serverRef.current) return;
+        serverRef.current = { ...serverRef.current, sync: upsertSync(serverRef.current.sync, row) };
+        schedulePublish();
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setLiveStatus('connected');
+          // Bağlantı kopup geri geldiyse aradaki değişiklikleri kaçırmamak için bir kez yeniden oku.
+          refreshQuakes();
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') setLiveStatus('off');
+      });
+    return () => {
+      sb.removeChannel(channel);
+      setLiveStatus('off');
+    };
+  }, [settingsLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Kaynak seçimi değişince sunucu verisinden yeniden süz (ağ isteği yok).
+  useEffect(() => {
+    if (serverRef.current) publishServer();
+  }, [publishServer]);
 
   // Oturum
   useEffect(() => {
@@ -142,10 +232,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setManualProvince,
       quakes,
       refreshQuakes,
+      liveStatus,
       online,
       session,
     }),
-    [settings, settingsLoaded, updateSettings, location, requestLocation, setManualProvince, quakes, refreshQuakes, online, session],
+    [
+      settings,
+      settingsLoaded,
+      updateSettings,
+      location,
+      requestLocation,
+      setManualProvince,
+      quakes,
+      refreshQuakes,
+      liveStatus,
+      online,
+      session,
+    ],
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
@@ -163,4 +266,9 @@ export function useVisibleQuakes() {
     () => (quakes.snapshot?.events ?? []).filter((e) => (e.primary.magnitude ?? 0) >= settings.minListMagnitude),
     [quakes.snapshot, settings.minListMagnitude],
   );
+}
+
+/** Sağlayıcı dışında da çizilebilen bileşenler için (ör. önizleme, testler): yoksa null. */
+export function useAppOptional(): AppContextValue | null {
+  return useContext(AppContext);
 }

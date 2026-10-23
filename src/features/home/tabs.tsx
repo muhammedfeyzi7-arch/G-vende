@@ -188,8 +188,8 @@ export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapsho
                 {h == null
                   ? 'Henüz sorgulanmadı'
                   : ok
-                    ? `${h.count} kayıt · ${relativeTimeTr(h.lastSuccessAt!)} güncellendi`
-                    : `Ulaşılamadı (${h.error}). Son başarılı: ${h.lastSuccessAt ? relativeTimeTr(h.lastSuccessAt) : 'yok'}`}
+                    ? `${h.count} kayıt · senkron ${relativeTimeTr(h.lastSuccessAt!)}${h.lastEventAt ? ` · son olay ${relativeTimeTr(h.lastEventAt)}` : ''}`
+                    : `${h.error ?? 'Ulaşılamadı'} · son başarılı: ${h.lastSuccessAt ? relativeTimeTr(h.lastSuccessAt) : 'yok'}`}
               </AppText>
             </View>
           </View>
@@ -199,10 +199,15 @@ export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapsho
         <Banner
           icon="time-outline"
           tone="warning"
-          text={`Hiçbir kaynağa ulaşılamadı. Gösterilen veriler önbellekten; son başarılı güncelleme: ${snapshot.lastSuccessAt ? formatDateTimeTr(snapshot.lastSuccessAt) : 'yok'}.`}
+          text={`Veriler güncel değil. Son başarılı senkron: ${snapshot.lastSuccessAt ? formatDateTimeTr(snapshot.lastSuccessAt) : 'yok'}. Gösterilen depremler eski olabilir.`}
         />
       ) : null}
       <AppText variant="caption">
+        {snapshot?.via === 'server'
+          ? 'Kaynakları GÜVENDE sunucusu 2 dakikada bir sorgular; yeni kayıtlar uygulamaya canlı gelir. '
+          : snapshot?.via === 'direct'
+            ? 'Sunucuya ulaşılamadığı için kaynaklar bu cihazdan doğrudan sorgulandı. '
+            : ''}
         Aynı deprem farklı kaynaklarda farklı büyüklükle yayımlanabilir. Uygulama özgün değerleri korur; ayrıntı için depreme dokunun.
       </AppText>
     </Card>

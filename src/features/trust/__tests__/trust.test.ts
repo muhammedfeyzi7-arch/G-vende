@@ -19,10 +19,10 @@ const base = (o: Partial<GateInput> = {}): GateInput => ({
 const state = (i: GateInput, key: string) => evaluateGates(i).find((g) => g.key === key)!.state;
 
 describe('yayın kontrolleri (kimlik → konum → canlı fotoğraf → topluluk)', () => {
-  it('tüm şartlar sağlanınca yayınlanabilir (Geçici Bilgi)', () => {
+  it('tüm şartlar sağlanınca yayınlanabilir (Kullanıcı Bildirimi)', () => {
     const g = evaluateGates(base());
     expect(gatesPass(g)).toBe(true);
-    expect(g.find((x) => x.key === 'community')!.title).toMatch(/Geçici Bilgi/);
+    expect(g.find((x) => x.key === 'community')!.title).toMatch(/Kullanıcı Bildirimi/);
   });
   it('kimliği doğrulanmamış kullanıcı yayınlayamaz', () => {
     const i = base({ trust: { ...verified, verified: false } });

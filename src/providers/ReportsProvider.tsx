@@ -146,7 +146,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       const label = CATEGORY_META[item.category].formLabel;
       if (outcome.kind === 'sent') {
         updateMine(item.clientId, { state: 'sent', serverId: outcome.serverId, error: null });
-        note(`rep-sent:${item.clientId}`, 'Bildiriminiz yayınlandı', `“${label}” önce Geçici Bilgi olarak görünür.`);
+        note(`rep-sent:${item.clientId}`, 'Bildiriminiz yayınlandı', `“${label}” önce Kullanıcı Bildirimi olarak görünür.`);
       } else if (outcome.kind === 'partial') {
         updateMine(item.clientId, { serverId: outcome.serverId, error: outcome.error });
       } else if (outcome.kind === 'fatal') {

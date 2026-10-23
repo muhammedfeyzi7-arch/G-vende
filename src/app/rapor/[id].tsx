@@ -13,6 +13,7 @@ import * as Location from 'expo-location';
 import type { Vote } from '@/features/reports/api';
 import { VERIFY_THRESHOLD, VOTE_RADIUS_M } from '@/features/trust/rules';
 import { TrustBadge } from '@/features/trust/TrustBadge';
+import { OfficialMatchChip } from '@/features/reports/components/OfficialMatchChip';
 import { useTrust } from '@/features/trust/TrustProvider';
 import { useReports } from '@/providers/ReportsProvider';
 import { colors, radius, spacing, themedStyles } from '@/theme';
@@ -148,12 +149,13 @@ export default function ReportDetail() {
 
       <Card style={{ gap: spacing.sm }}>
         <TrustBadge report={r} />
+        <OfficialMatchChip report={r} detailed />
         <AppText variant="label">
           {r.verification === 'official'
             ? 'Kurumsal (resmî) hesap tarafından paylaşıldı.'
             : r.verification === 'community'
               ? `Yakındaki ${r.confirmCount} doğrulanmış kişi onayladı.`
-              : `Henüz doğrulanmadı. ${VOTE_RADIUS_M} m yakınındaki ${VERIFY_THRESHOLD} doğrulanmış kişi onaylarsa “Doğrulanmış Bilgi” olur.`}
+              : `Henüz doğrulanmadı. ${VOTE_RADIUS_M} m yakınındaki ${VERIFY_THRESHOLD} doğrulanmış kişi onaylarsa “Topluluk Destekli” olur.`}
           {r.denyCount > 0 && r.verification !== 'official' ? ` ${r.denyCount} kişi yanlış olduğunu bildirdi.` : ''}
         </AppText>
         {canVote ? (

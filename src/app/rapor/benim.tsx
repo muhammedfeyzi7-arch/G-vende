@@ -26,13 +26,13 @@ function statusOf(m: MyReport): { label: string; color: string; icon: string; de
     return { label: 'Resmî', color: colors.primary, icon: 'checkmark-circle', detail: 'Kurumsal hesapla yayınlandı.' };
   if (m.verification === 'community')
     return {
-      label: 'Doğrulanmış Bilgi',
+      label: 'Topluluk Destekli',
       color: colors.safe,
       icon: 'shield-checkmark',
       detail: `${m.confirmCount ?? 0} yakın kişi onayladı.`,
     };
   return {
-    label: 'Geçici Bilgi',
+    label: 'Kullanıcı Bildirimi',
     color: colors.caution,
     icon: 'hourglass',
     detail: `${m.confirmCount ?? 0}/${VERIFY_THRESHOLD} onay${m.denyCount ? ` · ${m.denyCount} itiraz` : ''}`,

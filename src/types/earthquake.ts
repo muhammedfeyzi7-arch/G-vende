@@ -47,4 +47,6 @@ export type SourceHealth = {
   lastSuccessAt: string | null;
   error: string | null;
   count: number;
+  /** Kaynaktaki en yeni olayın zamanı (sunucu senkronundan). */
+  lastEventAt?: string | null;
 };

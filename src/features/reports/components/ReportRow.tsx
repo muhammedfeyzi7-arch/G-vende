@@ -8,6 +8,7 @@ import type { UserReport } from '@/types/report';
 import { relativeTimeTr } from '@/utils/time';
 import { CATEGORY_META, feltColor, reportHeadline } from '../categories';
 import { TrustBadge, trustMeta } from '@/features/trust/TrustBadge';
+import { OfficialMatchChip } from './OfficialMatchChip';
 
 export function ReportRow({
   report,
@@ -70,11 +71,10 @@ export function ReportRow({
             {report.description}
           </AppText>
         ) : null}
-        {report.verification !== 'unverified' ? (
-          <View style={styles.badges}>
-            <TrustBadge report={report} compact />
-          </View>
-        ) : null}
+        <View style={styles.badges}>
+          {report.verification !== 'unverified' ? <TrustBadge report={report} compact /> : null}
+          {report.isSample ? null : <OfficialMatchChip report={report} />}
+        </View>
       </View>
       <View style={styles.side}>
         <AppText variant="label" style={styles.time}>

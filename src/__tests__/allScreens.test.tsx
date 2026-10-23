@@ -289,7 +289,7 @@ describe('alt ekranlar', () => {
     ['gizlilik/gizle', /Kişi yok/],
     ['guvenlik', /Şifre kullanılmıyor/],
     ['tercihler', /Harita görünümü/],
-    ['bildirim-ayarlari', /erken uyarı sistemi değildir/],
+    ['bildirim-ayarlari', /doğrulanmış bir erken uyarı sağlayıcısı/],
     ['yardim', /Sık sorulan sorular/],
     ['geri-bildirim', /Hata, öneri/],
     ['hakkinda', /Veri kaynakları/],
@@ -373,7 +373,7 @@ describe('alt ekranlar', () => {
     expect(screen.getByText('Yayın kontrolleri')).toBeTruthy();
     expect(screen.getByText(/1\. Kimlik doğrulama/)).toBeTruthy();
     expect(screen.getByText(/Kanıt fotoğrafı gerekli/)).toBeTruthy();
-    expect(screen.getByText(/Önce “Geçici Bilgi”/)).toBeTruthy();
+    expect(screen.getByText(/Önce “Kullanıcı Bildirimi”/)).toBeTruthy();
     expect(screen.getByLabelText('Fotoğraf çek')).toBeTruthy();
     expect(screen.queryByLabelText('Galeriden seç')).toBeNull();
     expect(screen.getByText('Olay yeri konumu (zorunlu)')).toBeTruthy();

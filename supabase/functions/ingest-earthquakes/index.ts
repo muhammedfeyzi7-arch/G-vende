@@ -81,7 +81,8 @@ async function syncSource(sb: SupabaseClient, id: QuakeSourceId, state: SyncStat
       last_error: missing.length ? `Kaynak yanıtında beklenen alanlar yok: ${missing.join(', ')}` : null,
       last_count: readings.length,
       last_written: changed.length,
-      sample_keys: keys,
+      // Kayıt gelmediyse önceki gözlem korunur.
+      ...(keys ? { sample_keys: keys } : {}),
       updated_at: now.toISOString(),
     });
     return { source: id, ok: true, fetched: readings.length, written: changed.length };

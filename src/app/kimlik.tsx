@@ -55,7 +55,7 @@ export default function IdentityScreen() {
           <Ionicons name={isInstitution(trust) ? 'checkmark-circle' : 'shield-checkmark'} size={56} color={colors.safe} />
           <AppText variant="title">{isInstitution(trust) ? `Kurumsal hesap · ${trust.orgName ?? ''}` : 'Kimliğiniz doğrulandı'}</AppText>
           <AppText variant="label" style={{ textAlign: 'center' }}>
-            Bildirimleriniz {isInstitution(trust) ? '“Resmî” rozetiyle' : 'önce “Geçici Bilgi” olarak'} yayınlanır. Kimlik bilgileriniz
+            Bildirimleriniz {isInstitution(trust) ? '“Resmî” rozetiyle' : 'önce “Kullanıcı Bildirimi” olarak'} yayınlanır. Kimlik bilgileriniz
             saklanmaz; yalnızca doğrulama yapıldığı kaydedilir.
           </AppText>
         </View>

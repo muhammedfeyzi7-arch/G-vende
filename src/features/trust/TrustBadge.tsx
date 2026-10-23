@@ -5,14 +5,14 @@ import { colors, themedStyles } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { VERIFY_THRESHOLD } from './rules';
 
-/** Bildirimin güven düzeyi: Resmî (kurum rozeti) · Doğrulanmış (topluluk) · Geçici Bilgi. */
+/** Bildirimin güven düzeyi: Resmî kurum hesabı · Topluluk destekli (en az 3 yakın kişi; resmî doğrulama DEĞİLDİR) · Kullanıcı bildirimi. */
 export function trustMeta(r: Pick<UserReport, 'verification' | 'authorOrg' | 'confirmCount'>) {
   if (r.verification === 'official')
-    return { label: r.authorOrg ? `Resmî · ${r.authorOrg}` : 'Resmî', color: colors.primary, icon: 'checkmark-circle' as const };
+    return { label: r.authorOrg ? `Resmî kurum · ${r.authorOrg}` : 'Resmî kurum', color: colors.primary, icon: 'checkmark-circle' as const };
   if (r.verification === 'community')
-    return { label: `Doğrulanmış · ${r.confirmCount} onay`, color: colors.safe, icon: 'shield-checkmark' as const };
+    return { label: `Topluluk destekli · ${r.confirmCount} onay`, color: colors.safe, icon: 'shield-checkmark' as const };
   return {
-    label: r.confirmCount > 0 ? `Geçici Bilgi · ${r.confirmCount}/${VERIFY_THRESHOLD} onay` : 'Geçici Bilgi',
+    label: r.confirmCount > 0 ? `Kullanıcı Bildirimi · ${r.confirmCount}/${VERIFY_THRESHOLD} onay` : 'Kullanıcı Bildirimi',
     color: colors.caution,
     icon: 'time-outline' as const,
   };
