@@ -50,13 +50,14 @@ npx supabase link --project-ref <proje>
 node scripts/sync-function-shared.mjs      # fonksiyonların kullandığı src/ kodunu kopyalar
 npx supabase db push                       # supabase/migrations/*
 npx supabase functions deploy ingest-earthquakes delete-account notify-family verify-identity
-npx supabase secrets set INGEST_SECRET=... WEBHOOK_SECRET=... EXPO_ACCESS_TOKEN=... IDENTITY_HASH_PEPPER=<en az 32 karakter rastgele>
 ```
 
+- **Gizli değerler:** `20261023000007_jobs.sql` Vault'ta rastgele `ingest_secret`, `webhook_secret`, `identity_hash_pepper` üretir; fonksiyonlar bunları `internal_secret` (yalnızca service_role) ile okur. Panelde elle secret girmek gerekmez (girilirse ortam değişkeni önceliklidir). Push için isteğe bağlı: `EXPO_ACCESS_TOKEN`.
+- **Proje adresi (bir kez, SQL düzenleyicide):** `select vault.create_secret('https://<proje>.supabase.co', 'project_url');`
 - **Auth:** E-posta OTP'yi açın; e-posta şablonunda `{{ .Token }}` (6 haneli kod) gösterilmeli.
-- **ingest-earthquakes:** Her dakika `x-ingest-secret` başlığıyla çağrılmalı (Supabase Cron + `pg_net`).
-- **notify-family:** `safety_checkins` INSERT için Database Webhook, `x-webhook-secret` başlığıyla.
-- **verify-identity (kimlik doğrulama):** NVİ KPSPublic servisine bağlanır; `IDENTITY_HASH_PEPPER` gizli değeri olmadan çalışmaz. T.C. no / ad / doğum yılı saklanmaz.
+- **ingest-earthquakes:** `pg_cron` her dakika `pg_net` ile `x-ingest-secret` başlığıyla çağırır (migration kurar).
+- **notify-family:** `safety_checkins` INSERT tetikleyicisi `x-webhook-secret` ile çağırır (migration kurar; konum gönderilmez).
+- **verify-identity (kimlik doğrulama):** NVİ KPSPublic servisine bağlanır; Vault'taki `identity_hash_pepper` (veya `IDENTITY_HASH_PEPPER`) olmadan çalışmaz. T.C. no / ad / doğum yılı saklanmaz.
 - **Kurumsal hesap (Resmî rozet):** Yalnızca SQL düzenleyicisinden (service role) atanır:
   `update public.profiles set role = 'official', org_name = 'AFAD Düzce' where id = '<kullanıcı-uuid>';` (kurtarma ekibi için `role = 'rescue'`).
 - **Toplanma alanları:** `scripts/import-assembly-points.mjs` ile yalnızca resmî kaynak dosyalarından (varsayılan kuru çalıştırma).

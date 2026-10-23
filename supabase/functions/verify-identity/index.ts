@@ -2,10 +2,11 @@
 // eşleşmesini kontrol eder. Başarılıysa profile yalnızca doğrulama zamanı ve kimlik numarasının
 // anahtarlı özeti (aynı kimliğin ikinci hesapta kullanılmasını engellemek için) yazılır.
 // Kimlik numarası, ad, soyad ve doğum yılı hiçbir yerde saklanmaz ve günlüğe yazılmaz.
-// Gerekli gizli değerler: SUPABASE_SERVICE_ROLE_KEY, IDENTITY_HASH_PEPPER (en az 32 karakter rastgele).
+// Gizli anahtar: IDENTITY_HASH_PEPPER ortam değişkeni veya Vault'taki identity_hash_pepper (20261023000007_jobs.sql üretir).
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { isValidBirthYear, isValidTckn, normalizeNamePart } from '../_shared/app/features/trust/tckn.ts';
 import { callNvi, identityHash } from '../_shared/nvi.ts';
+import { serverSecret } from '../_shared/secrets.ts';
 
 const MAX_ATTEMPTS_PER_DAY = 5;
 const json = (body: unknown, status = 200) => Response.json(body, { status });
@@ -15,12 +16,11 @@ Deno.serve(async (req) => {
   const jwt = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
   if (!jwt) return json({ error: 'unauthorized' }, 401);
 
-  const pepper = Deno.env.get('IDENTITY_HASH_PEPPER') ?? '';
-  if (pepper.length < 32) return json({ error: 'not_configured' }, 503);
-
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { persistSession: false },
   });
+  const pepper = (await serverSecret(admin, 'IDENTITY_HASH_PEPPER', 'identity_hash_pepper')) ?? '';
+  if (pepper.length < 32) return json({ error: 'not_configured' }, 503);
   const { data: auth, error: authErr } = await admin.auth.getUser(jwt);
   if (authErr || !auth.user) return json({ error: 'unauthorized' }, 401);
   const uid = auth.user.id;

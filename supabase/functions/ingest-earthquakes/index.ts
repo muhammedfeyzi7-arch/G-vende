@@ -6,6 +6,7 @@ import { loadEarthquakes, defaultQuery } from '../_shared/app/features/earthquak
 import { formatMagnitude, placeTitle } from '../_shared/app/features/earthquakes/format.core.ts';
 import type { Fetcher } from '../_shared/app/features/earthquakes/sources/types.ts';
 import { selectRecipients, sendExpoPush, type Pref } from '../_shared/recipients.ts';
+import { serverSecret } from '../_shared/secrets.ts';
 
 const NOTIFY_WINDOW_MIN = 30;
 const MIN_NOTIFY_MAGNITUDE = 3.0;
@@ -14,10 +15,9 @@ const fetcher: Fetcher = (url, init) => fetch(url, { headers: init?.headers, sig
 
 Deno.serve(async (req) => {
   // Yalnızca zamanlayıcı/servis çağırabilir.
-  const secret = Deno.env.get('INGEST_SECRET');
-  if (!secret || req.headers.get('x-ingest-secret') !== secret) return new Response('forbidden', { status: 403 });
-
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  const secret = await serverSecret(sb, 'INGEST_SECRET', 'ingest_secret');
+  if (!secret || req.headers.get('x-ingest-secret') !== secret) return new Response('forbidden', { status: 403 });
   const now = new Date();
   const q = defaultQuery(now);
   q.since = new Date(now.getTime() - 6 * 3600_000);
