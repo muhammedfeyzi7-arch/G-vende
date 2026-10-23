@@ -26,9 +26,12 @@ _(Web önizlemesi: kaplama katmanları gerçek çizimdir, taban harita karoları
 
 ## iPhone'da hızlı deneme (Expo Go, Apple hesabı gerekmez)
 
-1. iPhone'a App Store'dan **Expo Go** uygulamasını kurun.
-2. Bilgisayarda: `npm install`, ardından `npx expo start --tunnel`.
-3. Ekrandaki QR kodu iPhone **Kamera** uygulamasıyla okutun; Expo Go'da açılır.
+1. iPhone'a App Store'dan **Expo Go** uygulamasını kurun (güncel sürüm; SDK 58).
+2. Bilgisayarda proje klasöründe: `git pull`, `npm install`, ardından **`npm run iphone`**
+   (`expo start --tunnel --go --clear`: Expo Go modu, tünel, temiz önbellek).
+3. **Expo Go uygulamasını** açın: *Scan QR code* ile okutun ya da *Enter URL manually* kısmına terminaldeki
+   `exp://…` adresini yazın. (iPhone Kamera'sı "Kullanılabilir veri bulunamadı" derse Expo Go içinden okutun.)
+4. Telefon ve bilgisayar aynı anda açık kalmalı; terminali kapatmayın.
 
 Expo Go yerel harita modülünü (MapLibre) içermez; bu modda uygulama gömülü Türkiye altlığıyla çizilen
 **basit harita** kullanır (uydu/sokak ayrıntısı yok). Tam harita için geliştirme derlemesi gerekir
