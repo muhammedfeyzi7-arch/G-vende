@@ -1,5 +1,5 @@
 import { assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
-import { isValidBirthYear, isValidTckn, normalizeNamePart } from '@/features/trust/tckn';
+import { isValidBirthYear, isValidTckn, normalizeNamePart } from './app/features/trust/tckn.ts';
 import { buildNviEnvelope, callNvi, identityHash, parseNviResult } from './nvi.ts';
 
 Deno.test('TCKN sağlama algoritması', () => {

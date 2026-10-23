@@ -1,7 +1,7 @@
 // Veritabanı webhook'u (safety_checkins INSERT) ile çağrılır; aynı gruptaki diğer
 // üyelere, aile bildirimlerini açık tuttularsa push gönderir. Konum push içeriğine eklenmez.
-import { createClient } from '@supabase/supabase-js';
-import { sendExpoPush } from '../_shared/recipients';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { sendExpoPush } from '../_shared/recipients.ts';
 
 type Payload = { type: 'INSERT'; table: 'safety_checkins'; record: { group_id: string; user_id: string; status: 'safe' | 'need_help' } };
 

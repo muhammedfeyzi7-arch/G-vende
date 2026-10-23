@@ -1,5 +1,5 @@
 import { assertEquals } from 'jsr:@std/assert@1';
-import { selectRecipients, type Pref } from './recipients';
+import { selectRecipients, type Pref } from './recipients.ts';
 
 const now = new Date('2026-10-22T19:00:00Z');
 const base: Pref = { user_id: 'u', quakes_enabled: true, official_enabled: true, min_magnitude: 4, region_lat: 40.69, region_lon: 30.4, region_radius_km: 150, min_interval_minutes: 10 };

@@ -3,8 +3,8 @@
 // anahtarlı özeti (aynı kimliğin ikinci hesapta kullanılmasını engellemek için) yazılır.
 // Kimlik numarası, ad, soyad ve doğum yılı hiçbir yerde saklanmaz ve günlüğe yazılmaz.
 // Gerekli gizli değerler: SUPABASE_SERVICE_ROLE_KEY, IDENTITY_HASH_PEPPER (en az 32 karakter rastgele).
-import { createClient } from '@supabase/supabase-js';
-import { isValidBirthYear, isValidTckn, normalizeNamePart } from '@/features/trust/tckn';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { isValidBirthYear, isValidTckn, normalizeNamePart } from '../_shared/app/features/trust/tckn.ts';
 import { callNvi, identityHash } from '../_shared/nvi.ts';
 
 const MAX_ATTEMPTS_PER_DAY = 5;

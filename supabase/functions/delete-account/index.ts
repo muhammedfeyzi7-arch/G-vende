@@ -1,7 +1,7 @@
 // Oturum sahibi kullanıcının hesabını kalıcı olarak siler. Bağlı kayıtlar (bildirimler,
 // aile üyelikleri, durumlar, tercihler) şemadaki ON DELETE CASCADE ile silinir; depodaki
 // fotoğraflar ayrıca temizlenir. Servis anahtarı yalnızca bu sunucu işlevinde bulunur.
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405 });

@@ -1,4 +1,4 @@
-import { distanceKm } from '@/utils/geo';
+import { distanceKm } from './app/utils/geo.ts';
 
 export type Pref = {
   user_id: string;

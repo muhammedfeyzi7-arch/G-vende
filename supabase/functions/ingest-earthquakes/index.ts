@@ -1,11 +1,11 @@
 // Zamanlanmış görev (ör. her dakika): kaynakları sorgular, okumaları kaydeder ve
 // yeni önemli olaylar için tercihe göre push gönderir. Bu bir ERKEN UYARI sistemi değildir;
 // bildirim, olay kaynaklarda yayımlandıktan sonra (dakikalar mertebesinde gecikmeyle) gider.
-import { createClient } from '@supabase/supabase-js';
-import { loadEarthquakes, defaultQuery } from '@/features/earthquakes/repository';
-import { formatMagnitude, placeTitle } from '@/features/earthquakes/format.core';
-import type { Fetcher } from '@/features/earthquakes/sources/types';
-import { selectRecipients, sendExpoPush, type Pref } from '../_shared/recipients';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { loadEarthquakes, defaultQuery } from '../_shared/app/features/earthquakes/repository.ts';
+import { formatMagnitude, placeTitle } from '../_shared/app/features/earthquakes/format.core.ts';
+import type { Fetcher } from '../_shared/app/features/earthquakes/sources/types.ts';
+import { selectRecipients, sendExpoPush, type Pref } from '../_shared/recipients.ts';
 
 const NOTIFY_WINDOW_MIN = 30;
 const MIN_NOTIFY_MAGNITUDE = 3.0;

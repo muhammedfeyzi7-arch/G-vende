@@ -47,6 +47,7 @@ Expo Go yerel harita modülünü (MapLibre) içermez; bu modda uygulama gömül�
 
 ```bash
 npx supabase link --project-ref <proje>
+node scripts/sync-function-shared.mjs      # fonksiyonların kullandığı src/ kodunu kopyalar
 npx supabase db push                       # supabase/migrations/*
 npx supabase functions deploy ingest-earthquakes delete-account notify-family verify-identity
 npx supabase secrets set INGEST_SECRET=... WEBHOOK_SECRET=... EXPO_ACCESS_TOKEN=... IDENTITY_HASH_PEPPER=<en az 32 karakter rastgele>
