@@ -162,6 +162,19 @@ export default function EmergencyScreen() {
         </Pressable>
       </View>
 
+      <Pressable
+        onPress={() => router.push('/arama')}
+        accessibilityRole="button"
+        accessibilityLabel="Acil arama: arıza hatları, aile ve operatöre okunacak konum"
+        style={({ pressed }) => [styles.moreCall, pressed && { opacity: 0.85 }]}
+      >
+        <Ionicons name="keypad-outline" size={16} color={colors.textSecondary} />
+        <AppText variant="label" style={{ flex: 1, fontSize: 11.5 }}>
+          Arıza hatları, ailemi ara ve 112’ye okunacak konumum
+        </AppText>
+        <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+      </Pressable>
+
       {/* Hızlı eylemler */}
       <View style={styles.actions}>
         <ActionTile
@@ -495,6 +508,18 @@ const styles = themedStyles(() => ({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#fff',
+  },
+  moreCall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: -spacing.xs,
+    paddingHorizontal: spacing.md,
+    minHeight: 36,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
   },
   pair: { flexDirection: 'row', gap: spacing.sm },
   halfCard: { flex: 1, paddingHorizontal: spacing.sm + 2 },

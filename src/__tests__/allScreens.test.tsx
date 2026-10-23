@@ -78,9 +78,9 @@ global.fetch = jest.fn(async () => {
 
 const wrap = (ui: ReactNode) => (
   <AppProvider>
-    <ReportsProvider>
-      <InboxProvider>{ui}</InboxProvider>
-    </ReportsProvider>
+    <InboxProvider>
+      <ReportsProvider>{ui}</ReportsProvider>
+    </InboxProvider>
   </AppProvider>
 );
 const flush = () => act(async () => new Promise((r) => setTimeout(r, 30)));
@@ -283,6 +283,8 @@ describe('alt ekranlar', () => {
     ['akis', /Canlı akış henüz bağlı değil/],
     ['depremler', /Kayıt yok/],
     ['acil-sms', /Hazır mesajlar/],
+    ['arama', /Arıza hatları/],
+    ['rapor/benim', /Henüz olay bildirmediniz/],
     ['duyurular', /Resmî deprem kayıtları/],
     ['canta', /Hazır olma durumunuz/],
     ['rehber/index', /Yangın/],
@@ -367,6 +369,44 @@ describe('alt ekranlar', () => {
     await fireEvent.changeText(screen.getByLabelText('T.C. kimlik numarası'), '12345678901');
     expect(screen.getByText('Numara geçersiz görünüyor.')).toBeTruthy();
     expect(screen.getByText(/e-Devlet Kapısı ile giriş/)).toBeTruthy();
+  });
+
+  it('Hazır mesajlar: kendi mesajını ekler ve kaydeder', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const Screen = require('@/app/acil-sms').default;
+    await open(<Screen />);
+    await fireEvent.press(screen.getByText('Kendi mesajını ekle'));
+    await fireEvent.changeText(screen.getByLabelText('Mesaj başlığı'), 'İşteyim');
+    await fireEvent.changeText(screen.getByLabelText('Mesaj metni'), 'İşteyim, iyiyim. {konum}');
+    await fireEvent.press(screen.getByText('Kaydet'));
+    await flush();
+    expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:settings')).customMessages[0]).toMatchObject({ title: 'İşteyim' });
+    expect(screen.getByText('İşteyim')).toBeTruthy();
+  });
+
+  it('Hazır mesajlar: şablon seçince alıcı paneli açılır', async () => {
+    const Screen = require('@/app/acil-sms').default;
+    await open(<Screen />);
+    await fireEvent.press(screen.getByLabelText(/^Güvendeyim\./));
+    expect(screen.getByText(/Alıcılar/)).toBeTruthy();
+    expect(screen.getByText('SMS ile gönder')).toBeTruthy();
+    expect(screen.getByText('Diğer uygulamalar')).toBeTruthy();
+  });
+
+  it('Acil arama: 112 ve arıza hatları aranır', async () => {
+    const Screen = require('@/app/arama').default;
+    await open(<Screen />);
+    await fireEvent.press(screen.getByLabelText('112 Acil Çağrı Merkezi’ni ara'));
+    expect(Linking.openURL).toHaveBeenCalledWith('tel:112');
+    await fireEvent.press(screen.getByLabelText('Doğalgaz acil, 187 ara'));
+    expect(Linking.openURL).toHaveBeenCalledWith('tel:187');
+  });
+
+  it('Bildirim merkezi: filtre sekmeleri', async () => {
+    const Screen = require('@/app/bildirimler').default;
+    await open(<Screen />);
+    await fireEvent.press(screen.getByRole('tab', { name: /Depremler/ }));
+    expect(screen.getByText('Bu filtrede bildirim yok')).toBeTruthy();
   });
 
   it('İl seçimi konumu ayarlar', async () => {

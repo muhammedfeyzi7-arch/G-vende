@@ -93,7 +93,9 @@ function RootStack() {
       <Stack.Screen name="akis" options={{ title: 'Son Bildirimler' }} />
       <Stack.Screen name="depremler" options={{ title: 'Deprem Geçmişi' }} />
       <Stack.Screen name="acil-mod" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-      <Stack.Screen name="acil-sms" options={{ title: 'Acil SMS' }} />
+      <Stack.Screen name="acil-sms" options={{ title: 'Hazır Mesajlar' }} />
+      <Stack.Screen name="arama" options={{ title: 'Acil Arama' }} />
+      <Stack.Screen name="rapor/benim" options={{ title: 'Bildirimlerim' }} />
       <Stack.Screen name="duyurular" options={{ title: 'Resmî Bilgiler' }} />
       <Stack.Screen name="canta" options={{ title: 'Acil Durum Çantası' }} />
       <Stack.Screen name="rehber/index" options={{ title: 'Afet Rehberleri' }} />
@@ -113,16 +115,16 @@ export default function RootLayout() {
     <SafeAreaProvider style={{ backgroundColor: colors.bg }}>
       <AppProvider>
         <TrustProvider>
-          <ReportsProvider>
-            <InboxProvider>
+          <InboxProvider>
+            <ReportsProvider>
               <NotificationRouting />
               <ThemeGate>
                 <BiometricGate>
                   <RootStack />
                 </BiometricGate>
               </ThemeGate>
-            </InboxProvider>
-          </ReportsProvider>
+            </ReportsProvider>
+          </InboxProvider>
         </TrustProvider>
       </AppProvider>
     </SafeAreaProvider>

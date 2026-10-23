@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +18,17 @@ export default function FeedScreen() {
   const [filter, setFilter] = useState<ReportFilter>('all');
   return (
     <View style={{ flex: 1 }}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable onPress={() => router.push('/rapor/benim')} accessibilityRole="button" style={{ padding: 6 }}>
+              <AppText variant="label" color={colors.primary}>
+                Bildirimlerim{feed.mine.length ? ` (${feed.mine.length})` : ''}
+              </AppText>
+            </Pressable>
+          ),
+        }}
+      />
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}>
         <LiveFeedTab
           filter={filter}

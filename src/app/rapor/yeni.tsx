@@ -37,7 +37,7 @@ export default function NewReport() {
   const insets = useSafeAreaInsets();
   const { location, userCoords, requestLocation, settings, session, online } = useApp();
   const events = useVisibleQuakes();
-  const { submit } = useReports();
+  const { submit, mine } = useReports();
   const family = useLocalFamily();
   const [category, setCategory] = useState<ReportCategory | null>(null);
   const [felt, setFelt] = useState<FeltIntensity | null>(null);
@@ -194,6 +194,13 @@ export default function NewReport() {
             text="Kötüye kullanımı önlemek için bildirim göndermeden önce giriş yapmanız gerekir."
             onPress={() => router.push('/giris')}
           />
+        ) : null}
+        {mine.length ? (
+          <Pressable onPress={() => router.push('/rapor/benim')} accessibilityRole="link" style={{ alignSelf: 'flex-end' }}>
+            <AppText variant="label" color={colors.primary}>
+              Gönderdiğim bildirimler ({mine.length}) ›
+            </AppText>
+          </Pressable>
         ) : null}
         {!online ? (
           <Banner

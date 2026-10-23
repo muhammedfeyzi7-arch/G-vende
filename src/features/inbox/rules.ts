@@ -2,7 +2,7 @@ import type { Settings } from '@/features/settings/settings';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import { distanceKm, type LatLng } from '@/utils/geo';
 
-export type InboxKind = 'quake' | 'official' | 'family' | 'community' | 'system';
+export type InboxKind = 'quake' | 'official' | 'family' | 'community' | 'report' | 'system';
 
 export interface InboxItem {
   id: string;

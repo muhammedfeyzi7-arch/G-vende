@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { mergeInbox, quakeInboxItems, type InboxItem } from '@/features/inbox/rules';
 import { readJson, writeJson } from '@/services/storage';
+import { notifyLocally } from '@/services/localAlerts';
 import { useApp } from './AppProvider';
 
 interface InboxValue {
@@ -9,6 +10,7 @@ interface InboxValue {
   add: (items: InboxItem[]) => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
+  remove: (id: string) => void;
   clear: () => void;
 }
 
@@ -36,11 +38,21 @@ export function InboxProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const add = useCallback((incoming: InboxItem[]) => commit(mergeInbox(ref.current, incoming)), [commit]);
+  // Silinen öğeler yeniden eklenmesin (deprem listesi her yenilendiğinde aynı kayıt tekrar gelir).
+  const dismissed = useRef(new Set<string>());
+  useEffect(() => {
+    readJson<string[]>('inbox-dismissed').then((d) => d?.forEach((x) => dismissed.current.add(x)));
+  }, []);
 
   useEffect(() => {
     if (!quakes.snapshot) return;
-    const incoming = quakeInboxItems(quakes.snapshot.events, settings, userCoords);
-    if (incoming.length) add(incoming);
+    const incoming = quakeInboxItems(quakes.snapshot.events, settings, userCoords).filter((i) => !dismissed.current.has(i.id));
+    if (!incoming.length) return;
+    const known = new Set(ref.current.map((i) => i.id));
+    const fresh = incoming.filter((i) => !known.has(i.id));
+    add(incoming);
+    // Yeni kayıtlar için telefona bildirim (ilk yüklemede eski kayıtlar bildirilmez: 15 dk sınırı).
+    if (loaded.current && settings.localAlerts && fresh.length) notifyLocally(fresh);
   }, [quakes.snapshot, settings.quakeNotifications, settings.officialNotifications, settings.minNotifyMagnitude, userCoords, add]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = useMemo<InboxValue>(
@@ -50,7 +62,16 @@ export function InboxProvider({ children }: { children: ReactNode }) {
       add,
       markRead: (id) => commit(ref.current.map((i) => (i.id === id ? { ...i, read: true } : i))),
       markAllRead: () => commit(ref.current.map((i) => ({ ...i, read: true }))),
-      clear: () => commit([]),
+      remove: (id) => {
+        dismissed.current.add(id);
+        writeJson('inbox-dismissed', [...dismissed.current].slice(-300));
+        commit(ref.current.filter((i) => i.id !== id));
+      },
+      clear: () => {
+        ref.current.forEach((i) => dismissed.current.add(i.id));
+        writeJson('inbox-dismissed', [...dismissed.current].slice(-300));
+        commit([]);
+      },
     }),
     [items, add, commit],
   );

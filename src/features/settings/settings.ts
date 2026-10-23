@@ -39,6 +39,10 @@ export interface Settings {
   /** Aile grubu bilgilerini (ad, son durum) çevrimdışı erişim için cihazda sakla — kullanıcı izniyle */
   cacheFamilyOffline: boolean;
   onboardingSeen: boolean;
+  /** Uygulama açıkken yeni deprem kayıtlarında telefona bildirim göster (sunucusuz) */
+  localAlerts: boolean;
+  /** Kullanıcının kendi yazdığı hazır mesajlar */
+  customMessages: { id: string; title: string; text: string }[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -61,4 +65,6 @@ export const DEFAULT_SETTINGS: Settings = {
   kitChecked: [],
   cacheFamilyOffline: false,
   onboardingSeen: false,
+  localAlerts: true,
+  customMessages: [],
 };

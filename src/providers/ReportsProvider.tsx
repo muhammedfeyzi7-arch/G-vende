@@ -17,6 +17,9 @@ import { readJson, writeJson } from '@/services/storage';
 import { friendlyError } from '@/services/supabase';
 import type { NewReportInput, PendingReport, UserReport } from '@/types/report';
 import { useApp } from './AppProvider';
+import { useInbox } from './InboxProvider';
+import { CATEGORY_META } from '@/features/reports/categories';
+import { syncMyReports, type MyReport } from '@/features/reports/myReports';
 
 type FeedStatus = 'idle' | 'loading' | 'ready' | 'error' | 'not-configured';
 
@@ -36,6 +39,9 @@ interface ReportsContextValue {
   flag: (id: string, reason: FlagReason) => Promise<void>;
   /** Kullanıcının verdiği topluluk oyları */
   votes: Map<string, Vote>;
+  /** Bu cihazdan gönderilen bildirimler ve durumları */
+  mine: MyReport[];
+  removeMine: (clientId: string) => void;
   vote: (id: string, v: Vote, device: { latitude: number; longitude: number; accuracy: number } | null) => Promise<void>;
 }
 
@@ -51,6 +57,24 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
   const [helpful, setHelpful] = useState<Set<string>>(new Set());
   const [votes, setVotes] = useState<Map<string, Vote>>(new Map());
   const pendingRef = useRef<PendingReport[]>([]);
+  const inbox = useInbox();
+  const [mine, setMine] = useState<MyReport[]>([]);
+  const mineRef = useRef<MyReport[]>([]);
+  const saveMine = useCallback((m: MyReport[]) => {
+    mineRef.current = m.slice(0, 50);
+    setMine(mineRef.current);
+    writeJson('my-reports', mineRef.current);
+  }, []);
+  const updateMine = useCallback(
+    (clientId: string, patch: Partial<MyReport>) =>
+      saveMine(mineRef.current.map((m) => (m.clientId === clientId ? { ...m, ...patch } : m))),
+    [saveMine],
+  );
+  const note = useCallback(
+    (id: string, title: string, body: string) =>
+      inbox.add([{ id, kind: 'report', title, body, at: new Date().toISOString(), read: false, href: '/rapor/benim' }]),
+    [inbox.add], // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const flushing = useRef(false);
 
   const savePending = useCallback((q: PendingReport[]) => {
@@ -61,13 +85,14 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     readJson<PendingReport[]>('pending-reports').then((q) => q && savePending(q));
+    readJson<MyReport[]>('my-reports').then((m) => m && saveMine(m));
     readJson<{ reports: UserReport[]; at: string }>('feed-cache').then((c) => {
       if (c && isBackendConfigured()) {
         setReports((r) => (r.length ? r : c.reports));
         setLastSyncedAt((t) => t ?? c.at);
       }
     });
-  }, [savePending]);
+  }, [savePending, saveMine]);
 
   const refresh = useCallback(async () => {
     if (!isBackendConfigured()) {
@@ -80,6 +105,14 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       const data = await fetchFeed();
       const at = new Date().toISOString();
       setReports(data);
+      const { next, changes } = syncMyReports(mineRef.current, data);
+      if (changes.length || next !== mineRef.current) saveMine(next);
+      for (const c of changes) {
+        const label = CATEGORY_META[c.report.category].formLabel;
+        if (c.kind === 'verified')
+          note(`rep-verified:${c.report.clientId}`, 'Bildiriminiz doğrulandı', `“${label}” yakındaki kişilerce onaylandı.`);
+        else note(`rep-gone:${c.report.clientId}`, 'Bildiriminiz yayında değil', `“${label}” akıştan kaldırıldı veya incelemeye alındı.`);
+      }
       setLastSyncedAt(at);
       setStatus('ready');
       setError(null);
@@ -110,9 +143,19 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     async (item: PendingReport) => {
       const outcome = await sendReport(item, item.serverId);
       savePending(applyOutcome(pendingRef.current, item.clientId, outcome));
+      const label = CATEGORY_META[item.category].formLabel;
+      if (outcome.kind === 'sent') {
+        updateMine(item.clientId, { state: 'sent', serverId: outcome.serverId, error: null });
+        note(`rep-sent:${item.clientId}`, 'Bildiriminiz yayınlandı', `“${label}” önce Geçici Bilgi olarak görünür.`);
+      } else if (outcome.kind === 'partial') {
+        updateMine(item.clientId, { serverId: outcome.serverId, error: outcome.error });
+      } else if (outcome.kind === 'fatal') {
+        updateMine(item.clientId, { state: 'failed', error: outcome.error });
+        note(`rep-failed:${item.clientId}`, 'Bildirim gönderilemedi', `“${label}”: ${outcome.error}`);
+      } else updateMine(item.clientId, { error: outcome.error });
       return outcome;
     },
-    [savePending],
+    [savePending, updateMine, note],
   );
 
   const retryPending = useCallback(async () => {
@@ -138,6 +181,19 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
   const submit = useCallback(
     async (input: NewReportInput) => {
       savePending(enqueue(pendingRef.current, input));
+      if (!mineRef.current.some((m) => m.clientId === input.clientId))
+        saveMine([
+          {
+            clientId: input.clientId,
+            serverId: null,
+            category: input.category,
+            description: input.description,
+            areaLabel: input.areaLabel,
+            createdAt: new Date().toISOString(),
+            state: 'pending',
+          },
+          ...mineRef.current,
+        ]);
       if (!online) return { sent: false, message: 'İnternet yok. Bildiriminiz cihazda bekliyor; bağlantı gelince gönderilecek.' };
       const item = pendingRef.current.find((p) => p.clientId === input.clientId)!;
       const outcome = await attempt(item);
@@ -151,13 +207,17 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
         return { sent: false, message: `Gönderilemedi (${outcome.error}). Bildiriminiz bekleyen gönderiler arasında.` };
       return { sent: false, message: `Gönderilemedi: ${friendlyError({ message: outcome.error })}` };
     },
-    [online, attempt, refresh, savePending],
+    [online, attempt, refresh, savePending, saveMine],
   );
 
   const discardPending = useCallback(
-    (clientId: string) => savePending(pendingRef.current.filter((p) => p.clientId !== clientId)),
-    [savePending],
+    (clientId: string) => {
+      savePending(pendingRef.current.filter((p) => p.clientId !== clientId));
+      saveMine(mineRef.current.filter((m) => !(m.clientId === clientId && m.state !== 'sent')));
+    },
+    [savePending, saveMine],
   );
+  const removeMine = useCallback((clientId: string) => saveMine(mineRef.current.filter((m) => m.clientId !== clientId)), [saveMine]);
 
   const toggleHelpful = useCallback(
     async (id: string) => {
@@ -216,6 +276,8 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       flag,
       votes,
       vote,
+      mine,
+      removeMine,
     }),
     [
       reports,
@@ -232,6 +294,8 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       flag,
       votes,
       vote,
+      mine,
+      removeMine,
     ],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
