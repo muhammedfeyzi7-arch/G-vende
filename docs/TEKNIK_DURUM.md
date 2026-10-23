@@ -4,8 +4,7 @@ Tarih: 22 Ekim 2026 · Sürüm 0.1.0
 
 ## 1. Başlangıç incelemesi
 
-- Oturumdaki tek depo (`isg-panel`) GÜVENDE ile ilgisiz bir OSGB/İSG web paneliydi (Vite + React). Kullanıcı isteği üzerine
-  o depoya dokunulmadı; GÜVENDE ayrı, boş bir klasörde (`/home/user/guvende`) sıfırdan, kendi git deposuyla oluşturuldu.
+- GÜVENDE başka hiçbir projeye bağlı olmadan, boş bir klasörde sıfırdan ve kendi git deposuyla oluşturuldu.
 - Ortam: Node 22, Expo SDK 58 (React Native 0.88, React 19.3). Paket sürümleri Expo'nun `bundledNativeModules.json`
   listesine göre sabitlendi.
 - **Ağ kısıtı:** Geliştirme konteynerinin ağ politikası `deprem.afad.gov.tr`, `www.koeri.boun.edu.tr`,
