@@ -3,15 +3,17 @@ import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { AppText, Button, StateMessage } from '@/components/ui';
 import { IconTile, accent } from '@/components/ds';
+import { appleErrorMessage, appleSignInAvailable, isAppleCancel, signInWithApple } from '@/features/auth/apple';
 import { parseAuthLink, signInWithAuthLink } from '@/features/auth/authLink';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError, requireSupabase } from '@/services/supabase';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, currentScheme, radius, spacing, themedStyles } from '@/theme';
 
 /**
  * E-posta ile parolasız giriş. Supabase'in varsayılan e-postası bir "Sign in" bağlantısı içerir:
@@ -24,6 +26,10 @@ export default function SignIn() {
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [busy, setBusy] = useState(false);
+  const [apple, setApple] = useState(false);
+  useEffect(() => {
+    appleSignInAvailable().then(setApple);
+  }, []);
 
   if (!isBackendConfigured())
     return (
@@ -89,6 +95,18 @@ export default function SignIn() {
 
   const validEmail = /^\S+@\S+\.\S+$/.test(email.trim());
 
+  const appleSignIn = async () => {
+    setBusy(true);
+    try {
+      await signInWithApple(requireSupabase());
+      router.back();
+    } catch (e) {
+      if (!isAppleCancel(e)) Alert.alert('Apple ile giriş yapılamadı', appleErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -102,13 +120,35 @@ export default function SignIn() {
           </AppText>
           <AppText variant="label" style={{ textAlign: 'center' }}>
             {step === 'email'
-              ? 'Şifre yok: e-postanıza tek kullanımlık bir giriş bağlantısı göndeririz.'
+              ? apple
+                ? 'Şifre yok: Apple hesabınızla ya da e-postanıza gelen tek kullanımlık bağlantıyla girin.'
+                : 'Şifre yok: e-postanıza tek kullanımlık bir giriş bağlantısı göndeririz.'
               : `${email.trim()} adresine “Your sign-in link” konulu bir e-posta gönderdik.`}
           </AppText>
         </View>
 
         {step === 'email' ? (
           <>
+            {apple ? (
+              <>
+                <AppleAuthentication.AppleAuthenticationButton
+                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                  buttonStyle={
+                    currentScheme() === 'dark'
+                      ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                      : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+                  }
+                  cornerRadius={radius.md}
+                  style={styles.apple}
+                  onPress={() => (busy ? undefined : appleSignIn())}
+                />
+                <View style={styles.or}>
+                  <View style={styles.line} />
+                  <AppText variant="caption">veya e-posta ile</AppText>
+                  <View style={styles.line} />
+                </View>
+              </>
+            ) : null}
             <View style={styles.inputWrap}>
               <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
               <TextInput
@@ -243,6 +283,7 @@ const styles = themedStyles(() => ({
   },
   step: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   stepNo: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  apple: { height: 48, width: '100%' },
   or: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   line: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.borderStrong },
 }));

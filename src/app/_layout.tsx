@@ -12,6 +12,7 @@ import { TrustProvider } from '@/features/trust/TrustProvider';
 import { ThemeGate } from '@/theme/ThemeGate';
 import { ToastProvider, useToast } from '@/components/Toast';
 import { parseAuthLink, signInWithAuthLink } from '@/features/auth/authLink';
+import { PushSync } from '@/features/notifications/PushSync';
 import { friendlyError, getSupabase } from '@/services/supabase';
 import { ConnectivityToasts } from '@/components/ConnectivityToasts';
 import { colors } from '@/theme';
@@ -147,6 +148,7 @@ export default function RootLayout() {
           <InboxProvider>
             <ReportsProvider>
               <NotificationRouting />
+              <PushSync />
               <ThemeGate>
                 <ToastProvider>
                   <ConnectivityToasts />

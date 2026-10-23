@@ -16,7 +16,6 @@ import { useAreaLabel } from '@/hooks/useAreaLabel';
 import { useProfile } from '@/hooks/useProfile';
 import { useApp } from '@/providers/AppProvider';
 import { useInbox } from '@/providers/InboxProvider';
-import { syncPreferences } from '@/services/notifications';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 import { Alert } from 'react-native';
 
@@ -36,20 +35,6 @@ export default function SettingsScreen() {
   useEffect(() => {
     loadContacts().then((c) => setContactCount(c.length));
   }, [profile]);
-
-  // Tercihler değiştiğinde sunucuya eşitle (girişliyse; değilse sessizce atlanır).
-  useEffect(() => {
-    syncPreferences(settings, userCoords).catch(() => {});
-  }, [
-    settings.quakeNotifications,
-    settings.officialNotifications,
-    settings.familyNotifications,
-    settings.communityNotifications,
-    settings.minNotifyMagnitude,
-    settings.notifyIntervalMinutes,
-    userCoords,
-    session,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleBiometric = async (v: boolean) => {
     if (!v) {
@@ -191,7 +176,7 @@ export default function SettingsScreen() {
               first
               icon="key-outline"
               title="Giriş ve şifre"
-              subtitle="E-posta ile şifresiz giriş"
+              subtitle="Apple veya e-posta ile şifresiz giriş"
               onPress={() => router.push('/guvenlik')}
             />
             <ListRow

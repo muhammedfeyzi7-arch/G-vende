@@ -80,7 +80,8 @@ export default function SecurityScreen() {
           Şifre kullanılmıyor
         </AppText>
         <AppText variant="caption">
-          Giriş, e-postanıza gelen tek kullanımlık bağlantıyla yapılır; çalınabilecek veya unutulabilecek bir şifre saklanmaz.
+          Giriş, Apple hesabınızla (iPhone) ya da e-postanıza gelen tek kullanımlık bağlantıyla yapılır; çalınabilecek veya unutulabilecek
+          bir şifre saklanmaz.
         </AppText>
         {session ? (
           <>

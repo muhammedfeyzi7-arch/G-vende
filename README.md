@@ -65,6 +65,21 @@ npx supabase functions deploy ingest-earthquakes delete-account notify-family ve
   `update public.profiles set role = 'official', org_name = 'AFAD Düzce' where id = '<kullanıcı-uuid>';` (kurtarma ekibi için `role = 'rescue'`).
 - **Toplanma alanları:** `scripts/import-assembly-points.mjs` ile yalnızca resmî kaynak dosyalarından (varsayılan kuru çalıştırma).
 
+### Apple ile Giriş (iPhone)
+
+Uygulama tarafı hazırdır (`expo-apple-authentication` + `signInWithIdToken`). Supabase'de bir kez:
+*Authentication → Sign In / Providers → Apple → Enable*, **Client IDs** alanına
+`host.exp.Exponent,app.guvende.mobile` yazıp kaydedin (ilki Expo Go, ikincisi kendi derlemeniz). Yalnızca
+iPhone'daki yerel girişte "Secret Key" gerekmez. Açılmamışsa uygulama "Apple ile giriş sunucuda henüz açılmadı" der ve
+e-posta ile giriş çalışmaya devam eder.
+
+### Push bildirimleri (uygulama kapalıyken)
+
+Expo push belirteci için bir Expo proje kimliği gerekir (gizli değildir):
+`npx eas login` → `npx eas init` → expo.dev'deki projenin **ID**'sini `.env` içine `EAS_PROJECT_ID=...` olarak yazın ve
+`npm run iphone` ile yeniden başlatın. Giriş yapılmış ve bildirim izni verilmişse belirteç otomatik kaydedilir; tercihler
+(eşik, bölge, aralık) hangi ekranda olunursa olsun sunucuya eşitlenir. Kimlik yoksa uygulama açıkken yerel bildirimler çalışır.
+
 ### Deprem veri akışı
 
 ```

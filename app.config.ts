@@ -14,6 +14,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'app.guvende.mobile',
+    usesAppleSignIn: true,
   },
   android: {
     package: 'app.guvende.mobile',
@@ -29,7 +30,11 @@ const config: ExpoConfig = {
       'android.permission.CAMERA',
       'android.permission.POST_NOTIFICATIONS',
     ],
-    blockedPermissions: ['android.permission.ACCESS_BACKGROUND_LOCATION', 'android.permission.WRITE_CONTACTS', 'android.permission.RECORD_AUDIO'],
+    blockedPermissions: [
+      'android.permission.ACCESS_BACKGROUND_LOCATION',
+      'android.permission.WRITE_CONTACTS',
+      'android.permission.RECORD_AUDIO',
+    ],
   },
   web: { favicon: './assets/favicon.png' },
   plugins: [
@@ -57,9 +62,12 @@ const config: ExpoConfig = {
     ['expo-contacts', { contactsPermission: 'Acil durum kişilerinizi rehberden seçebilmeniz için. Kişiler yalnızca bu cihazda saklanır.' }],
     // Düdük, ekran kilitliyken de çalabilsin; mikrofon kullanılmaz.
     ['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: true }],
+    'expo-apple-authentication',
     './plugins/withKandilliCleartext',
   ],
   experiments: { typedRoutes: true },
+  // Push bildirim belirteci için Expo (EAS) proje kimliği; gizli değildir. `npx eas init` sonrası .env'e yazılır.
+  extra: { eas: { projectId: process.env.EAS_PROJECT_ID || undefined } },
 };
 
 export default config;

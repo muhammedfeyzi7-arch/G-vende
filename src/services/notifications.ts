@@ -30,7 +30,11 @@ export async function registerForPush(): Promise<PushRegistration> {
   if (!perm.granted) return { ok: false, reason: 'Bildirim izni verilmedi.' };
 
   const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId;
-  if (!projectId) return { ok: false, reason: 'EAS projectId tanımlı değil (eas init çalıştırılmalı).' };
+  if (!projectId)
+    return {
+      ok: false,
+      reason: 'Uygulama kapalıyken bildirim için kurulum eksik (Expo proje kimliği). Uygulama açıkken deprem bildirimleri yine de çalışır.',
+    };
   try {
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
     const { error } = await sb
