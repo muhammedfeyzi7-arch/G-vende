@@ -12,6 +12,8 @@ export function AppText({
   style,
   numberOfLines,
   accessibilityRole,
+  adjustsFontSizeToFit,
+  minimumFontScale,
 }: {
   accessibilityRole?: 'header' | 'text';
   children: ReactNode;
@@ -19,9 +21,19 @@ export function AppText({
   color?: string;
   style?: StyleProp<TextStyle>;
   numberOfLines?: number;
+  /** Tek satıra sığmayan kısa başlıkları biraz küçültür */
+  adjustsFontSizeToFit?: boolean;
+  minimumFontScale?: number;
 }) {
   return (
-    <Text numberOfLines={numberOfLines} maxFontSizeMultiplier={1.6} style={[textStyles[variant], color ? { color } : null, style]}>
+    <Text
+      numberOfLines={numberOfLines}
+      accessibilityRole={accessibilityRole}
+      adjustsFontSizeToFit={adjustsFontSizeToFit}
+      minimumFontScale={minimumFontScale}
+      maxFontSizeMultiplier={1.6}
+      style={[textStyles[variant], color ? { color } : null, style]}
+    >
       {children}
     </Text>
   );

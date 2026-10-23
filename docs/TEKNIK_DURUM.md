@@ -103,3 +103,21 @@ Tarih: 22 Ekim 2026 · Sürüm 0.1.0
 - Kişilerin durumu kendiliğinden bilinmez: “Yanıt bekleniyor” siz sorduğunuzda, diğer durumlar siz işaretlediğinizde kaydedilir; yanıt vermeyen kişi tehlikede sayılmaz.
 
 **Doğrulama:** `tsc` (tipli rotalarla — tüm yönlendirmeler var olan ekranlara gidiyor), Jest 109/109, yerel Postgres RLS testleri (geri bildirim tablosu dahil), Deno 7/7, `expo prebuild` (Face ID, rehber, biyometrik izinleri; arka plan konumu ve kayıt izni kaldırılmış), `expo export` iOS + Android. Web önizlemesiyle üç referans ekranla görsel karşılaştırma yapıldı. **Gerçek cihazda/emülatörde test edilmedi.**
+
+## 8. Güncelleme — bilgi kirliliğine karşı güven katmanı (prototip)
+
+Kurallar **sunucuda** (Postgres tetikleyicileri + RLS, `supabase/migrations/20261023000005_trust.sql`) uygulanır; uygulama yalnızca eksikleri gösterir.
+
+| Yöntem | Uygulama | Sınır (dürüst not) |
+|---|---|---|
+| Kimlik doğrulama | `verify-identity` işlevi NVİ KPSPublic `TCKimlikNoDogrula` ile T.C. no + ad + soyad + doğum yılını eşleştirir. Kimlik verisi saklanmaz; yalnızca HMAC özeti (tek kimlik = tek hesap) ve doğrulama zamanı. KVKK açık rıza kutusu zorunlu. Günde 5 deneme. | Bilgilerin eşleştiğini gösterir, telefonu kullananın o kişi olduğunu kanıtlamaz. **e-Devlet ile giriş** kamu protokolü gerektirir; prototipte yok. NVİ servisi bu ortamdan çağrılamadı (ağ kısıtı); SOAP zarfı ve yanıt ayrıştırma birim testli. |
+| Canlı konum (1 km) | Konumlu bildirimde cihaz GPS'i (doğruluk ≤ 100 m) bildirilen yere ≤ 1 km olmalı. Hasar/yol/yardım için konum zorunlu. Cihaz konumu kontrol sonrası silinir. | Root/jailbreak cihazda sahte GPS mümkün; mağaza sürümünde Play Integrity / App Attest eklenmeli. |
+| Yalnızca anlık kamera | Galeriden yükleme kaldırıldı. Hasar/yol bildirimi, son 10 dk içinde çekilmiş fotoğraf eklenene kadar `pending_photo` durumunda yayınlanmaz. | Çekim zamanı istemciden gelir; değiştirilmiş istemci taklit edebilir (cihaz bütünlük doğrulaması gerekir). Çevrimdışı kuyrukta 10 dk geçen fotoğraflı bildirim reddedilir. |
+| Topluluk doğrulaması | 500 m içindeki doğrulanmış kişiler oylar. 3 onay → `community` (Doğrulanmış Bilgi). 3 ret ve retler onaydan fazla → kaldırılır, yazara ihlal puanı + askı (1. ihlal 7 gün, sonrası 30 gün). Kendi bildirimine ve resmî bildirime oy yok; saatte 30 oy sınırı. | Toplu kötüye kullanım (anlaşmalı oy) mümkün; itiraz ve moderatör paneli henüz yok. |
+| Kurumsal hesaplar | `profiles.role` = official/rescue + `org_name`; yalnızca service role atar. Konum/fotoğraf şartı yok, bildirim doğrudan “Resmî · Kurum” rozetiyle yayınlanır; oyları 3 sayılır. | Kurum başvuru/onay süreci tanımlanmadı. |
+
+**Testler:** `supabase/tests/trust.test.sql` (yeni, 30+ kontrol: doğrulanmamış/askıdaki kullanıcı, uzak konum, zayıf GPS, eski fotoğraf, 500 m oy, 3 onay/3 ret, resmî rozet, kurumsal oy ağırlığı) + mevcut RLS testleri geçti. Deno: NVİ SOAP/ayrıştırma/özet testleri. Jest: kural motoru (`evaluateGates`) ve yeni ekranlar.
+
+**Yeni/değişen dosyalar:** `supabase/migrations/20261023000005_trust.sql`, `supabase/functions/verify-identity/index.ts`, `supabase/functions/_shared/nvi.ts(+test)`, `src/features/trust/*` (rules, tckn, api, TrustProvider, TrustBadge), `src/app/kimlik.tsx`, `src/app/guven.tsx`, `src/app/rapor/yeni.tsx` (4 adımlı yayın kontrolü, yalnız kamera, canlı GPS), `src/app/rapor/[id].tsx` (Doğru/Yanlış ihbar oyu), `ReportRow`/`ReportCard` (güven rozeti), Ayarlar → Kimlik doğrulama.
+
+**Görsel uyum:** yazı ölçeği referans yoğunluğuna indirildi, düz alt menü (kırmızı siren), varsayılan uydu harita + sarı yollar, kenardan kenara Harita, 4'lü deprem özet satırı, aile üyesi fotoğrafı (yalnızca cihazda), Ailem haritasında “Sen” mavi nokta. Referanslardaki “Şu an deprem oluyor / Tahmini şiddet” ifadeleri bilinçli olarak “Deprem kaydedildi / Büyüklük” olarak bırakıldı (uygulama erken uyarı sistemi değildir).

@@ -1,10 +1,11 @@
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { Alert, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { AppText, Button, StateMessage } from '@/components/ui';
 import { Avatar, GroupTitle, ListRow, Page, RowGroup, ToggleRow, accent } from '@/components/ds';
 import { ASK_STATUS_MESSAGE, callPhone, effectiveStatus, formatPhone, sendSms, type ContactStatusKind } from '@/features/family/local';
 import { STATUS_LABEL } from '@/features/family/people';
 import { useLocalFamily } from '@/features/family/useLocalFamily';
+import { persistContactPhoto, pickPhoto } from '@/features/family/photos';
 import { useApp } from '@/providers/AppProvider';
 import { colors, spacing } from '@/theme';
 import { formatDateTimeTr, relativeTimeTr } from '@/utils/time';
@@ -28,6 +29,25 @@ export default function ContactDetail() {
   const meta = STATUS_LABEL[kind];
   const hidden = settings.hideLocationFrom.includes(c.id);
 
+  const changePhoto = () => {
+    const pick = async () => {
+      const r = await pickPhoto();
+      if (r === 'denied') return Alert.alert('İzin gerekli', 'Fotoğraf seçmek için galeri izni verin.');
+      if (!r) return;
+      try {
+        fam.setContactPhoto(c.id, await persistContactPhoto(r));
+      } catch {
+        Alert.alert('Kaydedilemedi', 'Fotoğraf kaydedilemedi.');
+      }
+    };
+    if (!c.photoUri) return pick();
+    Alert.alert('Fotoğraf', undefined, [
+      { text: 'Yeni fotoğraf seç', onPress: pick },
+      { text: 'Fotoğrafı kaldır', style: 'destructive', onPress: () => fam.setContactPhoto(c.id, null) },
+      { text: 'Vazgeç', style: 'cancel' },
+    ]);
+  };
+
   const ask = async () => {
     const r = await sendSms([c.phone], ASK_STATUS_MESSAGE);
     if (!r.ok) return Alert.alert('Gönderilemedi', r.reason);
@@ -38,7 +58,14 @@ export default function ContactDetail() {
     <Page>
       <Stack.Screen options={{ title: c.name }} />
       <View style={{ alignItems: 'center', gap: 6 }}>
-        <Avatar name={c.name} size={96} status={kind} ring={meta.color} />
+        <Pressable onPress={changePhoto} accessibilityRole="button" accessibilityLabel="Fotoğrafı değiştir">
+          <Avatar name={c.name} uri={c.photoUri} size={96} status={kind} ring={meta.color} />
+        </Pressable>
+        <Pressable onPress={changePhoto} hitSlop={8}>
+          <AppText variant="caption" color={colors.primary}>
+            {c.photoUri ? 'Fotoğrafı değiştir' : 'Fotoğraf ekle'}
+          </AppText>
+        </Pressable>
         <AppText variant="title">{c.name}</AppText>
         <AppText variant="label">
           {formatPhone(c.phone)}

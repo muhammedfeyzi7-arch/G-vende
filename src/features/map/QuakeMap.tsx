@@ -1,5 +1,6 @@
 import { Camera, GeoJSONSource, Layer, Map, Marker, type CameraRef, type LayerProps, type MapRef } from '@maplibre/maplibre-react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText, StateMessage } from '@/components/ui';
@@ -29,6 +30,8 @@ export type FamilyPin = {
   status: 'safe' | 'help' | 'waiting' | 'home' | 'unknown';
   /** İşaretçinin altında gösterilecek kısa durum etiketi */
   label?: string;
+  /** Yalnızca cihazda saklanan fotoğraf */
+  photoUri?: string | null;
 };
 
 export type MapSelection = { kind: 'quake'; id: string } | { kind: 'report'; id: string } | { kind: 'assembly'; id: string };
@@ -236,12 +239,25 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
                   style={{ alignItems: 'center' }}
                   accessibilityLabel={`${f.name}: ${f.label ?? ''}, ${relativeTimeTr(f.at)}${f.stale ? ' (eski konum)' : ''}`}
                 >
-                  <View style={[styles.famPin, { borderColor: c }, f.stale && { opacity: 0.6 }]}>
-                    <AppText variant="label" color={colors.text} style={{ fontWeight: '700' }}>
-                      {f.name.slice(0, 1).toLocaleUpperCase('tr-TR')}
-                    </AppText>
-                  </View>
-                  <View style={[styles.famLabel, { backgroundColor: c + 'E6' }]}>
+                  {f.id === 'me' ? (
+                    // Kullanıcının kendisi: referanstaki gibi mavi konum noktası
+                    <View style={styles.userHalo}>
+                      <View style={styles.userRing}>
+                        <View style={styles.userDot} />
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={[styles.famPin, { borderColor: c }, f.stale && { opacity: 0.6 }]}>
+                      {f.photoUri ? (
+                        <Image source={{ uri: f.photoUri }} style={styles.famPhoto} contentFit="cover" />
+                      ) : (
+                        <AppText variant="label" color={colors.text} style={{ fontWeight: '700' }}>
+                          {f.name.slice(0, 1).toLocaleUpperCase('tr-TR')}
+                        </AppText>
+                      )}
+                    </View>
+                  )}
+                  <View style={[styles.famLabel, { backgroundColor: (f.id === 'me' ? colors.primary : c) + 'E6' }]}>
                     <AppText variant="caption" color="#fff" numberOfLines={1} style={{ fontSize: 9.5, fontWeight: '700' }}>
                       {f.label ?? f.name}
                       {f.stale ? ' · eski' : ''}
@@ -279,6 +295,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     boxShadow: '0 0 14px rgba(20,217,154,0.65)',
   },
+  famPhoto: { width: 38, height: 38, borderRadius: 19 },
   famPin: {
     width: 44,
     height: 44,

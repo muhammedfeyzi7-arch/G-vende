@@ -41,10 +41,16 @@ function ActionTile({
       style={({ pressed }) => [styles.action, pressed && { opacity: 0.85 }]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <IconTile icon={icon} color={color} size={40} solid />
+        <IconTile icon={icon} color={color} size={40} />
         <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
       </View>
-      <AppText variant="heading" numberOfLines={2} style={{ fontSize: 12.5, lineHeight: 15, marginTop: spacing.sm }}>
+      <AppText
+        variant="heading"
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+        style={{ fontSize: 12.5, lineHeight: 15, marginTop: spacing.sm }}
+      >
         {title}
       </AppText>
       <AppText variant="caption" numberOfLines={3} style={{ fontSize: 10.5, lineHeight: 13 }}>
@@ -129,12 +135,14 @@ export default function EmergencyScreen() {
           <AppText variant="label" color="#F6C9CE">
             Acil Çağrı
           </AppText>
-          <AppText variant="display" style={{ fontSize: 35, lineHeight: 38.5 }}>
-            112
-          </AppText>
-          <AppText variant="caption" color="#F6C9CE" style={{ fontSize: 10, lineHeight: 13 }}>
-            {'Sağlık · İtfaiye · Polis\nAFAD · Jandarma'}
-          </AppText>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <AppText variant="display" style={{ fontSize: 35, lineHeight: 38.5 }}>
+              112
+            </AppText>
+            <AppText variant="caption" color="#F6C9CE" style={{ fontSize: 10, lineHeight: 13, flexShrink: 1 }}>
+              {'Sağlık · İtfaiye · Polis\nAFAD · Jandarma'}
+            </AppText>
+          </View>
         </View>
         <Pressable
           onPress={() => Linking.openURL('tel:112')}
@@ -255,7 +263,7 @@ export default function EmergencyScreen() {
                   interactive={false}
                 />
               </View>
-              <View style={{ flexDirection: wide && width >= 430 ? 'row' : 'column', gap: spacing.xs }}>
+              <View style={{ flexDirection: width >= 520 ? 'row' : 'column', gap: spacing.xs }}>
                 <Button
                   size="sm"
                   style={{ flex: 1 }}
@@ -445,8 +453,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
-    padding: spacing.sm + 2,
-    minHeight: 138,
+    padding: spacing.sm,
+    minHeight: 120,
   },
   card: {
     backgroundColor: colors.surface,

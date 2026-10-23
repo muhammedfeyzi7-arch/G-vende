@@ -84,7 +84,7 @@ export default function FamilyScreen() {
         at: new Date().toISOString(),
         stale: false,
         status: 'unknown',
-        label: me.status === 'safe' ? 'Sen · Güvende' : 'Sen',
+        label: 'Sen',
       });
     }
     for (const p of people) {
@@ -199,7 +199,7 @@ export default function FamilyScreen() {
         <Avatar
           name={p.source === 'me' ? profile.name || 'Sen' : p.name}
           uri={p.source === 'me' ? profile.photoUri : p.photoUri}
-          size={52}
+          size={46}
           status={p.status}
           ring={p.color}
         />
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   },
   banner: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderWidth: 1, borderRadius: radius.lg, padding: spacing.md },
   mapCard: {
-    height: 300,
+    height: 220,
     borderRadius: radius.xl,
     overflow: 'hidden',
     backgroundColor: '#0A1824',
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     paddingHorizontal: spacing.sm,
   },
-  member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 72, paddingVertical: spacing.sm },
+  member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 60, paddingVertical: 6 },
   divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   pill: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 2 },
   actions: { flexDirection: 'row', gap: spacing.sm },

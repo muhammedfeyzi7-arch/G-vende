@@ -38,13 +38,16 @@ _(Web önizlemesi: kaplama katmanları gerçek çizimdir, taban harita karoları
 ```bash
 npx supabase link --project-ref <proje>
 npx supabase db push                       # supabase/migrations/*
-npx supabase functions deploy ingest-earthquakes delete-account notify-family
-npx supabase secrets set INGEST_SECRET=... WEBHOOK_SECRET=... EXPO_ACCESS_TOKEN=...
+npx supabase functions deploy ingest-earthquakes delete-account notify-family verify-identity
+npx supabase secrets set INGEST_SECRET=... WEBHOOK_SECRET=... EXPO_ACCESS_TOKEN=... IDENTITY_HASH_PEPPER=<en az 32 karakter rastgele>
 ```
 
 - **Auth:** E-posta OTP'yi açın; e-posta şablonunda `{{ .Token }}` (6 haneli kod) gösterilmeli.
 - **ingest-earthquakes:** Her dakika `x-ingest-secret` başlığıyla çağrılmalı (Supabase Cron + `pg_net`).
 - **notify-family:** `safety_checkins` INSERT için Database Webhook, `x-webhook-secret` başlığıyla.
+- **verify-identity (kimlik doğrulama):** NVİ KPSPublic servisine bağlanır; `IDENTITY_HASH_PEPPER` gizli değeri olmadan çalışmaz. T.C. no / ad / doğum yılı saklanmaz.
+- **Kurumsal hesap (Resmî rozet):** Yalnızca SQL düzenleyicisinden (service role) atanır:
+  `update public.profiles set role = 'official', org_name = 'AFAD Düzce' where id = '<kullanıcı-uuid>';` (kurtarma ekibi için `role = 'rescue'`).
 - **Toplanma alanları:** `scripts/import-assembly-points.mjs` ile yalnızca resmî kaynak dosyalarından (varsayılan kuru çalıştırma).
 
 ## Komutlar
