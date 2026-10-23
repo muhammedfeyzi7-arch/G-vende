@@ -117,14 +117,14 @@ function RootStack() {
       <Stack.Screen name="geri-bildirim" options={{ title: 'Geri Bildirim' }} />
       <Stack.Screen name="hakkinda" options={{ title: 'Hakkında' }} />
       <Stack.Screen name="bildirimler" options={{ title: 'Bildirimler' }} />
-      <Stack.Screen name="akis" options={{ title: 'Son Bildirimler' }} />
+      <Stack.Screen name="akis" options={{ title: 'Olay Bildirimleri' }} />
       <Stack.Screen name="depremler" options={{ title: 'Deprem Geçmişi' }} />
       <Stack.Screen name="acil-mod" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <Stack.Screen name="acil-sms" options={{ title: 'Hazır Mesajlar' }} />
       <Stack.Screen name="arama" options={{ title: 'Acil Arama' }} />
       <Stack.Screen name="sarsinti" options={{ title: 'Sarsıntı Ölçer' }} />
       <Stack.Screen name="hosgeldin" options={{ headerShown: false, gestureEnabled: false }} />
-      <Stack.Screen name="rapor/benim" options={{ title: 'Bildirimlerim' }} />
+      <Stack.Screen name="rapor/benim" options={{ title: 'Olay Bildirimlerim' }} />
       <Stack.Screen name="duyurular" options={{ title: 'Resmî Bilgiler' }} />
       <Stack.Screen name="canta" options={{ title: 'Acil Durum Çantası' }} />
       <Stack.Screen name="rehber/index" options={{ title: 'Afet Rehberleri' }} />

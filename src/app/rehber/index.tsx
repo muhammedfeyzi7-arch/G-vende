@@ -56,6 +56,6 @@ const styles = themedStyles(() => ({
     borderRadius: radius.lg,
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
   },
 }));

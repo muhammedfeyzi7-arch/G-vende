@@ -107,7 +107,7 @@ describe('alt sekmeler', () => {
     expect(screen.getByLabelText('GÜVENDE, Afet Anında Yanınızda')).toBeTruthy();
     expect(screen.getByText('Deprem verisi alınamadı')).toBeTruthy();
     expect(screen.getByText('Ailem Güvende mi?')).toBeTruthy();
-    expect(screen.getByText('Son Bildirimler')).toBeTruthy();
+    expect(screen.getByText('Olay Bildirimleri')).toBeTruthy();
     expect(screen.getByText(/Topluluk bildirimleri sunucu bağlantısı gerektirir/)).toBeTruthy();
     expect(screen.getByText('Son Depremler')).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('112, Acil Çağrı'));
@@ -206,7 +206,7 @@ describe('alt sekmeler', () => {
     await flush();
     expect(SMS.sendSMSAsync).toHaveBeenCalledWith(['+905321234567'], expect.stringMatching(/^Ben güvendeyim\./));
     expect(SMS.sendSMSAsync.mock.calls[0][1]).not.toMatch(/Konumum/);
-    expect(screen.getAllByText('Güvendesin').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Güvendeyim').length).toBeGreaterThan(0);
     alert.mockRestore();
   });
 

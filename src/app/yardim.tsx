@@ -78,7 +78,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.md,
     gap: spacing.sm,
   },

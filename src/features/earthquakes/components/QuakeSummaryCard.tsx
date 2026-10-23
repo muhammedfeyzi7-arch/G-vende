@@ -125,7 +125,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surfaceRaised,
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.md,
     gap: spacing.md,
     boxShadow: colors.shadowSoft,

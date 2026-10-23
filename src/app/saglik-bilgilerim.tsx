@@ -4,7 +4,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { AppText, Button } from '@/components/ui';
 import { Page } from '@/components/ds';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 
 const FIELDS = [
   ['bloodType', 'Kan grubu', 'ör. A Rh+'],
@@ -51,13 +51,7 @@ export default function HealthInfo() {
 
 const styles = themedStyles(() => ({
   input: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
+    ...surface.input(),
     padding: spacing.md,
-    fontSize: 14,
   },
 }));

@@ -9,7 +9,7 @@ import { relativeTimeTr } from '@/utils/time';
 import { CATEGORY_META, feltColor, reportHeadline } from '../categories';
 import { TrustBadge, trustMeta } from '@/features/trust/TrustBadge';
 
-/** Ana sayfadaki yatay "Son Bildirimler" kartı. */
+/** Ana sayfadaki yatay "Olay Bildirimleri" kartı. */
 export function ReportCard({ report, onPress }: { report: UserReport; onPress: () => void }) {
   const meta = CATEGORY_META[report.category];
   const color = report.category === 'shake' ? feltColor(report.feltIntensity) : meta.color;
@@ -72,7 +72,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surfaceRaised,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.md,
     boxShadow: colors.shadowSoft,
   },

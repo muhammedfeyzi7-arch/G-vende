@@ -108,7 +108,7 @@ export default function ReportDetail() {
     );
 
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + spacing.xxl }}>
+    <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
       <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
         <View style={[styles.icon, { backgroundColor: meta.color }]}>
           <Ionicons name={meta.icon} size={26} color="#fff" />

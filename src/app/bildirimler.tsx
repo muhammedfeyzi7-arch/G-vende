@@ -25,7 +25,7 @@ const FILTERS: { key: Filter; label: string; match: (i: InboxItem) => boolean }[
   { key: 'unread', label: 'Okunmamış', match: (i) => !i.read },
   { key: 'quake', label: 'Depremler', match: (i) => i.kind === 'quake' || i.kind === 'official' },
   { key: 'family', label: 'Aile', match: (i) => i.kind === 'family' },
-  { key: 'report', label: 'Bildirimlerim', match: (i) => i.kind === 'report' || i.kind === 'community' },
+  { key: 'report', label: 'Olaylarım', match: (i) => i.kind === 'report' || i.kind === 'community' },
 ];
 
 function dayLabel(iso: string, now = new Date()) {
@@ -147,7 +147,7 @@ export default function NotificationCenter() {
                     </AppText>
                     <AppText variant="caption">· {relativeTimeTr(item.at)}</AppText>
                   </View>
-                  <AppText variant="heading" style={{ fontSize: 13.5, fontWeight: item.read ? '500' : '700' }}>
+                  <AppText variant="heading" style={{ fontSize: 14, fontWeight: item.read ? '500' : '700' }}>
                     {item.title}
                   </AppText>
                   <AppText variant="label" numberOfLines={2} style={{ fontSize: 11.5 }}>
@@ -190,7 +190,7 @@ const styles = themedStyles(() => ({
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     backgroundColor: colors.surface,
     justifyContent: 'center',
   },

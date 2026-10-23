@@ -17,7 +17,7 @@ import { MAX_DESCRIPTION, MAX_PHOTOS, validateReport } from '@/features/reports/
 import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
 import { isBackendConfigured } from '@/services/env';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 import type { FeltIntensity, ReportCategory } from '@/types/report';
 import { coarsen, distanceKm } from '@/utils/geo';
 import { evaluateGates, gatesPass, LOCATION_REQUIRED, PHOTO_REQUIRED, type Gate } from '@/features/trust/rules';
@@ -188,7 +188,7 @@ export default function NewReport() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={80}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + spacing.xxl }}
+        contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}
         keyboardShouldPersistTaps="handled"
       >
         {!isBackendConfigured() ? (
@@ -461,14 +461,9 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
   },
   input: {
+    ...surface.input(),
     minHeight: 100,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
     padding: spacing.md,
-    fontSize: 13,
     textAlignVertical: 'top',
   },
   photo: { width: 84, height: 84, borderRadius: radius.md },

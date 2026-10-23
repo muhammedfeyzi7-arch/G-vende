@@ -14,7 +14,7 @@ export default function PendingReports() {
   const { pending, retryPending, discardPending } = useReports();
   if (pending.length === 0) return <StateMessage icon="checkmark-circle-outline" title="Bekleyen gönderi yok" />;
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
+    <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
       <AppText variant="label">Bu bildirimler henüz yayınlanmadı. Bağlantı geldiğinde otomatik olarak tekrar denenir.</AppText>
       {pending.map((p) => (
         <Card key={p.clientId} style={{ gap: 6 }}>

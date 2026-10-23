@@ -8,7 +8,7 @@ import { Page } from '@/components/ds';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError, getSupabase } from '@/services/supabase';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 
 /** Geri bildirim: girişliyse sunucuya kaydedilir; değilse metin paylaşım menüsüyle iletilebilir. */
 export default function Feedback() {
@@ -73,14 +73,9 @@ export default function Feedback() {
 
 const styles = themedStyles(() => ({
   input: {
+    ...surface.input(),
     minHeight: 180,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
     padding: spacing.md,
-    fontSize: 14,
     textAlignVertical: 'top',
   },
 }));

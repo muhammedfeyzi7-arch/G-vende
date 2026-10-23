@@ -67,7 +67,7 @@ export default function AssemblyScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
+    <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
       <Card style={[{ gap: spacing.sm }, myPoint ? styles.myCard : null]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
           <View style={[styles.apIcon, { borderWidth: 3 }]}>

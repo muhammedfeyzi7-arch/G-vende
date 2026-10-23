@@ -7,7 +7,7 @@ import { Avatar, GroupTitle, Page } from '@/components/ds';
 import { deleteContactPhoto, persistContactPhoto, pickPhoto } from '@/features/family/photos';
 import { MAX_LOCAL_CONTACTS } from '@/features/family/local';
 import { useLocalFamily } from '@/features/family/useLocalFamily';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 
 /** Aile üyesi ekleme: elle veya rehberden. Kişiler yalnızca bu cihazda saklanır. */
 export default function AddMember() {
@@ -118,13 +118,6 @@ export default function AddMember() {
 const styles = themedStyles(() => ({
   photoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   input: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    fontSize: 14,
+    ...surface.input(),
   },
 }));

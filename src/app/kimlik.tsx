@@ -10,7 +10,7 @@ import { isValidBirthYear, isValidTckn } from '@/features/trust/tckn';
 import { useTrust } from '@/features/trust/TrustProvider';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 import { formatDateTimeTr } from '@/utils/time';
 
 /**
@@ -55,8 +55,8 @@ export default function IdentityScreen() {
           <Ionicons name={isInstitution(trust) ? 'checkmark-circle' : 'shield-checkmark'} size={56} color={colors.safe} />
           <AppText variant="title">{isInstitution(trust) ? `Kurumsal hesap · ${trust.orgName ?? ''}` : 'Kimliğiniz doğrulandı'}</AppText>
           <AppText variant="label" style={{ textAlign: 'center' }}>
-            Bildirimleriniz {isInstitution(trust) ? '“Resmî” rozetiyle' : 'önce “Kullanıcı Bildirimi” olarak'} yayınlanır. Kimlik bilgileriniz
-            saklanmaz; yalnızca doğrulama yapıldığı kaydedilir.
+            Bildirimleriniz {isInstitution(trust) ? '“Resmî” rozetiyle' : 'önce “Kullanıcı Bildirimi” olarak'} yayınlanır. Kimlik
+            bilgileriniz saklanmaz; yalnızca doğrulama yapıldığı kaydedilir.
           </AppText>
         </View>
         {trust.strikes > 0 ? (
@@ -173,14 +173,7 @@ export default function IdentityScreen() {
 
 const styles = themedStyles(() => ({
   input: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    fontSize: 14,
+    ...surface.input(),
   },
   invalid: { borderColor: colors.danger },
   consent: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start', paddingVertical: spacing.xs },

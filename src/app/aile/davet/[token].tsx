@@ -5,7 +5,7 @@ import { AppText, Button } from '@/components/ui';
 import { acceptInvite } from '@/features/family/api';
 import { useApp } from '@/providers/AppProvider';
 import { friendlyError } from '@/services/supabase';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 
 /** guvende://aile/davet/<token> derin bağlantısı */
 export default function AcceptInvite() {
@@ -14,7 +14,7 @@ export default function AcceptInvite() {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md }} keyboardShouldPersistTaps="handled">
       <AppText variant="heading">Bir aile grubuna davet edildiniz</AppText>
       <AppText variant="label">
         Katıldığınızda grup üyeleri adınızı ve bildirdiğiniz güvenlik durumunu görür. Konum paylaşımı varsayılan olarak kapalıdır.
@@ -55,13 +55,6 @@ export default function AcceptInvite() {
 
 const styles = themedStyles(() => ({
   input: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    fontSize: 14,
+    ...surface.input(),
   },
 }));

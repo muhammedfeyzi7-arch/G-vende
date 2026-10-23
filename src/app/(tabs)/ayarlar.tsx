@@ -89,7 +89,7 @@ export default function SettingsScreen() {
           </View>
         </Pressable>
         <View style={{ flex: 1, gap: 2 }}>
-          <AppText variant="title" numberOfLines={2} style={{ fontSize: 16.5 }}>
+          <AppText variant="title" numberOfLines={2} style={{ fontSize: 18 }}>
             {displayName || 'Profilinizi oluşturun'}
           </AppText>
           {profile.phone ? (
@@ -275,7 +275,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.md,
   },
   editBadge: {

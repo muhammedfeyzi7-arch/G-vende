@@ -10,7 +10,7 @@ import { EMPTY_PROFILE, loadProfile, persistPhoto, removePhoto, saveProfile, typ
 import { useAreaLabel } from '@/hooks/useAreaLabel';
 import { useApp } from '@/providers/AppProvider';
 import { getSupabase } from '@/services/supabase';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 
 export default function EditProfile() {
   const { session } = useApp();
@@ -134,13 +134,6 @@ export default function EditProfile() {
 
 const styles = themedStyles(() => ({
   input: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    fontSize: 14,
+    ...surface.input(),
   },
 }));

@@ -215,7 +215,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.md,
     boxShadow: colors.shadowSoft,
   },
@@ -247,6 +247,6 @@ const styles = themedStyles(() => ({
     justifyContent: 'center',
     backgroundColor: colors.surfaceRaised,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
   },
 }));

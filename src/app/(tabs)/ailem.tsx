@@ -74,20 +74,20 @@ export default function FamilyScreen() {
   );
   const counts = safeCount(people);
 
-  // Harita: "Sen" + çevrimiçi gruptaki izinli konumlar + buluşma noktası. Yerel kişilerin konumu bilinmez.
+  // Harita: "Ben" + çevrimiçi gruptaki izinli konumlar + buluşma noktası. Yerel kişilerin konumu bilinmez.
   const pins: FamilyPin[] = useMemo(() => {
     const out: FamilyPin[] = [];
     if (userCoords) {
       const me = people[0]!;
       out.push({
         id: 'me',
-        name: 'Sen',
+        name: 'Ben',
         latitude: userCoords.latitude,
         longitude: userCoords.longitude,
         at: new Date().toISOString(),
         stale: false,
         status: 'unknown',
-        label: 'Sen',
+        label: 'Ben',
       });
     }
     for (const p of people) {
@@ -206,14 +206,14 @@ export default function FamilyScreen() {
 
   const memberRow = (p: PersonSummary, i: number) => {
     const contact = p.contactId ? fam.contacts.find((c) => c.id === p.contactId) : null;
-    const name = p.source === 'me' ? 'Sen' : (contact?.relation ?? p.name);
+    const name = p.source === 'me' ? 'Ben' : (contact?.relation ?? p.name);
     const sub =
       p.source === 'me'
         ? profile.name || 'Durumunu bildirmek için dokun'
         : contact
           ? `${contact.relation ? `${contact.name} · ` : ''}${formatPhone(contact.phone)}`
           : 'Çevrimiçi aile grubu';
-    const shown = p.source === 'me' && p.status === 'safe' ? { ...p, label: 'Güvendesin' } : p;
+    const shown = p;
     return (
       <Pressable
         key={p.key}
@@ -225,7 +225,7 @@ export default function FamilyScreen() {
         style={[styles.member, i > 0 && styles.divider]}
       >
         <Avatar
-          name={p.source === 'me' ? profile.name || 'Sen' : p.name}
+          name={p.source === 'me' ? profile.name || 'Ben' : p.name}
           uri={p.source === 'me' ? profile.photoUri : p.photoUri}
           size={42}
           status={p.status}
@@ -394,7 +394,7 @@ export default function FamilyScreen() {
       </View>
 
       <View style={styles.sectionHead}>
-        <AppText variant="title" style={{ fontSize: 19.5, flex: 1 }}>
+        <AppText variant="title" style={{ fontSize: 17.5, flex: 1 }}>
           Aile Üyeleri
         </AppText>
         <Pressable onPress={fam.askEveryone} accessibilityRole="button" style={{ padding: 4 }}>
@@ -527,7 +527,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     paddingHorizontal: spacing.sm,
     boxShadow: colors.shadowSoft,
   },
@@ -543,7 +543,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.md,
     boxShadow: colors.shadowSoft,
   },

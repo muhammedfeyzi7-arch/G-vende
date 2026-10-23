@@ -102,7 +102,7 @@ const styles = themedStyles(() => ({
     borderRadius: radius.lg,
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
   },
   mag: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
 }));

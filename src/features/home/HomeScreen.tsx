@@ -223,7 +223,7 @@ export function HomeScreen() {
         <FamilySafetyCard groups={groups} myUserId={myUserId} />
 
         <View style={styles.block}>
-          <SectionTitle title="Son Bildirimler" action="Tümünü Gör" onAction={() => router.push('/akis')} />
+          <SectionTitle title="Olay Bildirimleri" action="Tümünü Gör" onAction={() => router.push('/akis')} />
           {recentReports.length ? (
             <ScrollView
               horizontal
@@ -352,7 +352,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     paddingVertical: spacing.md,
     gap: spacing.sm,
     overflow: 'hidden',

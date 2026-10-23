@@ -9,7 +9,7 @@ import { sendSms, type LocalContact } from '@/features/family/local';
 import { useFamilyActions } from '@/features/family/useFamilyActions';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { useApp } from '@/providers/AppProvider';
-import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles, surface } from '@/theme';
 import { coarsen } from '@/utils/geo';
 
 type Effect = 'safe' | 'help' | 'ask' | null;
@@ -354,7 +354,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.sm + 4,
   },
   tplOn: { borderColor: colors.primary, borderWidth: 1 },
@@ -382,14 +382,7 @@ const styles = themedStyles(() => ({
   },
   personOn: { borderColor: colors.primary, backgroundColor: colors.primaryMuted },
   input: {
-    minHeight: 46,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
+    ...surface.input(),
     paddingVertical: spacing.sm,
-    fontSize: 14,
   },
 }));

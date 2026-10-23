@@ -8,7 +8,7 @@ import { EDEVLET_ASSEMBLY_URL } from '@/features/assembly-points/api';
 import { loadMyPoint, saveMyPoint } from '@/features/assembly-points/mine';
 import { DEFAULT_LAYERS, QuakeMap, type QuakeMapHandle } from '@/features/map/QuakeMap';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 import { Linking } from 'react-native';
 
 /** Kullanıcının kendisine atanmış toplanma alanını haritadan seçip bu cihaza kaydetmesi. */
@@ -74,7 +74,7 @@ export default function PickAssemblyPoint() {
         </View>
       </View>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, gap: spacing.sm, paddingBottom: insets.bottom + spacing.lg }}
+        contentContainerStyle={{ padding: spacing.md, gap: spacing.sm, paddingBottom: insets.bottom + spacing.lg }}
         keyboardShouldPersistTaps="handled"
       >
         <AppText variant="label">
@@ -135,13 +135,6 @@ const styles = themedStyles(() => ({
     borderRadius: radius.pill,
   },
   input: {
-    minHeight: 44,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    fontSize: 13,
+    ...surface.input(),
   },
 }));

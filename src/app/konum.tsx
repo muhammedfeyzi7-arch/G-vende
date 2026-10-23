@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Button, Card } from '@/components/ui';
 import { PROVINCES } from '@/features/settings/provinces';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 
 export default function LocationScreen() {
   const insets = useSafeAreaInsets();
@@ -24,7 +24,7 @@ export default function LocationScreen() {
       data={list}
       keyExtractor={(p) => p.name}
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ padding: spacing.lg, gap: spacing.xs, paddingBottom: insets.bottom + spacing.xxl }}
+      contentContainerStyle={{ padding: spacing.md, gap: spacing.xs, paddingBottom: insets.bottom + spacing.xxl }}
       ListHeaderComponent={
         <View style={{ gap: spacing.md, marginBottom: spacing.md }}>
           <Card style={{ gap: spacing.sm }}>
@@ -93,13 +93,7 @@ export default function LocationScreen() {
 
 const styles = themedStyles(() => ({
   search: {
-    minHeight: 44,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surface,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
+    ...surface.input(),
   },
   row: { minHeight: 48, flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, borderRadius: radius.sm },
 }));

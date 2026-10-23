@@ -453,7 +453,7 @@ export function QuickCard({
         <AppText variant="caption" numberOfLines={2} style={{ fontSize: 9.5, lineHeight: 11.5 }}>
           {label}
         </AppText>
-        <AppText variant="heading" color={valueColor ?? colors.text} numberOfLines={1} style={{ fontSize: 12.5 }}>
+        <AppText variant="heading" color={valueColor ?? colors.text} numberOfLines={1} style={{ fontSize: 13 }}>
           {value}
         </AppText>
       </View>
@@ -469,7 +469,7 @@ const styles = themedStyles(() => ({
     borderRadius: 23,
     backgroundColor: colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: colors.shadowSoft,
@@ -493,7 +493,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.xs + 2,
     gap: spacing.xs + 2,
     boxShadow: colors.shadowSoft,
@@ -542,7 +542,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     paddingVertical: spacing.sm,
     paddingHorizontal: 8,
     minHeight: 64,

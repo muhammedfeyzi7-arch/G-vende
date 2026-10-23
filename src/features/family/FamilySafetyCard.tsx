@@ -60,7 +60,7 @@ export function FamilySafetyCard({ groups, myUserId }: { groups: FamilyGroup[]; 
               status={p.status}
               ring={p.color}
             />
-            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 12.5, marginTop: 6 }}>
+            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 13, marginTop: 6 }}>
               {p.name}
             </AppText>
             <AppText variant="label" color={p.color} numberOfLines={1} style={{ fontSize: 10.5 }}>
@@ -95,7 +95,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     paddingVertical: spacing.md,
     gap: spacing.sm,
     boxShadow: colors.shadowSoft,

@@ -51,7 +51,7 @@ export default function EarthquakeDetail() {
   const spread = mags.length > 1 ? Math.max(...mags) - Math.min(...mags) : 0;
 
   return (
-    <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + spacing.xxl }}>
+    <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: insets.bottom + spacing.xxl }}>
       <Stack.Screen options={{ title: placeTitle(event) }} />
       <View style={{ flexDirection: 'row', gap: spacing.lg, alignItems: 'center' }}>
         <View style={[styles.magBig, { borderColor: c, backgroundColor: c + '22' }]}>

@@ -23,7 +23,7 @@ export default function FeedScreen() {
           headerRight: () => (
             <Pressable onPress={() => router.push('/rapor/benim')} accessibilityRole="button" style={{ padding: 6 }}>
               <AppText variant="label" color={colors.primary}>
-                Bildirimlerim{feed.mine.length ? ` (${feed.mine.length})` : ''}
+                Olay bildirimlerim{feed.mine.length ? ` (${feed.mine.length})` : ''}
               </AppText>
             </Pressable>
           ),

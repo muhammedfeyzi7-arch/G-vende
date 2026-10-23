@@ -49,7 +49,7 @@ function ActionTile({
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.8}
-        style={{ fontSize: 12.5, lineHeight: 15, marginTop: spacing.sm }}
+        style={{ fontSize: 13, lineHeight: 15, marginTop: spacing.sm }}
       >
         {title}
       </AppText>
@@ -215,7 +215,7 @@ export default function EmergencyScreen() {
           >
             <IconTile icon={t.icon} color={t.color} size={38} solid />
             <View style={{ flex: 1 }}>
-              <AppText variant="heading" style={{ fontSize: 13.5 }} numberOfLines={1}>
+              <AppText variant="heading" style={{ fontSize: 14 }} numberOfLines={1}>
                 {t.title}
               </AppText>
               <AppText variant="caption" numberOfLines={1}>
@@ -229,7 +229,7 @@ export default function EmergencyScreen() {
       {/* Çök – Kapan – Tutun */}
       <View style={styles.card}>
         <View style={styles.cardHead}>
-          <AppText variant="title" style={{ fontSize: 16.5, flex: 1 }}>
+          <AppText variant="title" style={{ fontSize: 17.5, flex: 1 }}>
             Deprem Anında Ne Yapmalıyım?
           </AppText>
           <Pressable onPress={() => router.push('/rehber')} accessibilityRole="link" style={{ padding: 4 }}>
@@ -282,7 +282,7 @@ export default function EmergencyScreen() {
               >
                 Toplanma Alanım
               </AppText>
-              <AppText variant="heading" numberOfLines={2} style={{ fontSize: 12.5 }}>
+              <AppText variant="heading" numberOfLines={2} style={{ fontSize: 13 }}>
                 {point ? point.name : 'Henüz belirlenmedi'}
               </AppText>
               {point ? (
@@ -528,7 +528,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     padding: spacing.sm,
     minHeight: 120,
     boxShadow: colors.shadowSoft,
@@ -537,7 +537,7 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     paddingVertical: spacing.md,
     gap: spacing.sm,
     boxShadow: colors.shadowSoft,
@@ -550,7 +550,7 @@ const styles = themedStyles(() => ({
     borderRadius: radius.md,
     backgroundColor: colors.surfaceRaised,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },

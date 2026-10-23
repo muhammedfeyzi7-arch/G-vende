@@ -143,3 +143,31 @@ export const minTouch = 44;
 
 /** Temadan bağımsız her zaman koyu çizilen yüzeyler (ör. Acil Durum Modu) için: AppText varsayılan renkleri koyu paletten alır. */
 export const ForceDark = createContext(false);
+
+/**
+ * Ortak yüzeyler: tüm ekranlarda aynı görünmeleri için yalnızca bunlar kullanılır.
+ * themedStyles fabrikası içinde çağrılır (renkler tema değişince yeniden okunur).
+ */
+export const surface = {
+  /** İnce kenarlıklı kart */
+  card: () => ({
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  }),
+  /** Tek satırlık metin alanı */
+  input: () => ({
+    minHeight: 48,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surface,
+    color: colors.text,
+    paddingHorizontal: spacing.md,
+    fontSize: 15,
+  }),
+};
+
+/** Yazı ölçeği: bölüm başlığı · kart başlığı · satır başlığı · küçük karo başlığı. */
+export const type = { section: 17.5, card: 15, row: 14, tile: 13 } as const;

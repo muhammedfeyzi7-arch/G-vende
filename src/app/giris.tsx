@@ -37,7 +37,7 @@ export default function SignIn() {
     );
   if (session)
     return (
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md }}>
         <AppText variant="heading">Giriş yapıldı</AppText>
         <AppText variant="label">{session.user.email}</AppText>
         <Button label="Tamam" onPress={() => router.back()} />
@@ -200,7 +200,7 @@ export default function SignIn() {
 }
 
 const styles = themedStyles(() => ({
-  content: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xxl },
+  content: { padding: spacing.md, gap: spacing.md, paddingBottom: spacing.xxl },
   hero: { alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.xs },
   logo: {
     width: 72,
@@ -215,14 +215,14 @@ const styles = themedStyles(() => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    minHeight: 52,
-    borderRadius: radius.lg,
+    minHeight: 48,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.borderStrong,
     backgroundColor: colors.surface,
     paddingHorizontal: spacing.md,
   },
-  input: { flex: 1, minHeight: 50, color: colors.text, fontSize: 15 },
+  input: { flex: 1, minHeight: 46, color: colors.text, fontSize: 15 },
   benefits: {
     gap: spacing.sm,
     padding: spacing.md,

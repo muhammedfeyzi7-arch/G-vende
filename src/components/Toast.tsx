@@ -107,7 +107,7 @@ const styles = themedStyles(() => ({
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceRaised,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
     boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
   },
 }));

@@ -20,7 +20,7 @@ import {
 import type { FamilyState } from '@/features/family/useFamily';
 import { useApp } from '@/providers/AppProvider';
 import { friendlyError } from '@/services/supabase';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 import { coarsen } from '@/utils/geo';
 import { formatDateTimeTr, relativeTimeTr } from '@/utils/time';
 
@@ -396,14 +396,7 @@ const styles = themedStyles(() => ({
   },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   input: {
-    minHeight: 44,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.bg,
-    color: colors.text,
-    paddingHorizontal: spacing.md,
-    fontSize: 13,
+    ...surface.input(),
   },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: spacing.sm },
 }));
