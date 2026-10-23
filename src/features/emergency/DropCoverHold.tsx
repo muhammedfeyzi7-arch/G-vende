@@ -5,7 +5,7 @@ import { colors } from '@/theme';
 // Renkler çizim anında okunur; açık temada figür koyu, koyu temada beyaz olur.
 const W = () => colors.text;
 const R = () => colors.danger;
-const S = () => ({ stroke: W(), strokeWidth: 7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' });
+const S = () => ({ stroke: W(), strokeWidth: 11, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' });
 
 function Table() {
   return (
@@ -21,7 +21,7 @@ export function DropIcon({ size = 100 }: { size?: number }) {
   return (
     <Svg width={size} height={size * 0.75} viewBox="0 0 120 90" accessibilityLabel="Çök">
       <Table />
-      <Circle cx={44} cy={44} r={7.5} fill={W()} />
+      <Circle cx={44} cy={44} r={9.5} fill={W()} />
       <Path d="M52 52 L66 66" {...S()} />
       <Path d="M66 66 L52 80 L76 80" {...S()} />
       <Path d="M55 55 L46 79" {...S()} />
@@ -33,7 +33,7 @@ export function CoverIcon({ size = 100 }: { size?: number }) {
   return (
     <Svg width={size} height={size * 0.75} viewBox="0 0 120 90" accessibilityLabel="Kapan">
       <Table />
-      <Circle cx={40} cy={62} r={7.5} fill={W()} />
+      <Circle cx={40} cy={62} r={9.5} fill={W()} />
       <Path d="M50 64 L72 66" {...S()} />
       <Path d="M72 66 L58 80 L82 80" {...S()} />
       <Path d="M52 62 L44 50 L34 54" {...S()} />
@@ -45,7 +45,7 @@ export function HoldIcon({ size = 100 }: { size?: number }) {
   return (
     <Svg width={size} height={size * 0.75} viewBox="0 0 120 90" accessibilityLabel="Tutun">
       <Table />
-      <Circle cx={46} cy={60} r={7.5} fill={W()} />
+      <Circle cx={46} cy={60} r={9.5} fill={W()} />
       <Path d="M56 62 L76 66" {...S()} />
       <Path d="M76 66 L62 80 L86 80" {...S()} />
       <Path d="M58 60 L50 48 L40 52" {...S()} />
@@ -59,7 +59,7 @@ export function AfterIcon({ size = 100 }: { size?: number }) {
     <Svg width={size} height={size * 0.75} viewBox="0 0 120 90" accessibilityLabel="Sonra">
       <Rect x={80} y={10} width={26} height={72} rx={2} fill={W()} />
       <Rect x={84} y={44} width={4} height={4} rx={2} fill={colors.bg} />
-      <Circle cx={44} cy={22} r={7.5} fill={W()} />
+      <Circle cx={44} cy={22} r={9.5} fill={W()} />
       <Path d="M44 32 L38 54" {...S()} />
       <Path d="M38 54 L52 66 L48 82" {...S()} />
       <Path d="M38 54 L28 66 L16 64" {...S()} />

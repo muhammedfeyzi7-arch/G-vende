@@ -60,6 +60,11 @@ function ActionTile({
   );
 }
 
+const walkLabel = (km: number) =>
+  Number.isFinite(km)
+    ? `${formatDistance(km)}, yürüyerek yaklaşık ${Math.max(1, Math.round((km / 4.5) * 60))} dakika`
+    : 'Uzaklık bilinmiyor';
+
 export default function EmergencyScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
@@ -245,12 +250,19 @@ export default function EmergencyScreen() {
       <View style={[styles.pair, !wide && { flexDirection: 'column' }]}>
         <View style={[styles.card, styles.halfCard, { borderColor: colors.safe + '88' }]}>
           <Pressable onPress={() => router.push('/toplanma')} style={styles.halfHead} accessibilityRole="button">
-            <IconTile icon="flag" color={accent.green} size={34} />
+            <IconTile icon="flag" color={accent.green} size={30} solid />
             <View style={{ flex: 1 }}>
-              <AppText variant="label" color={colors.safe} style={{ fontWeight: '700' }}>
+              <AppText
+                variant="label"
+                color={colors.safe}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+                style={{ fontWeight: '700' }}
+              >
                 Toplanma Noktamız
               </AppText>
-              <AppText variant="heading" numberOfLines={2} style={{ fontSize: 13 }}>
+              <AppText variant="heading" numberOfLines={2} style={{ fontSize: 12.5 }}>
                 {point ? point.name : 'Henüz belirlenmedi'}
               </AppText>
               {point ? (
@@ -265,29 +277,42 @@ export default function EmergencyScreen() {
           </Pressable>
           {point ? (
             <>
-              <View style={styles.miniMap}>
-                <QuakeMap
-                  mapStyle={settings.mapStyle}
-                  events={[]}
-                  focus={null}
-                  reports={[]}
-                  assemblyPoints={[point]}
-                  user={userCoords}
-                  userIsPrecise={location.status === 'granted'}
-                  layers={{ ...DEFAULT_LAYERS, rings: false }}
-                  onSelect={() => {}}
-                  initialCenter={point}
-                  initialZoom={14}
-                  interactive={false}
-                />
+              <View style={{ flexDirection: 'row', gap: spacing.xs + 2 }}>
+                <View style={[styles.miniMap, { flex: 1 }]}>
+                  <QuakeMap
+                    mapStyle={settings.mapStyle}
+                    events={[]}
+                    focus={null}
+                    reports={[]}
+                    assemblyPoints={[point]}
+                    user={userCoords}
+                    userIsPrecise={location.status === 'granted'}
+                    layers={{ ...DEFAULT_LAYERS, rings: false }}
+                    onSelect={() => {}}
+                    initialCenter={point}
+                    initialZoom={14}
+                    interactive={false}
+                  />
+                </View>
+                <View style={styles.walk} accessible accessibilityLabel={walkLabel(point.distanceKm)}>
+                  <Ionicons name="walk" size={22} color={colors.safe} />
+                  <AppText variant="title" style={{ fontSize: 17, lineHeight: 20 }}>
+                    {Number.isFinite(point.distanceKm) ? formatDistance(point.distanceKm) : '—'}
+                  </AppText>
+                  <AppText variant="caption" style={{ fontSize: 10, textAlign: 'center' }}>
+                    {Number.isFinite(point.distanceKm)
+                      ? `~${Math.max(1, Math.round((point.distanceKm / 4.5) * 60))} dk yürüme`
+                      : 'Konum gerekli'}
+                  </AppText>
+                </View>
               </View>
-              <View style={{ flexDirection: width >= 520 ? 'row' : 'column', gap: spacing.xs }}>
+              <View style={{ flexDirection: 'row', gap: spacing.xs }}>
                 <Button
                   size="sm"
                   style={{ flex: 1 }}
                   variant="secondary"
                   icon="map-outline"
-                  label="Haritada Göster"
+                  label="Harita"
                   onPress={() => router.push('/toplanma')}
                 />
                 <Button
@@ -316,9 +341,9 @@ export default function EmergencyScreen() {
 
         <View style={[styles.card, styles.halfCard]}>
           <Pressable onPress={() => router.push('/canta')} style={styles.halfHead} accessibilityRole="button">
-            <IconTile icon="mci:bag-personal" color={accent.red} size={34} />
+            <IconTile icon="mci:bag-personal" color={accent.red} size={30} solid />
             <View style={{ flex: 1 }}>
-              <AppText variant="heading" style={{ fontSize: 13 }}>
+              <AppText variant="heading" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={{ fontSize: 13 }}>
                 Acil Durum Çantası
               </AppText>
               <AppText variant="caption">Hazırlık kontrol listesi</AppText>
@@ -524,7 +549,19 @@ const styles = themedStyles(() => ({
   pair: { flexDirection: 'row', gap: spacing.sm },
   halfCard: { flex: 1, paddingHorizontal: spacing.sm + 2 },
   halfHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  miniMap: { height: 110, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.mapPlaceholder },
+  walk: {
+    flex: 1,
+    height: 100,
+    borderRadius: radius.md,
+    backgroundColor: colors.safe + '14',
+    borderWidth: 1,
+    borderColor: colors.safe + '44',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    paddingHorizontal: 4,
+  },
+  miniMap: { height: 100, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.mapPlaceholder },
   kitRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 24 },
   news: {
     flexDirection: 'row',

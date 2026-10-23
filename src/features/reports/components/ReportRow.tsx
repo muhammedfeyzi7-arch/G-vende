@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { AppText, Pill } from '@/components/ui';
+import { AppText } from '@/components/ui';
 import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { relativeTimeTr } from '@/utils/time';
@@ -36,12 +37,30 @@ export function ReportRow({
       style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.surfacePressed }]}
     >
       <View style={[styles.icon, { backgroundColor: iconColor, boxShadow: `0 0 14px ${iconColor}55` }]}>
-        <Ionicons name={meta.icon} size={22} color={report.category === 'help' ? '#3A2A00' : '#fff'} />
+        <Ionicons name={meta.icon} size={19} color={report.category === 'help' ? '#3A2A00' : '#fff'} />
       </View>
-      {thumb ? <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" accessibilityIgnoresInvertColors /> : null}
+      {thumb ? (
+        <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" accessibilityIgnoresInvertColors />
+      ) : (
+        // Fotoğrafsız bildirimde referanstaki görsel alanı kategori degradesiyle korunur.
+        <View style={[styles.thumb, { overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }]}>
+          <LinearGradient
+            colors={[iconColor + '4D', iconColor + '10']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <Ionicons name={meta.icon} size={26} color={iconColor} />
+        </View>
+      )}
       <View style={styles.body}>
         <AppText variant="label" numberOfLines={1} style={styles.area}>
           {area}
+          {report.isSample ? (
+            <AppText variant="caption" color={colors.warning} style={{ fontSize: 10, fontWeight: '700' }}>
+              {'  ÖRNEK VERİ'}
+            </AppText>
+          ) : null}
         </AppText>
         <AppText variant="heading" numberOfLines={2} style={styles.headline}>
           {headline}
@@ -51,10 +70,11 @@ export function ReportRow({
             {report.description}
           </AppText>
         ) : null}
-        <View style={styles.badges}>
-          <TrustBadge report={report} compact />
-          {report.isSample ? <Pill label="ÖRNEK VERİ" color={colors.warning} /> : null}
-        </View>
+        {report.verification !== 'unverified' ? (
+          <View style={styles.badges}>
+            <TrustBadge report={report} compact />
+          </View>
+        ) : null}
       </View>
       <View style={styles.side}>
         <AppText variant="label" style={styles.time}>
@@ -88,8 +108,8 @@ const styles = themedStyles(() => ({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  icon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
-  thumb: { width: 66, height: 66, borderRadius: radius.md, backgroundColor: colors.surfaceRaised },
+  icon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  thumb: { width: 58, height: 58, borderRadius: radius.md, backgroundColor: colors.surfaceRaised },
   body: { flex: 1, gap: 2 },
   area: { fontSize: 11.5 },
   headline: { fontSize: 14, fontWeight: '700' },
