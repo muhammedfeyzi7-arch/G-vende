@@ -4,13 +4,16 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AppText, Button } from '@/components/ui';
 import { Avatar, GroupTitle, IconTile, Page, accent } from '@/components/ds';
 import { ASK_STATUS_MESSAGE, callPhone, formatPhone, sendSms } from '@/features/family/local';
 import { useLocalFamily } from '@/features/family/useLocalFamily';
+import { formatTrAddress, type TrAddress } from '@/features/location/address';
+import { readJson, writeJson } from '@/services/storage';
+import { relativeTimeTr } from '@/utils/time';
 import { useApp } from '@/providers/AppProvider';
-import { colors, hitSlop, radius, spacing, themedStyles, iconColors } from '@/theme';
+import { colors, hitSlop, radius, spacing, surface, themedStyles, iconColors } from '@/theme';
 
 /**
  * Türkiye geneli kısa numaralar. 112 tüm acil durumlar (sağlık, itfaiye, polis, jandarma, AFAD) için
@@ -22,30 +25,38 @@ const NUMBERS = [
   { tel: '185', title: 'Su arıza', sub: 'Patlak boru, su baskını', icon: 'water', color: accent.teal },
 ];
 
-/** Acil arama: 112, arıza hatları, aile kişileri ve operatöre okunacak konum. */
+/** Acil arama: 112, arıza hatları, aile kişileri ve operatöre okunacak açık adres. */
 export default function CallScreen() {
   const { location, requestLocation } = useApp();
   const fam = useLocalFamily();
-  const [address, setAddress] = useState<string | null>(null);
+  const [address, setAddress] = useState<TrAddress | null>(null);
+  const [lastKnown, setLastKnown] = useState<(TrAddress & { at: string }) | null>(null);
+  const [lookup, setLookup] = useState<'idle' | 'loading' | 'failed'>('idle');
+  const [note, setNote] = useState('');
   const [copied, setCopied] = useState(false);
   const coords = location.status === 'granted' ? location.coords : null;
 
   useEffect(() => {
+    readJson<TrAddress & { at: string }>('last-address').then((a) => a?.full && setLastKnown(a));
+    readJson<string>('address-note').then((n) => n && setNote(n));
+  }, []);
+
+  useEffect(() => {
     if (!coords) return;
+    setLookup('loading');
     Location.reverseGeocodeAsync(coords)
       .then(([a]) => {
-        if (!a) return;
-        const parts = [
-          a.street && `${a.street}${a.streetNumber ? ` No:${a.streetNumber}` : ''}`,
-          a.district ?? a.subregion,
-          a.city ?? a.region,
-        ];
-        setAddress(parts.filter(Boolean).join(', ') || null);
+        const f = formatTrAddress(a);
+        if (!f.full) return setLookup('failed');
+        setAddress(f);
+        setLookup('idle');
+        writeJson('last-address', { ...f, at: new Date().toISOString() });
       })
-      .catch(() => {});
+      .catch(() => setLookup('failed'));
   }, [coords?.latitude, coords?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const coordText = coords ? `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}` : null;
+  const shown = address ?? lastKnown;
+  const readText = [shown?.full, note.trim()].filter(Boolean).join(' — ');
 
   return (
     <Page>
@@ -83,42 +94,67 @@ export default function CallScreen() {
           <IconTile icon="location" color={accent.blue} size={36} solid />
           <View style={{ flex: 1 }}>
             <AppText variant="heading" style={{ fontSize: 14 }}>
-              Operatöre okuyacağınız konum
+              112’ye okuyacağınız adres
             </AppText>
             <AppText variant="caption">Aramada adresinizi sorduklarında buradan okuyun.</AppText>
           </View>
         </View>
-        {coords ? (
+        {shown ? (
           <>
-            {address ? (
-              <AppText variant="heading" style={{ fontSize: 15 }}>
-                {address}
+            <View style={{ gap: 2 }}>
+              <AppText variant="title" style={{ fontSize: 19, lineHeight: 25 }}>
+                {shown.line1 ?? shown.line2}
+              </AppText>
+              {shown.line1 && shown.line2 ? (
+                <AppText variant="heading" color={colors.textSecondary} style={{ fontSize: 15 }}>
+                  {shown.line2}
+                </AppText>
+              ) : null}
+            </View>
+            {!address && lastKnown ? (
+              <AppText variant="caption" color={colors.warning}>
+                Son bilinen adres ({relativeTimeTr(lastKnown.at)}). Şu anki konumunuz farklı olabilir.
               </AppText>
             ) : null}
-            <Pressable
-              onPress={async () => {
-                await Clipboard.setStringAsync(coordText!);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1500);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`Koordinat ${coordText}. Kopyala`}
-              hitSlop={hitSlop}
-              style={styles.coordRow}
-            >
-              <AppText variant="title" style={{ fontSize: 18, fontVariant: ['tabular-nums'] }}>
-                {coordText}
-              </AppText>
-              <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={18} color={colors.primary} />
-            </Pressable>
-            <AppText variant="caption">
-              {location.status === 'granted' && location.accuracyM ? `GPS doğruluğu ±${Math.round(location.accuracyM)} m · ` : ''}
-              Adres yaklaşık olabilir.
-            </AppText>
           </>
+        ) : coords ? (
+          <AppText variant="label">
+            {lookup === 'loading' ? 'Adres bulunuyor…' : 'Adres bulunamadı (internet gerekebilir). Operatöre bulunduğunuz yeri tarif edin.'}
+          </AppText>
         ) : (
           <Button label="Konumumu göster" icon="locate-outline" variant="secondary" size="sm" onPress={() => requestLocation()} />
         )}
+
+        <TextInput
+          value={note}
+          onChangeText={(t) => {
+            setNote(t);
+            writeJson('address-note', t);
+          }}
+          placeholder="Bina / kat / daire tarifi (ör. Gül Apt. 3. kat, daire 7)"
+          placeholderTextColor={colors.textMuted}
+          style={styles.note}
+          accessibilityLabel="Bina, kat ve daire tarifi"
+          maxLength={120}
+        />
+
+        {readText ? (
+          <Button
+            label={copied ? 'Kopyalandı' : 'Adresi kopyala'}
+            icon={copied ? 'checkmark' : 'copy-outline'}
+            variant="secondary"
+            size="sm"
+            onPress={async () => {
+              await Clipboard.setStringAsync(readText);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+          />
+        ) : null}
+        <AppText variant="caption">
+          {location.status === 'granted' && location.accuracyM ? `GPS doğruluğu ±${Math.round(location.accuracyM)} m · ` : ''}
+          Adres telefonun haritasından tahmin edilir; kapı numarası yanlış olabilir. Tarif alanı yalnızca bu cihazda saklanır.
+        </AppText>
       </View>
 
       <GroupTitle>Arıza hatları</GroupTitle>
@@ -189,6 +225,7 @@ export default function CallScreen() {
 }
 
 const styles = themedStyles(() => ({
+  note: { ...surface.input() },
   hero: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,7 +256,6 @@ const styles = themedStyles(() => ({
     padding: spacing.md,
     boxShadow: colors.shadowSoft,
   },
-  coordRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

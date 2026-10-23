@@ -170,12 +170,12 @@ export default function EmergencyScreen() {
       <Pressable
         onPress={() => router.push('/arama')}
         accessibilityRole="button"
-        accessibilityLabel="Acil arama: arıza hatları, aile ve operatöre okunacak konum"
+        accessibilityLabel="Acil arama: arıza hatları, aile ve 112’ye okunacak açık adres"
         style={({ pressed }) => [styles.moreCall, pressed && { opacity: 0.85 }]}
       >
         <Ionicons name="keypad-outline" size={16} color={colors.textSecondary} />
         <AppText variant="label" style={{ flex: 1, fontSize: 11.5 }}>
-          Arıza hatları, ailemi ara ve 112’ye okunacak konumum
+          Arıza hatları, ailemi ara ve 112’ye okunacak adresim
         </AppText>
         <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
       </Pressable>
