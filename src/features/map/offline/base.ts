@@ -20,20 +20,23 @@ export interface BasePalette {
   road: string;
   roadMinor: string;
   roadGlow: number;
+  /** Şehir ışığı parıltısı (gece görünümü); 0 ise çizilmez */
+  cityGlow: number;
 }
 
 export const NIGHT_SATELLITE: BasePalette = {
   sea: '#071421',
-  land: '#16221D',
-  turkey: '#1A2822',
+  land: '#18241E',
+  turkey: '#1D2B23',
   lake: '#0B2539',
   river: '#1E4D73',
   province: '#8C78B8',
   provinceOpacity: 0.42,
   border: '#9FB0C2',
   road: '#E3AA3C',
-  roadMinor: '#B98634',
-  roadGlow: 0.18,
+  roadMinor: '#9C6FB8',
+  roadGlow: 0.22,
+  cityGlow: 0.55,
 };
 
 export const NAVY_DARK: BasePalette = {
@@ -48,6 +51,7 @@ export const NAVY_DARK: BasePalette = {
   road: '#36597C',
   roadMinor: '#22405C',
   roadGlow: 0,
+  cityGlow: 0.25,
 };
 
 export const DAYLIGHT: BasePalette = {
@@ -62,6 +66,7 @@ export const DAYLIGHT: BasePalette = {
   road: '#E39A2C',
   roadMinor: '#E9B86A',
   roadGlow: 0,
+  cityGlow: 0,
 };
 
 export const OFFLINE_SOURCES = {
@@ -72,6 +77,7 @@ export const OFFLINE_SOURCES = {
   tr_roads: { type: 'geojson', data: data.roads },
   tr_lakes: { type: 'geojson', data: data.lakes },
   tr_rivers: { type: 'geojson', data: data.rivers },
+  tr_places: { type: 'geojson', data: data.places },
 };
 
 /** Kara ve su dolguları (uydu görüntüsünün altına). */
@@ -124,13 +130,37 @@ export const offlineLineLayers = (p: BasePalette) => [
         },
       ]
     : []),
+  ...(p.cityGlow
+    ? [
+        {
+          // Gece uydu görüntüsündeki şehir ışıklarını andıran sıcak parıltı (yalnızca görsel).
+          id: 'tr-city-glow',
+          type: 'circle',
+          source: 'tr_places',
+          paint: {
+            'circle-color': '#FFB347',
+            'circle-opacity': ['*', p.cityGlow, ['match', ['get', 'rank'], 1, 0.55, 2, 0.4, 0.28]],
+            'circle-blur': 1,
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              4,
+              ['match', ['get', 'rank'], 1, 14, 2, 8, 5],
+              9,
+              ['match', ['get', 'rank'], 1, 60, 2, 36, 22],
+            ],
+          },
+        },
+      ]
+    : []),
   {
     id: 'tr-roads-minor',
     type: 'line',
     source: 'tr_roads',
     filter: ['==', ['get', 'major'], 0],
     layout: { 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': p.roadMinor, 'line-opacity': 0.5, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.4, 10, 1.2] },
+    paint: { 'line-color': p.roadMinor, 'line-opacity': 0.65, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.5, 10, 1.4] },
   },
   {
     id: 'tr-roads',

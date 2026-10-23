@@ -24,15 +24,15 @@ import { formatTimeTr, relativeTimeTr } from '@/utils/time';
 function StatTile({ icon, color, value, label }: { icon: string; color: string; value: number; label: string }) {
   return (
     <View style={styles.stat} accessible accessibilityLabel={`${value} ${label}`}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-        <IconTile icon={icon} color={color} size={28} solid={color !== accent.gray} />
-        <AppText variant="title" style={{ fontSize: 16, lineHeight: 19.5 }}>
+      <IconTile icon={icon} color={color} size={30} solid={color !== accent.gray} />
+      <View style={{ flexShrink: 1, minWidth: 0 }}>
+        <AppText variant="title" style={{ fontSize: 17, lineHeight: 20 }}>
           {value}
         </AppText>
+        <AppText variant="caption" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={{ fontSize: 10.5 }}>
+          {label}
+        </AppText>
       </View>
-      <AppText variant="caption" numberOfLines={1} style={{ fontSize: 9.5 }}>
-        {label}
-      </AppText>
     </View>
   );
 }
@@ -479,7 +479,9 @@ const styles = themedStyles(() => ({
   stat: {
     flex: 1,
     minWidth: 0,
-    gap: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.sm,

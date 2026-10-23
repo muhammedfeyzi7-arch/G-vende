@@ -82,7 +82,7 @@ export default function SettingsScreen() {
       {/* Profil kartı */}
       <View style={styles.profile}>
         <Pressable onPress={() => router.push('/profil')} accessibilityRole="button" accessibilityLabel="Profil fotoğrafını düzenle">
-          <Avatar name={displayName || '?'} uri={profile.photoUri} size={72} />
+          <Avatar name={displayName || '?'} uri={profile.photoUri} size={64} />
           <View style={styles.editBadge}>
             <Ionicons name="pencil" size={14} color={colors.text} />
           </View>

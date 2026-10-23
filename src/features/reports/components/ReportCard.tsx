@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, Pill } from '@/components/ui';
 import { colors, radius, spacing, themedStyles } from '@/theme';
@@ -23,8 +24,8 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
     >
       <View style={{ flex: 1, gap: 4 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <View style={[styles.icon, { backgroundColor: color + '33' }]}>
-            <Ionicons name={meta.icon} size={16} color={color} />
+          <View style={[styles.icon, { backgroundColor: color, boxShadow: `0 0 10px ${color}88` }]}>
+            <Ionicons name={meta.icon} size={14} color={report.category === 'help' ? '#3A2A00' : '#fff'} />
           </View>
           <AppText variant="caption" numberOfLines={1}>
             {relativeTimeTr(report.createdAt)}
@@ -36,14 +37,23 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
         <AppText variant="caption" numberOfLines={1}>
           {report.areaLabel ?? 'Bölge belirtilmemiş'}
         </AppText>
-        <TrustBadge report={report} compact />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 'auto' }}>
-          <Ionicons name="thumbs-up-outline" size={15} color={colors.textSecondary} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 'auto' }}>
+          <Ionicons name="thumbs-up-outline" size={14} color={colors.textSecondary} />
           <AppText variant="caption">{report.helpfulCount}</AppText>
+          <Ionicons name="shield-checkmark-outline" size={14} color={colors.textSecondary} style={{ marginLeft: 6 }} />
+          <AppText variant="caption">{report.confirmCount}</AppText>
           {report.isSample ? <Pill label="ÖRNEK" color={colors.warning} /> : null}
         </View>
       </View>
-      {thumb ? <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" /> : null}
+      {thumb ? (
+        <Image source={{ uri: thumb }} style={styles.thumb} contentFit="cover" />
+      ) : (
+        // Fotoğrafsız bildirimde kategori simgeli degrade kutu (referanstaki görsel alanı korunur).
+        <View style={[styles.thumb, { overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }]}>
+          <LinearGradient colors={[color + '55', color + '12']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <Ionicons name={meta.icon} size={30} color={color} />
+        </View>
+      )}
     </Pressable>
   );
 }

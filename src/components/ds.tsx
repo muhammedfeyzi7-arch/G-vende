@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 /**
  * GÜVENDE tasarım sistemi bileşenleri (referans ekranlardaki kart, satır ve simge düzeni).
  */
@@ -70,22 +71,39 @@ export function IconTile({
   iconSize?: number;
   solid?: boolean;
 }) {
+  // Premium görünüm: renkten koyusuna degrade, ince ışıklı kenar ve hafif parıltı.
+  const r = size * 0.3;
   return (
     <View
       style={{
         width: size,
         height: size,
-        borderRadius: size * 0.3,
-        backgroundColor: solid ? color : color + '29',
-        borderWidth: solid ? 0 : 1,
-        borderColor: color + '33',
+        borderRadius: r,
+        borderWidth: 1,
+        borderColor: solid ? color + 'AA' : color + '40',
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
+        boxShadow: solid ? `0 4px 14px ${color}55` : undefined,
       }}
     >
+      <LinearGradient
+        colors={solid ? [shade(color, 0.12), shade(color, -0.28)] : [color + '3D', color + '12']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
       <Icon name={icon} size={iconSize ?? size * 0.52} color={solid ? '#fff' : color} />
     </View>
   );
+}
+
+/** #RRGGBB rengini açar (+) veya koyulaştırır (-). */
+export function shade(hex: string, amt: number) {
+  const n = parseInt(hex.slice(1, 7), 16);
+  const f = (c: number) => Math.max(0, Math.min(255, Math.round(amt >= 0 ? c + (255 - c) * amt : c * (1 + amt))));
+  const v = (f((n >> 16) & 255) << 16) | (f((n >> 8) & 255) << 8) | f(n & 255);
+  return `#${v.toString(16).padStart(6, '0')}`;
 }
 
 export function BellButton({ count, onPress }: { count: number; onPress: () => void }) {
@@ -135,12 +153,16 @@ export function SectionCard({
         accessibilityRole={onPress ? 'button' : 'header'}
         style={({ pressed }) => [styles.sectionHead, pressed && { opacity: 0.85 }]}
       >
-        <IconTile icon={icon} color={color} size={48} />
+        <IconTile icon={icon} color={color} size={40} solid />
         <View style={{ flex: 1 }}>
-          <AppText variant="heading" style={{ fontSize: 16 }}>
+          <AppText variant="heading" style={{ fontSize: 15 }}>
             {title}
           </AppText>
-          {subtitle ? <AppText variant="label">{subtitle}</AppText> : null}
+          {subtitle ? (
+            <AppText variant="label" style={{ fontSize: 11 }}>
+              {subtitle}
+            </AppText>
+          ) : null}
         </View>
         {onPress ? <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} /> : null}
       </Pressable>
@@ -202,25 +224,30 @@ export function ListRow({
     >
       {icon ? (
         iconTile ? (
-          <IconTile icon={icon} color={tint} size={40} />
+          <IconTile icon={icon} color={tint} size={32} />
         ) : (
           <View style={styles.rowIcon}>
-            <Icon name={icon} size={23} color={tint} />
+            <Icon name={icon} size={20} color={tint} />
           </View>
         )
       ) : null}
       <View style={{ flex: 1, gap: 1 }}>
-        <AppText variant="body" color={danger ? colors.danger : colors.text} style={{ fontSize: 14, fontWeight: '500' }}>
+        <AppText variant="body" color={danger ? colors.danger : colors.text} style={{ fontSize: 12.5, fontWeight: '500', lineHeight: 16 }}>
           {title}
         </AppText>
         {subtitle ? (
-          <AppText variant="label" style={{ fontSize: 12 }}>
+          <AppText variant="label" style={{ fontSize: 10.5, lineHeight: 13.5 }}>
             {subtitle}
           </AppText>
         ) : null}
       </View>
       {value ? (
-        <AppText variant="label" color={valueColor ?? colors.textSecondary} numberOfLines={1} style={{ maxWidth: 140, textAlign: 'right' }}>
+        <AppText
+          variant="label"
+          color={valueColor ?? colors.textSecondary}
+          numberOfLines={1}
+          style={{ maxWidth: 140, textAlign: 'right', fontSize: 11 }}
+        >
           {value}
         </AppText>
       ) : null}
@@ -252,6 +279,7 @@ export function ToggleRow(props: {
           disabled={props.disabled}
           trackColor={{ true: colors.primary, false: colors.borderStrong }}
           thumbColor="#fff"
+          style={{ transform: [{ scale: 0.85 }] }}
           accessibilityLabel={props.title}
         />
       }
@@ -261,13 +289,26 @@ export function ToggleRow(props: {
 
 export type AvatarStatus = 'safe' | 'help' | 'waiting' | 'home' | 'unknown' | null;
 
-const STATUS_STYLE: Record<Exclude<AvatarStatus, null>, { color: string; icon: string }> = {
+const STATUS_STYLE = (): Record<Exclude<AvatarStatus, null>, { color: string; icon: string }> => ({
   safe: { color: colors.safe, icon: 'checkmark' },
   help: { color: colors.danger, icon: 'alert' },
   waiting: { color: colors.warning, icon: 'time' },
   home: { color: colors.info, icon: 'home' },
   unknown: { color: colors.textMuted, icon: 'help' },
-};
+});
+
+// Fotoğrafsız kişiler için isimden türetilen sabit degrade (her kişi kendi renginde).
+const AVATAR_GRADIENTS: [string, string][] = [
+  ['#3B82F6', '#1E3A8A'],
+  ['#10B981', '#065F46'],
+  ['#F59E0B', '#92400E'],
+  ['#8B5CF6', '#4C1D95'],
+  ['#EC4899', '#831843'],
+  ['#06B6D4', '#164E63'],
+  ['#EF4444', '#7F1D1D'],
+];
+const gradientFor = (name: string) =>
+  AVATAR_GRADIENTS[[...name].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % AVATAR_GRADIENTS.length]!;
 
 export function Avatar({
   name,
@@ -282,7 +323,7 @@ export function Avatar({
   status?: AvatarStatus;
   ring?: string;
 }) {
-  const s = status ? STATUS_STYLE[status] : null;
+  const s = status ? STATUS_STYLE()[status] : null;
   const initials = name
     .split(/\s+/)
     .filter(Boolean)
@@ -290,21 +331,45 @@ export function Avatar({
     .map((w) => w[0]!.toLocaleUpperCase('tr-TR'))
     .join('');
   const ringColor = ring ?? s?.color;
+  // Halka ile fotoğraf arasında ince boşluk (referanstaki gibi).
+  const inner = ringColor ? size - 7 : size;
   return (
     <View style={{ width: size, height: size }}>
       <View
         style={[
           styles.avatar,
-          { width: size, height: size, borderRadius: size / 2, borderWidth: ringColor ? 2.5 : 0, borderColor: ringColor ?? 'transparent' },
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            borderWidth: ringColor ? 2 : 0,
+            borderColor: ringColor ?? 'transparent',
+            backgroundColor: 'transparent',
+            boxShadow: ringColor ? `0 0 12px ${ringColor}55` : undefined,
+          },
         ]}
       >
-        {uri ? (
-          <Image source={{ uri }} style={{ width: size - 6, height: size - 6, borderRadius: (size - 6) / 2 }} contentFit="cover" />
-        ) : (
-          <AppText variant="heading" color={colors.text} style={{ fontSize: size * 0.34 }}>
-            {initials || '?'}
-          </AppText>
-        )}
+        <View
+          style={{
+            width: inner,
+            height: inner,
+            borderRadius: inner / 2,
+            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {uri ? (
+            <Image source={{ uri }} style={{ width: inner, height: inner }} contentFit="cover" />
+          ) : (
+            <>
+              <LinearGradient colors={gradientFor(name)} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+              <AppText variant="heading" color="#FFFFFF" style={{ fontSize: size * 0.34, fontWeight: '700' }}>
+                {initials || '?'}
+              </AppText>
+            </>
+          )}
+        </View>
       </View>
       {s ? (
         <View
@@ -429,8 +494,8 @@ const styles = themedStyles(() => ({
     borderRadius: radius.xl,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
-    padding: spacing.sm,
-    gap: spacing.sm,
+    padding: spacing.xs + 2,
+    gap: spacing.xs + 2,
     boxShadow: colors.shadowSoft,
   },
   sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.xs },
@@ -444,10 +509,10 @@ const styles = themedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    minHeight: 56,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    gap: spacing.sm + 2,
+    minHeight: 44,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 6,
   },
   rowDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   rowIcon: { width: 36, alignItems: 'center' },

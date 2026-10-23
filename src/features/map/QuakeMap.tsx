@@ -16,6 +16,7 @@ import { ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './lay
 import type { MapStyleId } from '@/features/settings/settings';
 import { isLightMap, offlineOnlyStyle, paletteFor, styleFor } from './mapStyle';
 import { visibleLabels } from './offline/base';
+import { CATEGORY_META } from '@/features/reports/categories';
 
 export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean; family: boolean };
 export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true, family: true };
@@ -71,6 +72,7 @@ type Props = {
 const TURKEY_CENTER: [number, number] = [35.2, 39.0];
 /** Simgeli işaretçi sayısı sınırlı (view annotation performansı); geri kalanı daire katmanıyla çizilir. */
 const MAX_ASSEMBLY_MARKERS = 12;
+const MAX_REPORT_MARKERS = 30;
 const HITBOX = { top: 14, right: 14, bottom: 14, left: 14 };
 
 // Sırayla denenecek stiller: ortam değişkeni (varsa) → seçilen görünüm → tamamen çevrimdışı altlık.
@@ -237,6 +239,28 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
         </Marker>
       ))}
 
+      {/* Olay yeri bildirimleri referanstaki gibi kategori simgeli pin; sarsıntı bildirimleri renkli nokta olarak kalır. */}
+      {layers.reports
+        ? reports
+            .filter((r) => r.category !== 'shake' && r.latitude != null && r.longitude != null)
+            .slice(0, MAX_REPORT_MARKERS)
+            .map((r) => {
+              const m = CATEGORY_META[r.category];
+              return (
+                <Marker
+                  key={`rp-${r.id}`}
+                  id={`rp-${r.id}`}
+                  lngLat={[r.longitude!, r.latitude!]}
+                  onPress={() => onSelect({ kind: 'report', id: r.id })}
+                >
+                  <View style={[styles.reportPin, { backgroundColor: m.color, boxShadow: `0 0 14px ${m.color}AA` }]} accessibilityLabel={`${m.label} bildirimi`}>
+                    <Ionicons name={m.icon} size={15} color={r.category === 'help' ? '#3A2A00' : '#fff'} />
+                  </View>
+                </Marker>
+              );
+            })
+        : null}
+
       {layers.assembly
         ? assemblyPoints.slice(0, MAX_ASSEMBLY_MARKERS).map((p) => (
             <Marker
@@ -326,6 +350,15 @@ const styles = themedStyles(() => ({
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: '0 0 14px rgba(20,217,154,0.65)',
+  },
+  reportPin: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.85)',
   },
   cityDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#F2F6FA', borderWidth: 1, borderColor: '#030B14', marginBottom: 1 },
   cityDotLight: { backgroundColor: '#1F2D3D', borderColor: '#FFFFFF' },

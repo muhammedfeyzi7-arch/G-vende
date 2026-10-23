@@ -219,18 +219,6 @@ export function HomeScreen() {
             title="Son Bildirimler"
             action="Tümünü Gör"
             onAction={() => router.push('/akis')}
-            right={
-              <Pressable
-                onPress={() => router.push('/rapor/yeni')}
-                accessibilityRole="button"
-                accessibilityLabel="Bildirim ekle"
-                style={styles.addBtn}
-              >
-                <AppText variant="label" color={colors.text}>
-                  + Bildir
-                </AppText>
-              </Pressable>
-            }
           />
           {recentReports.length ? (
             <ScrollView
