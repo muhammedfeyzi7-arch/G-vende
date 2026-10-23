@@ -160,5 +160,5 @@ export const CITY_LABELS: CityLabel[] = [...data.seas.features.map((f) => toLabe
 
 /** Yakınlaştırmaya göre gösterilecek etiketler (kalabalığı önlemek için). */
 export function visibleLabels(zoom: number): CityLabel[] {
-  return CITY_LABELS.filter((l) => (l.sea ? zoom < 8.5 : l.rank === 1 ? zoom < 11 : l.rank === 2 ? zoom >= 5.2 && zoom < 11 : zoom >= 6 && zoom < 11));
+  return CITY_LABELS.filter((l) => (l.sea ? zoom < 8.5 : l.rank === 1 ? zoom < 11 : l.rank === 2 ? zoom >= 4.8 && zoom < 11 : zoom >= 5.7 && zoom < 11));
 }

@@ -10,7 +10,7 @@ import { formatDepth, placeTitle } from '../format';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const ICON = 18;
+const ICON = 17;
 
 function Item({
   icon,
@@ -36,7 +36,7 @@ function Item({
             {label}
           </AppText>
         ) : null}
-        <AppText variant="heading" numberOfLines={lines} style={styles.value}>
+        <AppText variant="heading" numberOfLines={lines} adjustsFontSizeToFit={lines === 1} minimumFontScale={0.8} style={styles.value}>
           {value}
         </AppText>
         {sub ? (
@@ -54,8 +54,8 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
   return (
     <View style={styles.row}>
       <Item icon="time-outline" value={formatTimeTr(event.primary.occurredAt)} sub={relativeTimeTr(event.primary.occurredAt)} flex={0.85} />
-      <Item icon="location-outline" label="Merkez üssü" value={placeTitle(event)} flex={1.35} lines={2} />
-      <Item icon="locate-outline" label="Derinlik" value={formatDepth(event.primary.depthKm)} flex={0.85} />
+      <Item icon="location-outline" label="Merkez üssü" value={placeTitle(event)} flex={1.45} lines={1} />
+      <Item icon="locate-outline" label="Derinlik" value={formatDepth(event.primary.depthKm)} flex={0.72} />
       <Pressable
         style={[styles.item, { flex: 1.05 }]}
         hitSlop={hitSlop}
@@ -91,5 +91,5 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
 const styles = themedStyles(() => ({
   row: { flexDirection: 'row', gap: 4, paddingVertical: spacing.sm, paddingHorizontal: spacing.xs },
   item: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' },
-  value: { fontSize: 14, fontWeight: '700' },
+  value: { fontSize: 13.5, fontWeight: '700' },
 }));

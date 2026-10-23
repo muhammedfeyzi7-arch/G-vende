@@ -199,7 +199,7 @@ export default function FamilyScreen() {
         <Avatar
           name={p.source === 'me' ? profile.name || 'Sen' : p.name}
           uri={p.source === 'me' ? profile.photoUri : p.photoUri}
-          size={46}
+          size={42}
           status={p.status}
           ring={p.color}
         />
@@ -284,7 +284,7 @@ export default function FamilyScreen() {
             layers={{ ...DEFAULT_LAYERS, rings: false }}
             onSelect={() => router.push('/aile/bulusma')}
             initialCenter={userCoords ?? undefined}
-            initialZoom={userCoords ? 11.5 : 5}
+            initialZoom={userCoords ? 10.2 : 5}
           />
         ) : (
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: 56, paddingHorizontal: spacing.sm }}>
@@ -495,7 +495,7 @@ const styles = themedStyles(() => ({
     paddingHorizontal: spacing.sm,
     boxShadow: colors.shadowSoft,
   },
-  member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 60, paddingVertical: 6 },
+  member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 54, paddingVertical: 5 },
   divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   pill: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 2 },
   actions: { flexDirection: 'row', gap: spacing.sm },

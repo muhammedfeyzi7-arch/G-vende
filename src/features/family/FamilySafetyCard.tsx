@@ -56,7 +56,7 @@ export function FamilySafetyCard({ groups, myUserId }: { groups: FamilyGroup[]; 
             <Avatar
               name={p.source === 'me' ? profile.name || 'Ben' : p.name}
               uri={p.source === 'me' ? profile.photoUri : p.photoUri}
-              size={54}
+              size={46}
               status={p.status}
               ring={p.color}
             />
@@ -101,6 +101,6 @@ const styles = themedStyles(() => ({
     boxShadow: colors.shadowSoft,
   },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg },
-  list: { paddingHorizontal: spacing.md, gap: spacing.sm },
-  person: { width: 74, alignItems: 'center' },
+  list: { paddingHorizontal: spacing.md, gap: spacing.xs },
+  person: { width: 68, alignItems: 'center' },
 }));

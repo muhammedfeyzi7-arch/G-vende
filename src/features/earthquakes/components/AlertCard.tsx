@@ -68,9 +68,9 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-      <Ionicons name="pulse" size={44} color={accent} style={[styles.wave, { textShadowColor: accent + 'CC' }]} />
+      <Ionicons name="pulse" size={38} color={accent} style={[styles.wave, { textShadowColor: accent + 'CC' }]} />
       <View style={{ flex: 1, gap: 3 }}>
-        <AppText variant="title" color={strong} numberOfLines={alert ? 1 : 2} style={{ fontSize: alert ? 19 : 17, letterSpacing: -0.2 }}>
+        <AppText variant="title" color={strong} numberOfLines={alert ? 1 : 2} style={{ fontSize: alert ? 16.5 : 15, letterSpacing: -0.2 }}>
           {title}
         </AppText>
         <AppText variant="label" numberOfLines={2} color={soft} style={{ fontSize: 11.5 }}>
@@ -85,7 +85,7 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
             Büyüklük {event.primary.magnitudeType ? `(${event.primary.magnitudeType})` : ''}
           </AppText>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <AppText variant="display" color={strong} style={{ fontSize: 24.5, lineHeight: 28 }}>
+            <AppText variant="display" color={strong} style={{ fontSize: 22, lineHeight: 25 }}>
               {formatMagnitude(event.primary.magnitude)}
             </AppText>
             <Ionicons name="pulse" size={16} color={accent} />
@@ -106,8 +106,8 @@ const styles = themedStyles(() => ({
     gap: spacing.md,
     borderRadius: radius.xl,
     borderWidth: 1,
-    paddingVertical: spacing.md,
-    paddingLeft: spacing.lg,
+    paddingVertical: spacing.sm + 2,
+    paddingLeft: spacing.md,
     paddingRight: spacing.md,
     overflow: 'hidden',
   },

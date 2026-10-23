@@ -41,7 +41,7 @@ function ActionTile({
       style={({ pressed }) => [styles.action, pressed && { opacity: 0.85 }]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <IconTile icon={icon} color={color} size={40} />
+        <IconTile icon={icon} color={color} size={38} solid />
         <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
       </View>
       <AppText

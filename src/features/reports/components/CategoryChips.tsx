@@ -44,7 +44,7 @@ const styles = themedStyles(() => ({
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: spacing.md + 2,
-    minHeight: 40,
+    minHeight: 34,
     borderRadius: radius.pill,
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,

@@ -38,9 +38,9 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
           >
             <View style={styles.iconWrap}>
               {item.center ? (
-                <MaterialCommunityIcons name="alarm-light" size={30} color={color} style={focused ? styles.glow : undefined} />
+                <MaterialCommunityIcons name="alarm-light" size={28} color={color} style={focused ? styles.glow : undefined} />
               ) : (
-                <Ionicons name={item.iconActive as never} size={26} color={color} />
+                <Ionicons name={item.iconActive as never} size={24} color={color} />
               )}
             </View>
             <Text
@@ -68,5 +68,5 @@ const styles = themedStyles(() => ({
   item: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 3, minHeight: 56 },
   iconWrap: { height: 32, justifyContent: 'center' },
   glow: { textShadowColor: 'rgba(255,53,72,0.8)', textShadowRadius: 12 },
-  label: { fontSize: 12 },
+  label: { fontSize: 11.5 },
 }));

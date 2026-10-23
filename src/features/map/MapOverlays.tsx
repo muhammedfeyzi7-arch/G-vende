@@ -14,7 +14,7 @@ function ControlButton({ icon, label, onPress, active }: { icon: string; label: 
       accessibilityState={{ selected: !!active }}
       style={({ pressed }) => [styles.ctrl, active && { borderColor: colors.primary }, pressed && { opacity: 0.85 }]}
     >
-      <Ionicons name={icon as never} size={24} color={active ? colors.primary : colors.text} />
+      <Ionicons name={icon as never} size={20} color={active ? colors.primary : colors.text} />
       <AppText variant="caption" color={colors.text} style={{ fontSize: 9 }}>
         {label}
       </AppText>
@@ -152,7 +152,7 @@ export function MapLegend() {
         {FELT_LEVELS.map((l) => (
           <View key={l.value} style={styles.legendItem}>
             <View style={[styles.dot, { backgroundColor: l.color }]} />
-            <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: 10.5 }}>
+            <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: 10 }}>
               {l.label}
             </AppText>
           </View>
@@ -191,9 +191,9 @@ export function NearbyAssemblyButton({ onPress, count, mine }: { onPress: () => 
 const styles = themedStyles(() => ({
   controls: { position: 'absolute', right: spacing.sm, top: spacing.sm, gap: spacing.xs + 2 },
   ctrl: {
-    width: 76,
-    minHeight: 62,
-    borderRadius: 14,
+    width: 62,
+    minHeight: 52,
+    borderRadius: 12,
     backgroundColor: colors.mapPanel,
     borderWidth: 1,
     borderColor: colors.mapPanelBorder,
@@ -233,9 +233,9 @@ const styles = themedStyles(() => ({
     gap: 4,
     alignSelf: 'flex-start',
   },
-  legendRow: { flexDirection: 'row', columnGap: 7 },
+  legendRow: { flexDirection: 'row', columnGap: 5 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dot: { width: 9, height: 9, borderRadius: 5 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
   assemblyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -249,7 +249,7 @@ const styles = themedStyles(() => ({
     paddingLeft: spacing.sm,
     paddingRight: spacing.sm,
     flexShrink: 1,
-    maxWidth: '50%',
+    maxWidth: '45%',
     minHeight: 48,
   },
   assemblyIcon: {

@@ -118,7 +118,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
   const [attempt, setAttempt] = useState(0);
   const failed = styleIndex >= STYLES.length;
   // Şehir adları işaretçi olarak çizilir (yazı tipi indirmeden, çevrimdışı da görünür).
-  const [zoom, setZoom] = useState(initialZoom ?? (focus ? 6.3 : 5));
+  const [zoom, setZoom] = useState(initialZoom ?? (focus ? 5.9 : 4.8));
   const labels = useMemo(() => visibleLabels(zoom), [zoom]);
   const lightLabels = isLightMap(mapStyle, scheme);
 
@@ -193,7 +193,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
         if (z !== zoom) setZoom(z);
       }}
     >
-      <Camera ref={camera} initialViewState={{ center: initialCenter, zoom: initialZoom ?? (focus ? 6.3 : 5) }} minZoom={3} maxZoom={16} />
+      <Camera ref={camera} initialViewState={{ center: initialCenter, zoom: initialZoom ?? (focus ? 5.9 : 4.8) }} minZoom={3} maxZoom={16} />
 
       {layers.rings ? (
         <GeoJSONSource id="rings" data={ringData}>

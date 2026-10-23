@@ -27,7 +27,7 @@ export const RING_LAYERS: LayerDef[] = [
         colors.caution,
       ],
       // Üst üste binen halkalar merkeze doğru koyulaşan yumuşak bir geçiş oluşturur.
-      'fill-opacity': ['step', ['get', 'km'], 0.2, 12, 0.14, 20, 0.11, 30, 0.08, 40, 0.06, 60, 0.05],
+      'fill-opacity': ['step', ['get', 'km'], 0.34, 12, 0.26, 20, 0.19, 30, 0.14, 40, 0.1, 60, 0.08],
     },
   },
   {
@@ -36,8 +36,8 @@ export const RING_LAYERS: LayerDef[] = [
     filter: ['in', ['get', 'km'], ['literal', [25, 50, 75]]],
     paint: {
       'line-color': ['step', ['get', 'km'], colors.danger, 40, colors.warning, 60, colors.caution],
-      'line-opacity': 0.35,
-      'line-width': 1,
+      'line-opacity': 0.75,
+      'line-width': 1.5,
     },
   },
 ];

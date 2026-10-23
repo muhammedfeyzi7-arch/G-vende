@@ -42,13 +42,13 @@ export function ScreenHeader({ title, subtitle, right }: { title: string; subtit
   return (
     <View style={{ gap: 4 }}>
       <View style={styles.header}>
-        <AppText variant="display" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 33.5, flex: 1 }}>
+        <AppText variant="display" accessibilityRole="header" style={{ fontSize: 25, lineHeight: 30, flex: 1 }}>
           {title}
         </AppText>
         {right}
       </View>
       {subtitle ? (
-        <AppText variant="label" style={{ fontSize: 13, lineHeight: 17.5 }}>
+        <AppText variant="label" style={{ fontSize: 12, lineHeight: 16 }}>
           {subtitle}
         </AppText>
       ) : null}
@@ -399,11 +399,11 @@ export function QuickCard({
 const styles = themedStyles(() => ({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   bell: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',

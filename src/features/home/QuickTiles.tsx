@@ -35,7 +35,7 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
             end={{ x: 0, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
-          <Icon name={t.icon} size={28} color={t.big && light ? colors.onAccent : t.color} />
+          <Icon name={t.icon} size={24} color={t.big && light ? colors.onAccent : t.color} />
           {t.big ? (
             <AppText variant="title" color="#fff" style={{ fontSize: 19.5, lineHeight: 23 }}>
               {t.title}
@@ -43,7 +43,7 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
           ) : (
             <AppText
               variant="label"
-              color={t.color === '#8B5CF6' ? (light ? '#7C3AED' : '#C4B5FD') : t.color}
+              color={t.key === 'toplanma' ? t.color : colors.text}
               numberOfLines={3}
               style={styles.title}
             >
@@ -70,7 +70,7 @@ const styles = themedStyles(() => ({
   row: { flexDirection: 'row', gap: spacing.xs },
   tile: {
     flex: 1,
-    minHeight: 100,
+    minHeight: 86,
     borderRadius: radius.lg,
     borderWidth: 1,
     overflow: 'hidden',

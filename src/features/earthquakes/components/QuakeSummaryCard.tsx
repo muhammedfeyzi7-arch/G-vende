@@ -99,7 +99,7 @@ export function QuakeSummaryCard({ event, user, feltReports }: { event: Earthqua
           style={({ pressed }) => [styles.detailBtn, pressed && { opacity: 0.85 }]}
         >
           <AppText variant="label" color={colors.text} style={{ fontSize: 11.5 }}>
-            Detaylar
+            Detayları Gör
           </AppText>
           <Ionicons name="chevron-forward" size={14} color={colors.text} />
         </Pressable>

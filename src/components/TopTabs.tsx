@@ -27,7 +27,7 @@ export function TopTabs<K extends string>({
               <AppText
                 variant="heading"
                 color={active ? colors.primary : colors.textSecondary}
-                style={{ fontSize: 14, fontWeight: active ? '700' : '500' }}
+                style={{ fontSize: 13, fontWeight: active ? '700' : '500' }}
               >
                 {t.label}
               </AppText>
@@ -43,6 +43,6 @@ export function TopTabs<K extends string>({
 const styles = themedStyles(() => ({
   wrap: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   row: { paddingHorizontal: spacing.sm },
-  tab: { paddingHorizontal: spacing.md, paddingTop: spacing.md, minHeight: 48, justifyContent: 'space-between' },
+  tab: { paddingHorizontal: spacing.md, paddingTop: spacing.sm + 2, minHeight: 42, justifyContent: 'space-between' },
   underline: { height: 3, borderRadius: 2, marginTop: spacing.sm, backgroundColor: 'transparent' },
 }));
