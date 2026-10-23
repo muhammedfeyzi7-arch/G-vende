@@ -1,0 +1,32 @@
+# Rehber fotoğraflarını (Wikimedia Commons, açık lisanslı) indirip assets/guide/ altına işler.
+# Yalnızca scripts/guide-photos.tsv değiştiğinde çalışır.
+name: guide-photos
+on:
+  push:
+    paths: [scripts/guide-photos.tsv]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download
+        run: |
+          mkdir -p assets/guide/src
+          while IFS=$'\t' read -r key url; do
+            [ -z "$key" ] && continue
+            curl -fsSL -A 'GuvendeApp/1.0 (guide photo import)' -o "assets/guide/src/$key.jpg" "$url"
+            # 720 px genişlik, kalite 72: uygulama paketinde hafif kalsın.
+            convert "assets/guide/src/$key.jpg" -strip -resize '720x720>' -quality 72 "assets/guide/src/$key.jpg"
+            sleep 2
+          done < scripts/guide-photos.tsv
+          ls -la assets/guide/src
+      - name: Commit
+        run: |
+          git config user.name 'guide-photos bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add assets/guide/src
+          git diff --cached --quiet || git commit -m 'Rehber fotoğrafları: Wikimedia Commons kaynaklarından indirildi'
+          git push
