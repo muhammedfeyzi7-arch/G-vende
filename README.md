@@ -73,6 +73,18 @@ Uygulama tarafı hazırdır (`expo-apple-authentication` + `signInWithIdToken`).
 iPhone'daki yerel girişte "Secret Key" gerekmez. Açılmamışsa uygulama "Apple ile giriş sunucuda henüz açılmadı" der ve
 e-posta ile giriş çalışmaya devam eder.
 
+### Ücretli indirme (abonelik yok)
+
+GÜVENDE mağazada **ücretli uygulama** olarak satılır; uygulama içinde satın alma, abonelik veya kilitli özellik yoktur,
+bu yüzden ödeme kodu da yoktur. Yayın adımları:
+
+- **App Store:** App Store Connect → *Business* → **Paid Apps** sözleşmesini imzalayın, banka ve vergi bilgilerini
+  girin → uygulama → *Pricing and Availability* → fiyat seçin (ör. 49,99 ₺). Fiyat sonradan değiştirilebilir.
+- **Google Play:** Play Console → *Payments profile* (ödeme profili) → uygulama → *Monetize → App pricing* → **Paid**.
+  Not: Google Play'de ücretsiz yayımlanmış bir uygulama sonradan ücretliye çevrilemez; ilk yayın ücretli olmalı.
+- **Apple ile Giriş ve hesap silme:** Apple, hesap silmede Apple oturum belirtecinin iptalini (revoke) bekler.
+  Yayından önce `delete-account` işlevine Apple REST "revoke" çağrısı eklenmeli (Apple anahtarı gerekir).
+
 ### Push bildirimleri (uygulama kapalıyken)
 
 Expo push belirteci için bir Expo proje kimliği gerekir (gizli değildir):

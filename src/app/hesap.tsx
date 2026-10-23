@@ -9,7 +9,15 @@ import { clearAll } from '@/services/storage';
 import { friendlyError, getSupabase } from '@/services/supabase';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 
-/** Hesap durumu. Uygulamada ücretli üyelik yoktur; tüm özellikler ücretsizdir. */
+/** Uygulamaya giriş yöntemi (Supabase oturumundan). */
+export function signInMethod(user: { email?: string | null; app_metadata?: { provider?: string } } | null | undefined): string {
+  const p = user?.app_metadata?.provider;
+  if (p === 'apple') return user?.email?.endsWith('@privaterelay.appleid.com') ? 'Apple (gizli e-posta)' : 'Apple';
+  if (p === 'email') return 'E-posta bağlantısı';
+  return p ? p : 'E-posta';
+}
+
+/** Hesap durumu. Uygulama içi satın alma veya abonelik yoktur; indirilen sürümde tüm özellikler açıktır. */
 export default function AccountScreen() {
   const { session } = useApp();
   const { profile } = useProfile();
@@ -64,24 +72,39 @@ export default function AccountScreen() {
       </View>
       {!session && isBackendConfigured() ? <Button label="Giriş yap" icon="log-in-outline" onPress={() => router.push('/giris')} /> : null}
       <AppText variant="caption">
-        GÜVENDE ücretsizdir; ücretli paket veya üyelik yoktur. Deprem verileri, harita, Acil Durum araçları, SMS ile aile bildirimi ve
-        toplanma alanınız hesap olmadan çalışır.
+        Uygulama içi satın alma veya abonelik yoktur; tüm özellikler açıktır. Deprem verileri, harita, Acil Durum araçları, SMS ile aile
+        bildirimi ve toplanma alanınız hesap olmadan da çalışır.
         {isBackendConfigured()
-          ? ' Hesap; herkese açık bildirim paylaşmak ve çevrimiçi aile grubu için gereklidir.'
+          ? ' Hesap; herkese açık olay bildirimi paylaşmak, çevrimiçi aile grubu ve uygulama kapalıyken bildirim için gereklidir.'
           : ' Bu kurulumda sunucu bağlantısı olmadığı için hesap özellikleri kapalıdır.'}
       </AppText>
       {isBackendConfigured() && session ? (
         <>
           <GroupTitle>Hesap</GroupTitle>
           <RowGroup>
-            <ListRow first icon="mail-outline" title="E-posta" value={session.user.email ?? ''} />
+            <ListRow
+              first
+              icon={session.user.app_metadata?.provider === 'apple' ? 'logo-apple' : 'mail-outline'}
+              title="Giriş yöntemi"
+              value={signInMethod(session.user)}
+            />
+            {session.user.email ? <ListRow icon="at-outline" title="E-posta" value={session.user.email} /> : null}
             <ListRow
               icon="download-outline"
               title="Verilerimi indir"
               subtitle="Sunucudaki verilerinizin kopyası (JSON)"
               onPress={exportData}
             />
-            <ListRow icon="log-out-outline" title="Çıkış yap" onPress={() => getSupabase()?.auth.signOut()} />
+            <ListRow
+              icon="log-out-outline"
+              title="Çıkış yap"
+              onPress={() =>
+                Alert.alert('Çıkış yapılsın mı?', 'Aile kişileriniz, toplanma alanınız ve ayarlarınız bu cihazda kalır.', [
+                  { text: 'Vazgeç', style: 'cancel' },
+                  { text: 'Çıkış yap', style: 'destructive', onPress: () => getSupabase()?.auth.signOut() },
+                ])
+              }
+            />
             <ListRow icon="trash-outline" title="Hesabımı sil" danger onPress={deleteAccount} />
           </RowGroup>
         </>

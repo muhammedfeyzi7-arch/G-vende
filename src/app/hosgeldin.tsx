@@ -8,6 +8,7 @@ import { AppText, Button } from '@/components/ui';
 import { IconTile, accent } from '@/components/ds';
 import { useNotificationPermission } from '@/hooks/useNotificationPermission';
 import { useApp } from '@/providers/AppProvider';
+import { isBackendConfigured } from '@/services/env';
 import { colors, hitSlop, radius, spacing, themedStyles, iconColors } from '@/theme';
 
 const FEATURES = [
@@ -74,7 +75,7 @@ export default function Welcome() {
   const notif = useNotificationPermission();
   const [step, setStep] = useState(0);
 
-  const finish = (to: '/' | '/aile/ekle' | '/toplanma/sec' = '/') => {
+  const finish = (to: '/' | '/aile/ekle' | '/toplanma/sec' | '/giris' = '/') => {
     updateSettings({ onboardingSeen: true });
     router.replace('/');
     if (to !== '/') setTimeout(() => router.push(to), 0);
@@ -158,6 +159,18 @@ export default function Welcome() {
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
       </Pressable>
+      {isBackendConfigured() ? (
+        <Pressable onPress={() => finish('/giris')} accessibilityRole="button" style={styles.feature}>
+          <IconTile icon="person-circle" color={accent.purple} size={44} solid />
+          <View style={{ flex: 1 }}>
+            <AppText variant="heading" style={{ fontSize: 15 }}>
+              Hesap oluşturun (isteğe bağlı)
+            </AppText>
+            <AppText variant="caption">Apple veya e-posta ile; aile grubu ve uygulama kapalıyken bildirim için.</AppText>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+        </Pressable>
+      ) : null}
       <Pressable onPress={() => finish('/toplanma/sec')} accessibilityRole="button" style={styles.feature}>
         <IconTile icon="flag" color={accent.green} size={44} solid />
         <View style={{ flex: 1 }}>
