@@ -18,6 +18,9 @@ insert into public.profiles (id, identity_verified_at) values
   ('00000000-0000-0000-0000-0000000000f5', now() - interval '2 days'),
   ('00000000-0000-0000-0000-0000000000f6', now() - interval '2 days'),
   ('00000000-0000-0000-0000-0000000000f7', now() - interval '2 days');
+-- Olay bildirimi kapısı (0012): testlerdeki bildirim yerlerinin yakınında yakın zamanda resmî M6,5 kaydı.
+insert into public.earthquake_readings (source, source_event_id, magnitude, latitude, longitude, occurred_at)
+  values ('afad', 'TEST-GATE', 6.5, 40.90, 31.20, now() - interval '1 hour') on conflict do nothing;
 insert into public.profiles (id, display_name) values ('00000000-0000-0000-0000-0000000000f2', 'Doğrulanmamış');
 -- Kurumsal rol yalnızca service_role/yönetici tarafından atanır.
 insert into public.profiles (id, role, org_name) values ('00000000-0000-0000-0000-0000000000f8', 'official', 'AFAD Düzce');
@@ -237,5 +240,32 @@ select pg_temp.fails($$insert into public.report_votes (report_id, vote, device_
 reset role;
 select pg_temp.ok((select verification = 'unverified' from public.user_reports where description = 'Halka 1'),
   'tek kişinin onayı topluluk eşiğini (3) doldurmaz');
+
+-- 9) Olay bildirimi kapısı (0012): yalnızca yakında yeni resmî deprem kaydı varken
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f3');
+select pg_temp.fails($$insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m)
+  values (gen_random_uuid(), 'shake', 38.50, 43.40, 38.5001, 43.4001, 5)$$,
+  'no_recent_quake', 'yakında deprem kaydı yokken (Van) olay bildirilemez');
+select pg_temp.fails($$insert into public.user_reports (client_id, category) values (gen_random_uuid(), 'safe')$$,
+  'quake_location_required', 'konumsuz bildirimde bölge doğrulanamaz');
+reset role;
+-- Eski (72 saatten önceki) deprem kapıyı açmaz
+insert into public.earthquake_readings (source, source_event_id, magnitude, latitude, longitude, occurred_at)
+  values ('afad', 'TEST-OLD', 6.0, 38.50, 43.40, now() - interval '4 days');
+-- Yalnızca EMSC/USGS kaydı resmî sayılmaz
+insert into public.earthquake_readings (source, source_event_id, magnitude, latitude, longitude, occurred_at)
+  values ('emsc', 'TEST-EMSC', 5.5, 38.50, 43.40, now() - interval '1 hour');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f3');
+select pg_temp.fails($$insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m)
+  values (gen_random_uuid(), 'shake', 38.50, 43.40, 38.5001, 43.4001, 5)$$,
+  'no_recent_quake', 'eski deprem veya yalnızca EMSC kaydı kapıyı açmaz');
+reset role;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f8');
+insert into public.user_reports (client_id, category, description, latitude, longitude)
+  values (gen_random_uuid(), 'road', 'Van kurumsal duyuru', 38.50, 43.40);
+reset role;
+select pg_temp.ok((select count(*) = 1 from public.user_reports where description = 'Van kurumsal duyuru'),
+  'kurumsal hesap deprem kapısından muaf');
 
 \echo 'TÜM GÜVEN KATMANI TESTLERİ GEÇTİ'

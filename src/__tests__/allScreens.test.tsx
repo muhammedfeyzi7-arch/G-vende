@@ -372,7 +372,8 @@ describe('alt ekranlar', () => {
     await open(<Yeni />);
     await fireEvent.press(screen.getByText('Yol kapanması veya engel'));
     expect(screen.getByText('Yayın kontrolleri')).toBeTruthy();
-    expect(screen.getByText(/1\. Kimlik doğrulama/)).toBeTruthy();
+    expect(screen.getByText(/1\. Bölgenizde yakın zamanda deprem yok/)).toBeTruthy();
+    expect(screen.getByText(/2\. Kimlik doğrulama/)).toBeTruthy();
     expect(screen.getByText(/Kanıt fotoğrafı gerekli/)).toBeTruthy();
     expect(screen.getByText(/Önce “Kullanıcı Bildirimi”/)).toBeTruthy();
     expect(screen.getByLabelText('Fotoğraf çek')).toBeTruthy();

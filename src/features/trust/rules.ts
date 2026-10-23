@@ -29,7 +29,7 @@ export interface TrustInfo {
 export const isSuspended = (t: TrustInfo | null, now = Date.now()) => !!t?.suspendedUntil && Date.parse(t.suspendedUntil) > now;
 export const isInstitution = (t: TrustInfo | null) => t?.role === 'official' || t?.role === 'rescue';
 
-export type GateKey = 'identity' | 'location' | 'photo' | 'community';
+export type GateKey = 'quake' | 'identity' | 'location' | 'photo' | 'community';
 export type GateState = 'ok' | 'todo' | 'blocked' | 'skip' | 'info';
 export interface Gate {
   key: GateKey;
@@ -49,14 +49,37 @@ export interface GateInput {
   /** Bildirilen nokta (bu sürümde cihaz konumu; ileride haritadan seçilebilir) */
   point: LatLng | null;
   photos: { capturedAt: string }[];
+  /** Bulunulan yere yakın, son 72 saatteki resmî deprem (yoksa null). Bkz. reports/quakeGate. */
+  nearbyQuake: { magnitude: number; place: string; source: string } | null;
   now?: number;
 }
 
-/** Kullanıcı akışı: 1) kimlik 2) konum 3) canlı fotoğraf 4) topluluk onayı. */
+/** Kullanıcı akışı: 0) bölgede deprem 1) kimlik 2) konum 3) canlı fotoğraf 4) topluluk onayı. */
 export function evaluateGates(i: GateInput): Gate[] {
   const now = i.now ?? Date.now();
   const inst = isInstitution(i.trust);
   const gates: Gate[] = [];
+
+  // Herkese açık bildirim yalnızca deprem bölgesinde açılır (sunucu da denetler; kurumlar muaf).
+  if (inst) {
+    gates.push({ key: 'quake', title: 'Bölge şartı yok', detail: 'Kurumsal hesaplar her zaman bildirim yapabilir.', state: 'skip' });
+  } else if (i.nearbyQuake) {
+    gates.push({
+      key: 'quake',
+      title: `Bölgede deprem: M${i.nearbyQuake.magnitude.toFixed(1)}`,
+      detail: `${i.nearbyQuake.place} · ${i.nearbyQuake.source} kaydı`,
+      state: 'ok',
+    });
+  } else {
+    gates.push({
+      key: 'quake',
+      title: 'Bölgenizde yakın zamanda deprem yok',
+      detail: !i.device
+        ? 'Konumunuz alınınca kontrol edilir.'
+        : 'Olay bildirimi yalnızca son 72 saatte çevrenizde M4+ deprem olduysa açılır.',
+      state: i.device ? 'blocked' : 'todo',
+    });
+  }
 
   gates.push(
     !i.backend
@@ -85,7 +108,7 @@ export function evaluateGates(i: GateInput): Gate[] {
               },
   );
 
-  const needLoc = !!i.category && LOCATION_REQUIRED.includes(i.category);
+  const needLoc = !!i.category && (LOCATION_REQUIRED.includes(i.category) || !inst);
   if (!i.withLocation && !needLoc) {
     gates.push({ key: 'location', title: 'Konum eklenmeyecek', detail: 'Bildirim haritada gösterilmez.', state: 'skip' });
   } else if (inst) {
@@ -158,8 +181,10 @@ export function trustErrorMessage(message: string | undefined | null): string | 
   const map: [string, string][] = [
     ['identity_required', 'Bu işlem için kimlik doğrulaması gerekir.'],
     ['account_suspended', 'Yanlış ihbar nedeniyle hesabınız geçici olarak askıya alındı.'],
-    ['location_required', 'Bu bildirim türü için konum zorunludur.'],
+    ['no_recent_quake', 'Bölgenizde son 72 saatte M4+ deprem kaydı yok; olay bildirimi yalnızca deprem bölgesinde açılır.'],
     ['device_location_required', 'Canlı GPS konumunuz alınamadı.'],
+    ['quake_location_required', 'Deprem bölgesinde olduğunuzun kontrolü için konum gerekir.'],
+    ['location_required', 'Bu bildirim türü için konum zorunludur.'],
     ['location_inaccurate', `GPS doğruluğu yetersiz (en fazla ${MAX_GPS_ACCURACY_M} m).`],
     ['too_far', 'Bulunduğunuz yere çok uzak bir noktayı bildiremez veya oylayamazsınız.'],
     ['identity_too_new', 'Kimlik doğrulamasından 24 saat sonra oy verebilirsiniz (sahte hesaplara karşı önlem).'],

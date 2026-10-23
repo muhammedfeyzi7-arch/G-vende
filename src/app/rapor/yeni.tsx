@@ -20,7 +20,9 @@ import { isBackendConfigured } from '@/services/env';
 import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 import type { FeltIntensity, ReportCategory } from '@/types/report';
 import { coarsen, distanceKm } from '@/utils/geo';
-import { evaluateGates, gatesPass, LOCATION_REQUIRED, PHOTO_REQUIRED, type Gate } from '@/features/trust/rules';
+import { evaluateGates, gatesPass, isInstitution, LOCATION_REQUIRED, PHOTO_REQUIRED, type Gate } from '@/features/trust/rules';
+import { GATE_MIN_MAGNITUDE, GATE_WINDOW_HOURS } from '@/features/reports/quakeGate';
+import { useReportGate } from '@/features/reports/useReportGate';
 import { useTrust } from '@/features/trust/TrustProvider';
 import type { DeviceFix, ReportPhoto } from '@/types/report';
 
@@ -101,7 +103,9 @@ export default function NewReport() {
     }
   };
 
-  const needLocation = !!category && LOCATION_REQUIRED.includes(category);
+  const inst = isInstitution(trust);
+  // Bireysel bildirimde konum her zaman gerekir: sunucu bölgede deprem olup olmadığını bu konumla denetler.
+  const needLocation = !inst || (!!category && LOCATION_REQUIRED.includes(category));
   const withLocation = attachLocation || needLocation;
   useEffect(() => {
     if (withLocation && !fix && location.status === 'granted') locate();
@@ -149,6 +153,16 @@ export default function NewReport() {
     else go();
   };
 
+  const gate = useReportGate(fix);
+  const nearbyQuake = gate.quake
+    ? {
+        magnitude: gate.quake.reading.magnitude!,
+        place: gate.quake.reading.place ?? gate.quake.event.primary.place ?? 'Yakınınızda',
+        source: gate.quake.reading.source === 'afad' ? 'AFAD' : 'Kandilli',
+      }
+    : null;
+  // Konum biliniyor ve yakında resmî deprem kaydı yok: herkese açık form yerine açıklama gösterilir.
+  const closed = isBackendConfigured() && !inst && gate.located && !gate.quake;
   const signedIn = !!session;
   const gates = evaluateGates({
     backend: isBackendConfigured(),
@@ -159,6 +173,7 @@ export default function NewReport() {
     device: fix,
     point: fix,
     photos,
+    nearbyQuake,
   });
   const canPublish = isBackendConfigured() && signedIn && gatesPass(gates);
   const onGate = (g: Gate) => {
@@ -168,8 +183,8 @@ export default function NewReport() {
     else router.push('/guven');
   };
 
-  const smsFamily = async () => {
-    if (category !== 'safe' && category !== 'help') return;
+  const smsFamily = async (status: 'safe' | 'help' | null = category === 'safe' || category === 'help' ? category : null) => {
+    if (!status) return;
     if (!family.contacts.length) {
       return Alert.alert('Kişi yok', 'Önce Ailem sekmesinden acil durum kişilerinizi ekleyin.', [
         { text: 'Vazgeç', style: 'cancel' },
@@ -177,7 +192,7 @@ export default function NewReport() {
       ]);
     }
     const gps = attachLocation && location.status === 'granted' ? coarsen(location.coords, 0.001) : null;
-    const msg = buildStatusMessage(category === 'safe' ? 'safe' : 'need_help', {
+    const msg = buildStatusMessage(status === 'safe' ? 'safe' : 'need_help', {
       location: gps,
       meetingPoint: family.meetingPoint,
       note: description,
@@ -197,7 +212,7 @@ export default function NewReport() {
             tone="warning"
             text="Herkese açık yayın için sunucu gerekli (bu kurulumda yok). “Güvendeyim” ve “Yardım” için acil kişilerinize SMS gönderebilirsiniz."
           />
-        ) : !signedIn ? (
+        ) : closed ? null : !signedIn ? (
           <Banner
             icon="person-circle-outline"
             tone="warning"
@@ -220,220 +235,259 @@ export default function NewReport() {
           />
         ) : null}
 
-        <View style={{ gap: spacing.sm }}>
-          <AppText variant="heading">Ne bildirmek istiyorsunuz?</AppText>
-          <View style={styles.grid}>
-            {ORDER.map((c) => {
-              const m = CATEGORY_META[c];
-              const active = category === c;
-              return (
-                <Pressable
-                  key={c}
-                  onPress={() => {
-                    setCategory(c);
-                    if (c !== 'shake') setFelt(null);
-                  }}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: active }}
-                  style={[styles.catCard, active && { borderColor: m.color, backgroundColor: m.color + '1F' }]}
-                >
-                  <Ionicons name={m.icon} size={24} color={m.color} />
-                  <AppText variant="label" color={colors.text} style={{ textAlign: 'center' }}>
-                    {m.formLabel}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        {category === 'help' ? (
-          <Card style={{ gap: spacing.sm, borderColor: colors.dangerBorder }}>
-            <AppText variant="heading">Hayati tehlike varsa önce 112’yi arayın</AppText>
-            <AppText variant="label">Bu bildirim acil çağrı yerine geçmez ve ekiplere iletilmesi garanti edilmez.</AppText>
-            <Button label="112’yi ara" icon="call" variant="danger" onPress={call112} />
+        {closed ? (
+          <Card style={{ gap: spacing.md }}>
+            <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
+              <Ionicons name="pulse-outline" size={24} color={colors.primary} />
+              <AppText variant="heading" style={{ flex: 1 }}>
+                Bölgenizde yakın zamanda deprem yok
+              </AppText>
+            </View>
+            <AppText variant="body">
+              Olay bildirimi (sarsıntı, hasar, kapalı yol, yardım) yalnızca son {GATE_WINDOW_HOURS} saatte çevrenizde AFAD veya
+              Kandilli’nin kaydettiği M{GATE_MIN_MAGNITUDE.toFixed(1)} ve üzeri bir deprem olduğunda açılır. Böylece harita gerçek
+              olaylarla dolu kalır.
+            </AppText>
+            <AppText variant="caption">
+              Konumunuz {fix ? 'GPS ile' : 'yaklaşık olarak'} kontrol edildi. Uzakta olduğunuz bir bölgeyi bildiremezsiniz.
+            </AppText>
+            <Button
+              label={`Acil kişilerime “Güvendeyim” SMS’i${family.contacts.length ? ` (${family.contacts.length})` : ''}`}
+              icon="chatbubble-ellipses-outline"
+              onPress={() => smsFamily('safe')}
+              accessibilityHint="Her zaman kullanılabilir; telefonunuzun SMS uygulaması açılır"
+            />
+            <Button label="Hayati tehlike: 112’yi ara" icon="call" variant="danger" onPress={call112} />
+            {!fix ? (
+              <Button
+                label={locating ? 'Konum alınıyor…' : 'GPS ile yeniden kontrol et'}
+                icon="locate-outline"
+                variant="secondary"
+                loading={locating}
+                onPress={locate}
+              />
+            ) : null}
           </Card>
         ) : null}
 
-        {category === 'shake' ? (
-          <View style={{ gap: spacing.sm }}>
-            <AppText variant="heading">Sarsıntıyı nasıl hissettiniz?</AppText>
-            <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-              {[...FELT_LEVELS].reverse().map((l) => (
-                <Pressable
-                  key={l.value}
-                  onPress={() => setFelt(l.value)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: felt === l.value }}
-                  style={[styles.feltChip, felt === l.value && { borderColor: l.color, backgroundColor: l.color + '26' }]}
-                >
-                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: l.color }} />
-                  <AppText variant="label" color={colors.text}>
-                    {l.label}
+        {closed ? null : (
+          <>
+            <View style={{ gap: spacing.sm }}>
+              <AppText variant="heading">Ne bildirmek istiyorsunuz?</AppText>
+              <View style={styles.grid}>
+                {ORDER.map((c) => {
+                  const m = CATEGORY_META[c];
+                  const active = category === c;
+                  return (
+                    <Pressable
+                      key={c}
+                      onPress={() => {
+                        setCategory(c);
+                        if (c !== 'shake') setFelt(null);
+                      }}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: active }}
+                      style={[styles.catCard, active && { borderColor: m.color, backgroundColor: m.color + '1F' }]}
+                    >
+                      <Ionicons name={m.icon} size={24} color={m.color} />
+                      <AppText variant="label" color={colors.text} style={{ textAlign: 'center' }}>
+                        {m.formLabel}
+                      </AppText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            {category === 'help' ? (
+              <Card style={{ gap: spacing.sm, borderColor: colors.dangerBorder }}>
+                <AppText variant="heading">Hayati tehlike varsa önce 112’yi arayın</AppText>
+                <AppText variant="label">Bu bildirim acil çağrı yerine geçmez ve ekiplere iletilmesi garanti edilmez.</AppText>
+                <Button label="112’yi ara" icon="call" variant="danger" onPress={call112} />
+              </Card>
+            ) : null}
+
+            {category === 'shake' ? (
+              <View style={{ gap: spacing.sm }}>
+                <AppText variant="heading">Sarsıntıyı nasıl hissettiniz?</AppText>
+                <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
+                  {[...FELT_LEVELS].reverse().map((l) => (
+                    <Pressable
+                      key={l.value}
+                      onPress={() => setFelt(l.value)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: felt === l.value }}
+                      style={[styles.feltChip, felt === l.value && { borderColor: l.color, backgroundColor: l.color + '26' }]}
+                    >
+                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: l.color }} />
+                      <AppText variant="label" color={colors.text}>
+                        {l.label}
+                      </AppText>
+                    </Pressable>
+                  ))}
+                </View>
+                <AppText variant="caption">Kişisel algınızdır; ölçüm değildir.</AppText>
+              </View>
+            ) : null}
+
+            <View style={{ gap: spacing.sm }}>
+              <AppText variant="heading">Açıklama {category === 'other' ? '' : '(isteğe bağlı)'}</AppText>
+              <TextInput
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Kısa ve net yazın. Ad, telefon veya adres gibi kişisel bilgi paylaşmayın."
+                placeholderTextColor={colors.textMuted}
+                multiline
+                maxLength={MAX_DESCRIPTION}
+                style={styles.input}
+                accessibilityLabel="Açıklama"
+              />
+              <AppText variant="caption" style={{ textAlign: 'right' }}>
+                {description.length}/{MAX_DESCRIPTION}
+              </AppText>
+            </View>
+
+            <View style={{ gap: spacing.sm }}>
+              <AppText variant="heading">
+                {category && PHOTO_REQUIRED.includes(category) ? 'Kanıt fotoğrafı (zorunlu)' : 'Fotoğraf (isteğe bağlı)'} · en fazla{' '}
+                {MAX_PHOTOS}
+              </AppText>
+              <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
+                {photos.map((ph, i) => (
+                  <View key={ph.uri}>
+                    <Image source={{ uri: ph.uri }} style={styles.photo} contentFit="cover" />
+                    <Pressable
+                      onPress={() => setPhotos((p) => p.filter((_, j) => j !== i))}
+                      style={styles.removePhoto}
+                      accessibilityRole="button"
+                      accessibilityLabel="Fotoğrafı kaldır"
+                    >
+                      <Ionicons name="close" size={16} color="#fff" />
+                    </Pressable>
+                  </View>
+                ))}
+                {photos.length < MAX_PHOTOS ? (
+                  <Pressable onPress={takePhoto} style={styles.addPhoto} accessibilityRole="button" accessibilityLabel="Fotoğraf çek">
+                    <Ionicons name="camera-outline" size={24} color={colors.textSecondary} />
+                    <AppText variant="caption">Çek</AppText>
+                  </Pressable>
+                ) : null}
+              </View>
+              <AppText variant="caption">
+                Yalnızca uygulama kamerasıyla şimdi çekilen fotoğraf eklenebilir; galeriden yükleme kapalıdır. Fotoğraflar yeniden kodlanır,
+                konum (EXIF) bilgisi silinir. İnsan yüzü ve plaka içermemesine dikkat edin.
+              </AppText>
+            </View>
+
+            <Card style={{ gap: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                  <AppText variant="heading">{needLocation ? 'Olay yeri konumu (zorunlu)' : 'Konumu ekle'}</AppText>
+                  <AppText variant="caption">
+                    Telefonunuzun canlı GPS konumu kullanılır. Herkese ~1 km’ye yuvarlanarak gösterilir; tam konum yalnızca yakındaki kişilerin
+                    oylamasını ölçmek için sunucuda tutulur.
+                  </AppText>
+                </View>
+                {needLocation ? null : (
+                  <Switch
+                    value={attachLocation}
+                    onValueChange={setAttachLocation}
+                    trackColor={{ true: colors.primary, false: colors.borderStrong }}
+                    accessibilityLabel="Konumu ekle"
+                  />
+                )}
+              </View>
+              {withLocation ? (
+                <Button
+                  label={locating ? 'Konum alınıyor…' : fix ? `Konum alındı (±${Math.round(fix.accuracy)} m) · yenile` : 'Canlı konumumu al'}
+                  icon="locate-outline"
+                  variant="secondary"
+                  loading={locating}
+                  onPress={locate}
+                />
+              ) : null}
+              {withLocation ? (
+                <TextInput
+                  value={areaLabel}
+                  onChangeText={setAreaLabel}
+                  placeholder="Bölge (ör. Düzce · Gölyaka)"
+                  placeholderTextColor={colors.textMuted}
+                  maxLength={80}
+                  style={[styles.input, { minHeight: 44 }]}
+                  accessibilityLabel="Bölge adı"
+                />
+              ) : null}
+            </Card>
+
+            <Card style={{ gap: spacing.sm }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+                <AppText variant="heading" style={{ flex: 1 }}>
+                  Yayın kontrolleri
+                </AppText>
+                <Pressable onPress={() => router.push('/guven')} accessibilityRole="link" hitSlop={8}>
+                  <AppText variant="label" color={colors.primary}>
+                    Neden?
                   </AppText>
                 </Pressable>
-              ))}
-            </View>
-            <AppText variant="caption">Kişisel algınızdır; ölçüm değildir.</AppText>
-          </View>
-        ) : null}
-
-        <View style={{ gap: spacing.sm }}>
-          <AppText variant="heading">Açıklama {category === 'other' ? '' : '(isteğe bağlı)'}</AppText>
-          <TextInput
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Kısa ve net yazın. Ad, telefon veya adres gibi kişisel bilgi paylaşmayın."
-            placeholderTextColor={colors.textMuted}
-            multiline
-            maxLength={MAX_DESCRIPTION}
-            style={styles.input}
-            accessibilityLabel="Açıklama"
-          />
-          <AppText variant="caption" style={{ textAlign: 'right' }}>
-            {description.length}/{MAX_DESCRIPTION}
-          </AppText>
-        </View>
-
-        <View style={{ gap: spacing.sm }}>
-          <AppText variant="heading">
-            {category && PHOTO_REQUIRED.includes(category) ? 'Kanıt fotoğrafı (zorunlu)' : 'Fotoğraf (isteğe bağlı)'} · en fazla{' '}
-            {MAX_PHOTOS}
-          </AppText>
-          <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-            {photos.map((ph, i) => (
-              <View key={ph.uri}>
-                <Image source={{ uri: ph.uri }} style={styles.photo} contentFit="cover" />
-                <Pressable
-                  onPress={() => setPhotos((p) => p.filter((_, j) => j !== i))}
-                  style={styles.removePhoto}
-                  accessibilityRole="button"
-                  accessibilityLabel="Fotoğrafı kaldır"
-                >
-                  <Ionicons name="close" size={16} color="#fff" />
-                </Pressable>
               </View>
-            ))}
-            {photos.length < MAX_PHOTOS ? (
-              <Pressable onPress={takePhoto} style={styles.addPhoto} accessibilityRole="button" accessibilityLabel="Fotoğraf çek">
-                <Ionicons name="camera-outline" size={24} color={colors.textSecondary} />
-                <AppText variant="caption">Çek</AppText>
-              </Pressable>
-            ) : null}
-          </View>
-          <AppText variant="caption">
-            Yalnızca uygulama kamerasıyla şimdi çekilen fotoğraf eklenebilir; galeriden yükleme kapalıdır. Fotoğraflar yeniden kodlanır,
-            konum (EXIF) bilgisi silinir. İnsan yüzü ve plaka içermemesine dikkat edin.
-          </AppText>
-        </View>
+              {gates.map((g, i) => (
+                <Pressable
+                  key={g.key}
+                  onPress={() => onGate(g)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${i + 1}. ${g.title}. ${g.detail}`}
+                  style={styles.gate}
+                >
+                  <Ionicons name={GATE_ICON[g.state].icon} size={20} color={GATE_ICON[g.state].color} />
+                  <View style={{ flex: 1 }}>
+                    <AppText variant="label" color={colors.text} style={{ fontWeight: '600' }}>
+                      {i + 1}. {g.title}
+                    </AppText>
+                    <AppText variant="caption">{g.detail}</AppText>
+                  </View>
+                  {g.state === 'todo' ? <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} /> : null}
+                </Pressable>
+              ))}
+            </Card>
 
-        <Card style={{ gap: spacing.sm }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ flex: 1 }}>
-              <AppText variant="heading">{needLocation ? 'Olay yeri konumu (zorunlu)' : 'Konumu ekle'}</AppText>
-              <AppText variant="caption">
-                Telefonunuzun canlı GPS konumu kullanılır. Herkese ~1 km’ye yuvarlanarak gösterilir; tam konum yalnızca yakındaki kişilerin
-                oylamasını ölçmek için sunucuda tutulur.
-              </AppText>
-            </View>
-            {needLocation ? null : (
-              <Switch
-                value={attachLocation}
-                onValueChange={setAttachLocation}
-                trackColor={{ true: colors.primary, false: colors.borderStrong }}
-                accessibilityLabel="Konumu ekle"
+            <AppText variant="caption">
+              Bildiriminiz kategori, açıklama, fotoğraf, bölge adı ve yaklaşık konumla herkese açık görünür; adınız gösterilmez. Kimliğiniz
+              yalnızca yanlış ihbar durumunda hesabınıza yaptırım uygulanabilmesi için doğrulanmıştır.
+            </AppText>
+
+            {category === 'safe' || category === 'help' ? (
+              <Button
+                label={`Acil kişilerime SMS gönder${family.contacts.length ? ` (${family.contacts.length})` : ''}`}
+                icon="chatbubble-ellipses-outline"
+                variant={canPublish ? 'secondary' : 'primary'}
+                onPress={() => smsFamily()}
+                accessibilityHint="İnternet gerekmez; telefonunuzun SMS uygulaması açılır"
+              />
+            ) : null}
+            {isBackendConfigured() && !signedIn ? (
+              // Girişsiz kullanıcı formu doldurduktan sonra takılmasın: giriş ekranı açılır, yazdıkları bu ekranda kalır.
+              <Button label="Giriş yap ve yayınla" icon="log-in-outline" onPress={() => router.push('/giris')} disabled={!category} />
+            ) : (
+              <Button
+                label={sending ? 'Gönderiliyor…' : 'Bildirimi herkese yayınla'}
+                icon="send"
+                onPress={onSubmit}
+                loading={sending}
+                disabled={!category || (category === 'other' && !description.trim()) || !canPublish}
               />
             )}
-          </View>
-          {withLocation ? (
-            <Button
-              label={locating ? 'Konum alınıyor…' : fix ? `Konum alındı (±${Math.round(fix.accuracy)} m) · yenile` : 'Canlı konumumu al'}
-              icon="locate-outline"
-              variant="secondary"
-              loading={locating}
-              onPress={locate}
-            />
-          ) : null}
-          {withLocation ? (
-            <TextInput
-              value={areaLabel}
-              onChangeText={setAreaLabel}
-              placeholder="Bölge (ör. Düzce · Gölyaka)"
-              placeholderTextColor={colors.textMuted}
-              maxLength={80}
-              style={[styles.input, { minHeight: 44 }]}
-              accessibilityLabel="Bölge adı"
-            />
-          ) : null}
-        </Card>
-
-        <Card style={{ gap: spacing.sm }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-            <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
-            <AppText variant="heading" style={{ flex: 1 }}>
-              Yayın kontrolleri
-            </AppText>
-            <Pressable onPress={() => router.push('/guven')} accessibilityRole="link" hitSlop={8}>
-              <AppText variant="label" color={colors.primary}>
-                Neden?
+            {!canPublish ? (
+              <AppText variant="caption" style={{ textAlign: 'center' }}>
+                {!isBackendConfigured()
+                  ? 'Herkese açık yayın için sunucu bağlantısı gerekli (bu kurulumda yok).'
+                  : !signedIn
+                    ? 'Giriş yaptıktan sonra bu ekrana dönersiniz; yazdıklarınız kaybolmaz.'
+                    : 'Yayın kontrollerindeki eksikleri tamamlayın.'}
               </AppText>
-            </Pressable>
-          </View>
-          {gates.map((g, i) => (
-            <Pressable
-              key={g.key}
-              onPress={() => onGate(g)}
-              accessibilityRole="button"
-              accessibilityLabel={`${i + 1}. ${g.title}. ${g.detail}`}
-              style={styles.gate}
-            >
-              <Ionicons name={GATE_ICON[g.state].icon} size={20} color={GATE_ICON[g.state].color} />
-              <View style={{ flex: 1 }}>
-                <AppText variant="label" color={colors.text} style={{ fontWeight: '600' }}>
-                  {i + 1}. {g.title}
-                </AppText>
-                <AppText variant="caption">{g.detail}</AppText>
-              </View>
-              {g.state === 'todo' ? <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} /> : null}
-            </Pressable>
-          ))}
-        </Card>
-
-        <AppText variant="caption">
-          Bildiriminiz kategori, açıklama, fotoğraf, bölge adı ve yaklaşık konumla herkese açık görünür; adınız gösterilmez. Kimliğiniz
-          yalnızca yanlış ihbar durumunda hesabınıza yaptırım uygulanabilmesi için doğrulanmıştır.
-        </AppText>
-
-        {category === 'safe' || category === 'help' ? (
-          <Button
-            label={`Acil kişilerime SMS gönder${family.contacts.length ? ` (${family.contacts.length})` : ''}`}
-            icon="chatbubble-ellipses-outline"
-            variant={canPublish ? 'secondary' : 'primary'}
-            onPress={smsFamily}
-            accessibilityHint="İnternet gerekmez; telefonunuzun SMS uygulaması açılır"
-          />
-        ) : null}
-        {isBackendConfigured() && !signedIn ? (
-          // Girişsiz kullanıcı formu doldurduktan sonra takılmasın: giriş ekranı açılır, yazdıkları bu ekranda kalır.
-          <Button label="Giriş yap ve yayınla" icon="log-in-outline" onPress={() => router.push('/giris')} disabled={!category} />
-        ) : (
-          <Button
-            label={sending ? 'Gönderiliyor…' : 'Bildirimi herkese yayınla'}
-            icon="send"
-            onPress={onSubmit}
-            loading={sending}
-            disabled={!category || (category === 'other' && !description.trim()) || !canPublish}
-          />
+            ) : null}
+          </>
         )}
-        {!canPublish ? (
-          <AppText variant="caption" style={{ textAlign: 'center' }}>
-            {!isBackendConfigured()
-              ? 'Herkese açık yayın için sunucu bağlantısı gerekli (bu kurulumda yok).'
-              : !signedIn
-                ? 'Giriş yaptıktan sonra bu ekrana dönersiniz; yazdıklarınız kaybolmaz.'
-                : 'Yayın kontrollerindeki eksikleri tamamlayın.'}
-          </AppText>
-        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );

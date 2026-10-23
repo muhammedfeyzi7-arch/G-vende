@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useCanReport } from '@/features/reports/useReportGate';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useMemo, useRef, useState } from 'react';
@@ -36,6 +37,7 @@ const TABS: { key: TabKey; label: string }[] = [
  * Canlı Akış / Resmî Veriler / Toplanma Alanları / Yardım / Detaylar panelleri.
  */
 export default function MapScreen() {
+  const canReport = useCanReport();
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { height } = useWindowDimensions();
@@ -256,7 +258,7 @@ export default function MapScreen() {
       </ScrollView>
 
       {/* Harita kartlarının üstüne binmesin: akış görünür olunca çıkar. */}
-      {tab === 'feed' && scrolledToFeed ? (
+      {tab === 'feed' && scrolledToFeed && canReport ? (
         <Pressable
           onPress={() => router.push('/rapor/yeni')}
           accessibilityRole="button"

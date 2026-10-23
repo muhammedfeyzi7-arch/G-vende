@@ -25,6 +25,9 @@ set client_min_messages = notice;
 insert into public.profiles (id, identity_verified_at)
   select id, now() - interval '2 days' from auth.users;
 
+-- Olay bildirimi kapısı (0012): testlerdeki bildirim yerlerinin yakınında yakın zamanda resmî M6,5 kaydı.
+insert into public.earthquake_readings (source, source_event_id, magnitude, latitude, longitude, occurred_at)
+  values ('afad', 'TEST-GATE', 6.5, 40.90, 31.20, now() - interval '1 hour') on conflict do nothing;
 -- 1) Bildirim oluşturma, konum yuvarlama, yazar kimliğinin gizliliği
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 insert into public.user_reports (client_id, category, felt_intensity, description, latitude, longitude, area_label,
@@ -47,16 +50,16 @@ exception when insufficient_privilege then raise notice 'OK: sayaç sütunları 
 end $$;
 
 do $$ begin
-  insert into public.user_reports (client_id, category, felt_intensity) values (gen_random_uuid(), 'safe', 2);
+  insert into public.user_reports (client_id, category, felt_intensity, latitude, longitude, device_latitude, device_longitude, device_accuracy_m) values (gen_random_uuid(), 'safe', 2, 40.9, 31.2, 40.9001, 31.2001, 5);
   raise exception 'BAŞARISIZ: sarsıntı dışı kategoride şiddet kabul edildi';
 exception when check_violation then raise notice 'OK: şiddet yalnızca sarsıntı bildiriminde';
 end $$;
 
 -- 2) Hız sınırı: 10 dakikada en fazla 3
-insert into public.user_reports (client_id, category) values (gen_random_uuid(), 'safe');
-insert into public.user_reports (client_id, category) values (gen_random_uuid(), 'safe');
+insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m) values (gen_random_uuid(), 'safe', 40.9, 31.2, 40.9001, 31.2001, 5);
+insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m) values (gen_random_uuid(), 'safe', 40.9, 31.2, 40.9001, 31.2001, 5);
 do $$ begin
-  insert into public.user_reports (client_id, category) values (gen_random_uuid(), 'safe');
+  insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m) values (gen_random_uuid(), 'safe', 40.9, 31.2, 40.9001, 31.2001, 5);
   raise exception 'BAŞARISIZ: hız sınırı uygulanmadı';
 exception when raise_exception then
   if sqlerrm = 'rate_limited' then raise notice 'OK: hız sınırı (3/10 dk)'; else raise; end if;
@@ -65,9 +68,9 @@ end $$;
 -- 3) Aynı client_id ile tekrar gönderim reddedilir (çevrimdışı kuyruk tekilleştirmesi)
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-insert into public.user_reports (client_id, category) values ('22222222-2222-2222-2222-222222222222', 'other');
+insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m) values ('22222222-2222-2222-2222-222222222222', 'other', 40.9, 31.2, 40.9001, 31.2001, 5);
 do $$ begin
-  insert into public.user_reports (client_id, category) values ('22222222-2222-2222-2222-222222222222', 'other');
+  insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m) values ('22222222-2222-2222-2222-222222222222', 'other', 40.9, 31.2, 40.9001, 31.2001, 5);
   raise exception 'BAŞARISIZ: tekrar gönderim kabul edildi';
 exception when unique_violation then raise notice 'OK: client_id tekilleştirmesi';
 end $$;
@@ -77,7 +80,7 @@ reset role;
 select pg_temp.as_user('');
 select pg_temp.ok((select count(*) = 4 from public.user_reports), 'anonim kullanıcı görünür bildirimleri okuyabilir');
 do $$ begin
-  insert into public.user_reports (client_id, category) values (gen_random_uuid(), 'safe');
+  insert into public.user_reports (client_id, category, latitude, longitude, device_latitude, device_longitude, device_accuracy_m) values (gen_random_uuid(), 'safe', 40.9, 31.2, 40.9001, 31.2001, 5);
   raise exception 'BAŞARISIZ: anonim yazdı';
 exception when insufficient_privilege then raise notice 'OK: anonim bildirim yazamaz';
 end $$;

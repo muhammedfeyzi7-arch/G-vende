@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useCanReport } from '@/features/reports/useReportGate';
 import { router } from 'expo-router';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -41,6 +42,7 @@ function statusOf(m: MyReport): { label: string; color: string; icon: string; de
 
 /** Bu cihazdan gönderilen olay bildirimleri ve güncel durumları (yayında, doğrulandı, bekliyor…). */
 export default function MyReports() {
+  const canReport = useCanReport();
   const insets = useSafeAreaInsets();
   const { mine, removeMine, discardPending, retryPending, pending } = useReports();
 
@@ -50,8 +52,8 @@ export default function MyReports() {
         icon="document-text-outline"
         title="Henüz olay bildirmediniz"
         message="Sarsıntı, hasar, yol kapanması veya yardım ihtiyacını bildirdiğinizde durumunu buradan takip edersiniz."
-        actionLabel="Olay bildir"
-        onAction={() => router.push('/rapor/yeni')}
+        actionLabel={canReport ? 'Olay bildir' : undefined}
+        onAction={canReport ? () => router.push('/rapor/yeni') : undefined}
       />
     );
 

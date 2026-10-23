@@ -1,4 +1,5 @@
 import { useToast } from '@/components/Toast';
+import { useCanReport } from '@/features/reports/useReportGate';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
@@ -58,6 +59,7 @@ function SectionTitle({
 }
 
 export function HomeScreen() {
+  const canReport = useCanReport();
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { height } = useWindowDimensions();
@@ -261,7 +263,7 @@ export function HomeScreen() {
               </View>
               {feed.status === 'error' ? (
                 <Button label="Tekrar" size="sm" variant="secondary" onPress={() => feed.refresh()} />
-              ) : feed.status !== 'not-configured' ? (
+              ) : feed.status !== 'not-configured' && canReport ? (
                 <Button label="Bildir" icon="add" size="sm" onPress={() => router.push('/rapor/yeni')} />
               ) : null}
             </View>

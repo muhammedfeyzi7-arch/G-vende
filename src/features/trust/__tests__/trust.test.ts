@@ -13,6 +13,7 @@ const base = (o: Partial<GateInput> = {}): GateInput => ({
   device: here,
   point: here,
   photos: [{ capturedAt: new Date(NOW - 60_000).toISOString() }],
+  nearbyQuake: { magnitude: 5.1, place: 'Düzce', source: 'AFAD' },
   now: NOW,
   ...o,
 });
@@ -42,12 +43,18 @@ describe('yayın kontrolleri (kimlik → konum → canlı fotoğraf → topluluk
     expect(state(base({ photos: [] }), 'photo')).toBe('todo');
     expect(state(base({ photos: [{ capturedAt: new Date(NOW - 30 * 60_000).toISOString() }] }), 'photo')).toBe('todo');
   });
-  it('"Güvendeyim" için fotoğraf ve konum isteğe bağlı', () => {
-    const i = base({ category: 'safe', withLocation: false, device: null, point: null, photos: [] });
-    expect(gatesPass(evaluateGates(i))).toBe(true);
+  it('"Güvendeyim" için fotoğraf isteğe bağlı ama konum gerekir (bölgede deprem kontrolü)', () => {
+    expect(gatesPass(evaluateGates(base({ category: 'safe', photos: [] })))).toBe(true);
+    expect(state(base({ category: 'safe', withLocation: false, device: null, point: null, photos: [] }), 'location')).toBe('todo');
+  });
+  it('bölgede yakın zamanda resmî deprem yoksa yayınlanamaz', () => {
+    const i = base({ nearbyQuake: null });
+    expect(state(i, 'quake')).toBe('blocked');
+    expect(gatesPass(evaluateGates(i))).toBe(false);
+    expect(state(base({ nearbyQuake: null, device: null }), 'quake')).toBe('todo');
   });
   it('kurumsal hesap konum/fotoğraf şartından muaf ve "Resmî" yayınlar', () => {
-    const i = base({ trust: { ...verified, role: 'official', orgName: 'AFAD' }, device: null, photos: [], point: here });
+    const i = base({ trust: { ...verified, role: 'official', orgName: 'AFAD' }, device: null, photos: [], point: here, nearbyQuake: null });
     const g = evaluateGates(i);
     expect(gatesPass(g)).toBe(true);
     expect(g.find((x) => x.key === 'community')!.title).toBe('Resmî bilgi');
@@ -59,6 +66,9 @@ describe('sunucu hata mesajları', () => {
     expect(trustErrorMessage('new row violates: too_far')).toMatch(/uzak/);
     expect(trustErrorMessage('photo_not_live')).toMatch(/kamerasıyla/);
     expect(trustErrorMessage('identity_required')).toMatch(/kimlik/);
+    expect(trustErrorMessage('no_recent_quake')).toMatch(/72 saat/);
+    expect(trustErrorMessage('quake_location_required')).toMatch(/konum gerekir/);
+    expect(trustErrorMessage('device_location_required')).toMatch(/GPS/);
     expect(trustErrorMessage('başka bir hata')).toBeNull();
   });
 });

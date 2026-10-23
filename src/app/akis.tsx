@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useCanReport } from '@/features/reports/useReportGate';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -12,6 +13,7 @@ import { colors, font, radius, spacing, themedStyles } from '@/theme';
 
 /** Tüm kullanıcı bildirimleri (canlı akış) — kategori filtreli. */
 export default function FeedScreen() {
+  const canReport = useCanReport();
   const insets = useSafeAreaInsets();
   const { online } = useApp();
   const feed = useReports();
@@ -48,17 +50,19 @@ export default function FeedScreen() {
           online={online}
         />
       </ScrollView>
-      <Pressable
-        onPress={() => router.push('/rapor/yeni')}
-        accessibilityRole="button"
-        accessibilityLabel="Bildirim ekle"
-        style={({ pressed }) => [styles.fab, { bottom: insets.bottom + spacing.lg }, pressed && { opacity: 0.9 }]}
-      >
-        <Ionicons name="pencil" size={22} color="#fff" />
-        <AppText variant="heading" color="#fff" style={{ fontSize: font.size.lg }}>
-          Olay Bildir
-        </AppText>
-      </Pressable>
+      {canReport ? (
+        <Pressable
+          onPress={() => router.push('/rapor/yeni')}
+          accessibilityRole="button"
+          accessibilityLabel="Bildirim ekle"
+          style={({ pressed }) => [styles.fab, { bottom: insets.bottom + spacing.lg }, pressed && { opacity: 0.9 }]}
+        >
+          <Ionicons name="pencil" size={22} color="#fff" />
+          <AppText variant="heading" color="#fff" style={{ fontSize: font.size.lg }}>
+            Olay Bildir
+          </AppText>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

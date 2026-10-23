@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useCanReport } from '@/features/reports/useReportGate';
 import { useKeepAwake } from 'expo-keep-awake';
 import { router } from 'expo-router';
 import { Accelerometer } from 'expo-sensors';
@@ -20,6 +21,7 @@ const SCALE_G = 0.3; // grafiğin üst sınırı
  * hiçbir veri kaydedilmez veya gönderilmez. Deprem büyüklüğü ya da erken uyarı değildir.
  */
 export default function VibrationMeter() {
+  const canReport = useCanReport();
   useKeepAwake();
   const [available, setAvailable] = useState<boolean | null>(null);
   const [running, setRunning] = useState(true);
@@ -118,11 +120,13 @@ export default function VibrationMeter() {
         />
         <Button style={{ flex: 1 }} variant="secondary" icon="refresh" label="Sıfırla" onPress={() => setState(initialVibration())} />
       </View>
-      <Button
-        icon="pulse"
-        label="Sarsıntı hissettim — bildir"
-        onPress={() => router.push({ pathname: '/rapor/yeni', params: { kategori: 'shake' } })}
-      />
+      {canReport ? (
+        <Button
+          icon="pulse"
+          label="Sarsıntı hissettim — bildir"
+          onPress={() => router.push({ pathname: '/rapor/yeni', params: { kategori: 'shake' } })}
+        />
+      ) : null}
 
       <View style={styles.note}>
         <Ionicons name="information-circle" size={18} color={colors.textSecondary} />
