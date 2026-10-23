@@ -51,7 +51,7 @@ export default function HelpCenter() {
           style={styles.item}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-            <AppText variant="heading" style={{ flex: 1, fontSize: 16 }}>
+            <AppText variant="heading" style={{ flex: 1, fontSize: 14 }}>
               {f.q}
             </AppText>
             <Ionicons name={open === i ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSecondary} />

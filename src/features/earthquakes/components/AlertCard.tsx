@@ -70,22 +70,22 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
         <AppText variant="title" numberOfLines={alert ? 1 : 2} style={{ fontSize: alert ? 19 : 17, letterSpacing: -0.2 }}>
           {title}
         </AppText>
-        <AppText variant="label" numberOfLines={2} color={soft} style={{ fontSize: 13 }}>
+        <AppText variant="label" numberOfLines={2} color={soft} style={{ fontSize: 11.5 }}>
           {subtitle}
         </AppText>
       </View>
       {event ? (
         <View style={[styles.magBox, { borderColor: alert ? colors.danger + 'B3' : colors.borderStrong }]}>
-          <AppText variant="caption" color={soft} style={{ fontSize: 11 }}>
+          <AppText variant="caption" color={soft} style={{ fontSize: 9.5 }}>
             Büyüklük {event.primary.magnitudeType ? `(${event.primary.magnitudeType})` : ''}
           </AppText>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <AppText variant="display" style={{ fontSize: 28, lineHeight: 32 }}>
+            <AppText variant="display" style={{ fontSize: 24.5, lineHeight: 28 }}>
               {formatMagnitude(event.primary.magnitude)}
             </AppText>
             <Ionicons name="pulse" size={16} color={accent} />
           </View>
-          <AppText variant="caption" color={alert ? '#F3C3C9' : colors.textMuted} style={{ fontSize: 10 }}>
+          <AppText variant="caption" color={alert ? '#F3C3C9' : colors.textMuted} style={{ fontSize: 9 }}>
             {sourceLabel(event.primary)}
           </AppText>
         </View>

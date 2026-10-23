@@ -81,7 +81,7 @@ export default function OfficialInfo() {
                 ))}
                 <AppText variant="caption">{relativeTimeTr(e.primary.occurredAt)}</AppText>
               </View>
-              <AppText variant="heading" style={{ fontSize: 15 }}>
+              <AppText variant="heading" style={{ fontSize: 13 }}>
                 {placeTitle(e)}
               </AppText>
               <AppText variant="caption">Derinlik {formatDepth(e.primary.depthKm)}</AppText>

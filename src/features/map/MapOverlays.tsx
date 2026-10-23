@@ -15,7 +15,7 @@ function ControlButton({ icon, label, onPress, active }: { icon: string; label: 
       style={({ pressed }) => [styles.ctrl, active && { borderColor: colors.primary }, pressed && { opacity: 0.85 }]}
     >
       <Ionicons name={icon as never} size={24} color={active ? colors.primary : colors.text} />
-      <AppText variant="caption" color={colors.text} style={{ fontSize: 10.5 }}>
+      <AppText variant="caption" color={colors.text} style={{ fontSize: 9 }}>
         {label}
       </AppText>
     </Pressable>
@@ -70,7 +70,7 @@ function MiniChip({ label, active, onPress, a11y }: { label: string; active: boo
       accessibilityLabel={a11y}
       style={[styles.miniChip, active && { backgroundColor: colors.primary, borderColor: colors.primary }]}
     >
-      <AppText variant="caption" color={active ? '#fff' : colors.text} style={{ fontSize: 12 }}>
+      <AppText variant="caption" color={active ? '#fff' : colors.text} style={{ fontSize: 10.5 }}>
         {label}
       </AppText>
     </Pressable>
@@ -143,24 +143,21 @@ export function MapLegend() {
     <View
       style={styles.legend}
       accessible
-      accessibilityLabel="Lejant: kullanıcıların bildirdiği hissedilen sarsıntı. Çok güçlü kırmızı, güçlü turuncu, orta sarı, hafif gri."
+      accessibilityLabel="Lejant: kullanıcıların bildirdiği hissedilen sarsıntı. Çok güçlü kırmızı, güçlü turuncu, orta sarı, hafif gri. Halkalar merkez üssüne 25, 50 ve 75 kilometre uzaklıktır; ölçülmüş sarsıntı alanı değildir."
     >
-      <AppText variant="caption" color={colors.textSecondary} numberOfLines={1} style={{ fontSize: 11.5 }}>
+      <AppText variant="caption" color={colors.textSecondary} numberOfLines={1} style={{ fontSize: 10 }}>
         Sarsıntı hissedilen bölgeler
       </AppText>
       <View style={styles.legendRow}>
         {FELT_LEVELS.map((l) => (
           <View key={l.value} style={styles.legendItem}>
             <View style={[styles.dot, { backgroundColor: l.color }]} />
-            <AppText variant="caption" color={colors.text} style={{ fontSize: 11 }}>
+            <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: 10.5 }}>
               {l.label}
             </AppText>
           </View>
         ))}
       </View>
-      <AppText variant="caption" style={{ fontSize: 10 }}>
-        Halkalar: 25/50/75 km uzaklık, ölçüm değil
-      </AppText>
     </View>
   );
 }
@@ -170,7 +167,12 @@ export function NearbyAssemblyButton({ onPress, count, mine }: { onPress: () => 
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel="Yakınımdaki toplanma alanları"
+      accessibilityLabel={[
+        'Yakınımdaki toplanma alanları',
+        mine ? `Alanınız: ${mine}` : count != null ? (count > 0 ? `${count} resmî alan` : 'Resmî veri yok') : null,
+      ]
+        .filter(Boolean)
+        .join(', ')}
       style={({ pressed }) => [styles.assemblyBtn, pressed && { opacity: 0.85 }]}
     >
       <View style={styles.assemblyIcon}>
@@ -180,13 +182,6 @@ export function NearbyAssemblyButton({ onPress, count, mine }: { onPress: () => 
         <AppText variant="label" color={colors.text} numberOfLines={2}>
           Yakınımdaki toplanma alanları
         </AppText>
-        {mine ? (
-          <AppText variant="caption" color={colors.safe} numberOfLines={1}>
-            Alanınız: {mine}
-          </AppText>
-        ) : count != null ? (
-          <AppText variant="caption">{count > 0 ? `${count} resmî alan` : 'Resmî veri yok'}</AppText>
-        ) : null}
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.text} />
     </Pressable>
@@ -238,7 +233,7 @@ const styles = StyleSheet.create({
     gap: 4,
     alignSelf: 'flex-start',
   },
-  legendRow: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 6, rowGap: 2 },
+  legendRow: { flexDirection: 'row', columnGap: 7 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   dot: { width: 9, height: 9, borderRadius: 5 },
   assemblyBtn: {

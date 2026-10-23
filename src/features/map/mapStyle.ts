@@ -134,9 +134,17 @@ export const GUVENDE_DARK_STYLE = {
  * üzerine GÜVENDE sınır/yol/yer adı katmanları. Görüntü koyulaştırılarak kaplamalar öne çıkarılır.
  * Not: Karo adresi bu geliştirme ortamından doğrulanamadı.
  */
-const overlayLayers = (GUVENDE_DARK_STYLE.layers as { id: string }[]).filter((l) =>
-  ['boundary-state', 'boundary-country', 'roads-major', 'water-name', 'place-town', 'place-city'].includes(l.id),
-);
+type AnyLayer = { id: string; paint?: Record<string, unknown> };
+const overlayLayers = (GUVENDE_DARK_STYLE.layers as AnyLayer[])
+  .filter((l) => ['boundary-state', 'boundary-country', 'roads-minor', 'roads-major', 'water-name', 'place-town', 'place-city'].includes(l.id))
+  .map((l) =>
+    // Uydu görüntüsü üzerinde yollar referanstaki gibi sarımsı ve yarı saydam çizilir.
+    l.id === 'roads-major'
+      ? { ...l, paint: { ...l.paint, 'line-color': '#D9A93A', 'line-opacity': 0.55 } }
+      : l.id === 'roads-minor'
+        ? { ...l, paint: { ...l.paint, 'line-color': '#B98B3A', 'line-opacity': 0.35 } }
+        : l,
+  );
 
 export const SATELLITE_STYLE = {
   ...GUVENDE_DARK_STYLE,
@@ -157,7 +165,7 @@ export const SATELLITE_STYLE = {
       id: 'satellite',
       type: 'raster',
       source: 's2',
-      paint: { 'raster-brightness-max': 0.55, 'raster-saturation': -0.35, 'raster-contrast': 0.1 },
+      paint: { 'raster-brightness-max': 0.6, 'raster-saturation': -0.2, 'raster-contrast': 0.15 },
     },
     ...overlayLayers,
   ],
@@ -167,7 +175,7 @@ export const SATELLITE_STYLE = {
 export const LIGHT_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
 export const MAP_STYLE_OPTIONS: { id: 'dark' | 'satellite' | 'light'; label: string; description: string }[] = [
+  { id: 'satellite', label: 'Uydu', description: 'Sentinel-2 uydu görüntüsü + yollar ve yer adları (EOX, CC BY 4.0)' },
   { id: 'dark', label: 'Koyu', description: 'Gece ve kesintide göz yormayan koyu harita (OpenStreetMap)' },
-  { id: 'satellite', label: 'Uydu', description: 'Sentinel-2 uydu görüntüsü + yer adları (EOX, CC BY 4.0)' },
   { id: 'light', label: 'Açık', description: 'Gündüz kullanımına uygun açık harita (OpenStreetMap)' },
 ];

@@ -25,7 +25,7 @@ export default function Guides() {
         >
           <IconTile icon={g.icon} color={g.color} size={46} />
           <View style={{ flex: 1 }}>
-            <AppText variant="heading" style={{ fontSize: 16 }}>
+            <AppText variant="heading" style={{ fontSize: 14 }}>
               {g.title}
             </AppText>
             <AppText variant="caption">{g.summary}</AppText>

@@ -71,7 +71,7 @@ export function ReportRow({
           style={styles.helpful}
         >
           <Ionicons name={helpful ? 'heart' : 'heart-outline'} size={21} color={helpful ? colors.danger : colors.textSecondary} />
-          <AppText variant="label" style={{ fontSize: 15 }}>
+          <AppText variant="label" style={{ fontSize: 13 }}>
             {report.helpfulCount}
           </AppText>
         </Pressable>
@@ -93,11 +93,11 @@ const styles = StyleSheet.create({
   icon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
   thumb: { width: 66, height: 66, borderRadius: radius.md, backgroundColor: colors.surfaceRaised },
   body: { flex: 1, gap: 2 },
-  area: { fontSize: 13 },
-  headline: { fontSize: 16, fontWeight: '700' },
-  desc: { fontSize: 14, lineHeight: 19 },
+  area: { fontSize: 11.5 },
+  headline: { fontSize: 14, fontWeight: '700' },
+  desc: { fontSize: 12.5, lineHeight: 16.5 },
   badges: { flexDirection: 'row', gap: spacing.xs, marginTop: 4 },
   side: { alignSelf: 'stretch', alignItems: 'flex-end', justifyContent: 'space-between', paddingVertical: 2 },
-  time: { fontSize: 13 },
+  time: { fontSize: 11.5 },
   helpful: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 32, paddingLeft: 6 },
 });

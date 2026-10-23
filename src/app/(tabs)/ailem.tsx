@@ -26,11 +26,11 @@ function StatTile({ icon, color, value, label }: { icon: string; color: string; 
     <View style={styles.stat} accessible accessibilityLabel={`${value} ${label}`}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <IconTile icon={icon} color={color} size={28} solid={color !== accent.gray} />
-        <AppText variant="title" style={{ fontSize: 18, lineHeight: 22 }}>
+        <AppText variant="title" style={{ fontSize: 16, lineHeight: 19.5 }}>
           {value}
         </AppText>
       </View>
-      <AppText variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>
+      <AppText variant="caption" numberOfLines={1} style={{ fontSize: 9.5 }}>
         {label}
       </AppText>
     </View>
@@ -40,7 +40,7 @@ function StatTile({ icon, color, value, label }: { icon: string; color: string; 
 function StatusPill({ p }: { p: PersonSummary }) {
   return (
     <View style={[styles.pill, { borderColor: p.color + '88', backgroundColor: p.color + '22' }]}>
-      <AppText variant="caption" color={p.color} style={{ fontSize: 12, fontWeight: '700' }}>
+      <AppText variant="caption" color={p.color} style={{ fontSize: 10.5, fontWeight: '700' }}>
         {p.label}
       </AppText>
     </View>
@@ -198,16 +198,16 @@ export default function FamilyScreen() {
       >
         <Avatar
           name={p.source === 'me' ? profile.name || 'Sen' : p.name}
-          uri={p.source === 'me' ? profile.photoUri : null}
+          uri={p.source === 'me' ? profile.photoUri : p.photoUri}
           size={52}
           status={p.status}
           ring={p.color}
         />
         <View style={{ flex: 1 }}>
-          <AppText variant="heading" numberOfLines={1} style={{ fontSize: 16 }}>
+          <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
             {name}
           </AppText>
-          <AppText variant="label" numberOfLines={1} style={{ fontSize: 13 }}>
+          <AppText variant="label" numberOfLines={1} style={{ fontSize: 11.5 }}>
             {sub}
           </AppText>
         </View>
@@ -240,7 +240,7 @@ export default function FamilyScreen() {
             style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.85 }]}
           >
             <Ionicons name="person-add" size={20} color={colors.primary} />
-            <AppText variant="heading" color={colors.text} style={{ fontSize: 15 }}>
+            <AppText variant="heading" color={colors.text} style={{ fontSize: 13 }}>
               Üye Ekle
             </AppText>
           </Pressable>
@@ -258,7 +258,7 @@ export default function FamilyScreen() {
       >
         <Icon name={counts.help ? 'alert-circle' : 'shield-checkmark'} size={34} color={bannerTone} />
         <View style={{ flex: 1 }}>
-          <AppText variant="heading" color={bannerTone} style={{ fontSize: 17 }}>
+          <AppText variant="heading" color={bannerTone} style={{ fontSize: 15 }}>
             {bannerText}
           </AppText>
           <AppText variant="caption">
@@ -360,7 +360,7 @@ export default function FamilyScreen() {
       </View>
 
       <View style={styles.sectionHead}>
-        <AppText variant="title" style={{ fontSize: 22, flex: 1 }}>
+        <AppText variant="title" style={{ fontSize: 19.5, flex: 1 }}>
           Aile Üyeleri
         </AppText>
         <Pressable onPress={fam.askEveryone} accessibilityRole="button" style={{ padding: 4 }}>
@@ -389,7 +389,7 @@ export default function FamilyScreen() {
         <Pressable onPress={invite} accessibilityRole="button" style={({ pressed }) => [styles.action, pressed && { opacity: 0.85 }]}>
           <IconTile icon="qr-code-outline" color={accent.gray} size={40} />
           <View style={{ flex: 1 }}>
-            <AppText variant="heading" style={{ fontSize: 15 }}>
+            <AppText variant="heading" style={{ fontSize: 13 }}>
               Davet Linki Oluştur
             </AppText>
             <AppText variant="caption" numberOfLines={2}>
@@ -405,7 +405,7 @@ export default function FamilyScreen() {
         >
           <IconTile icon="people" color={accent.gray} size={40} />
           <View style={{ flex: 1 }}>
-            <AppText variant="heading" style={{ fontSize: 15 }}>
+            <AppText variant="heading" style={{ fontSize: 13 }}>
               Toplanma Noktası
             </AppText>
             <AppText variant="caption" numberOfLines={2}>

@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     color: colors.text,
     padding: spacing.md,
-    fontSize: 15,
+    fontSize: 13,
     textAlignVertical: 'top',
   },
   photo: { width: 84, height: 84, borderRadius: radius.md },

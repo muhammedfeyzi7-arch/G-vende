@@ -142,6 +142,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     color: colors.text,
     paddingHorizontal: spacing.md,
-    fontSize: 15,
+    fontSize: 13,
   },
 });

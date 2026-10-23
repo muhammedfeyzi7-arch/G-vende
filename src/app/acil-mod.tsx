@@ -41,7 +41,7 @@ function Big({
       ]}
     >
       {icon}
-      <AppText variant="title" color={active ? '#111' : '#fff'} style={{ fontSize: 20, textAlign: 'center' }}>
+      <AppText variant="title" color={active ? '#111' : '#fff'} style={{ fontSize: 17.5, textAlign: 'center' }}>
         {label}
       </AppText>
       {sub ? (
@@ -96,7 +96,7 @@ export default function EmergencyMode() {
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <AppText variant="display" style={{ flex: 1, fontSize: 28 }}>
+          <AppText variant="display" style={{ flex: 1, fontSize: 24.5 }}>
             Acil Durum Modu
           </AppText>
           <Pressable
@@ -115,7 +115,7 @@ export default function EmergencyMode() {
           style={styles.call}
         >
           <Ionicons name="call" size={40} color="#fff" />
-          <AppText variant="display" style={{ fontSize: 40 }}>
+          <AppText variant="display" style={{ fontSize: 35 }}>
             112’yi Ara
           </AppText>
         </Pressable>

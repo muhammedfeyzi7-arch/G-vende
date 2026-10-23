@@ -26,6 +26,8 @@ export interface LocalContact {
   phone: string;
   relation: string | null;
   status?: ContactStatus | null;
+  /** Yalnızca bu cihazda saklanan fotoğraf (file://) */
+  photoUri?: string | null;
 }
 
 export interface MyStatus {

@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     color: colors.text,
     paddingHorizontal: spacing.md,
-    fontSize: 15,
+    fontSize: 13,
   },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: spacing.sm },
 });

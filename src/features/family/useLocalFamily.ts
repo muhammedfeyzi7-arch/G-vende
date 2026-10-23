@@ -14,6 +14,7 @@ import {
   type LocalMeetingPoint,
   type MyStatus,
 } from './local';
+import { deleteContactPhoto } from './photos';
 
 export function useLocalFamily() {
   const [contacts, setContacts] = useState<LocalContact[]>([]);
@@ -39,19 +40,35 @@ export function useLocalFamily() {
   }, []);
 
   const addContact = useCallback(
-    (name: string, phoneRaw: string, relation: string | null): string | null => {
+    (name: string, phoneRaw: string, relation: string | null, photoUri?: string | null): string | null => {
       const phone = normalizePhone(phoneRaw);
       if (!name.trim()) return 'İsim girin.';
       if (!phone) return 'Telefon numarası geçersiz.';
       if (contacts.length >= MAX_LOCAL_CONTACTS) return `En fazla ${MAX_LOCAL_CONTACTS} kişi eklenebilir.`;
       if (contacts.some((c) => c.phone === phone)) return 'Bu numara zaten listede.';
-      persist([...contacts, { id: `${Date.now()}`, name: name.trim(), phone, relation: relation?.trim() || null, status: null }]);
+      persist([...contacts, { id: `${Date.now()}`, name: name.trim(), phone, relation: relation?.trim() || null, status: null, photoUri: photoUri ?? null }]);
       return null;
     },
     [contacts, persist],
   );
 
-  const removeContact = useCallback((id: string) => persist(contacts.filter((c) => c.id !== id)), [contacts, persist]);
+  const removeContact = useCallback(
+    (id: string) => {
+      deleteContactPhoto(contacts.find((c) => c.id === id)?.photoUri);
+      persist(contacts.filter((c) => c.id !== id));
+    },
+    [contacts, persist],
+  );
+
+  /** Fotoğrafı değiştirir veya kaldırır (null); eski dosya silinir. */
+  const setContactPhoto = useCallback(
+    (id: string, photoUri: string | null) => {
+      const old = contacts.find((c) => c.id === id)?.photoUri;
+      if (old && old !== photoUri) deleteContactPhoto(old);
+      persist(contacts.map((c) => (c.id === id ? { ...c, photoUri } : c)));
+    },
+    [contacts, persist],
+  );
 
   const setContactStatus = useCallback(
     (ids: string[], kind: ContactStatusKind | null) => {
@@ -71,5 +88,5 @@ export function useLocalFamily() {
     saveMyStatus(s);
   }, []);
 
-  return { contacts, meetingPoint, myStatus, loaded, addContact, removeContact, setContactStatus, updateMeetingPoint, setMyStatus };
+  return { contacts, meetingPoint, myStatus, loaded, addContact, removeContact, setContactStatus, setContactPhoto, updateMeetingPoint, setMyStatus };
 }

@@ -86,16 +86,16 @@ export default function SettingsScreen() {
           </View>
         </Pressable>
         <View style={{ flex: 1, gap: 2 }}>
-          <AppText variant="title" numberOfLines={2} style={{ fontSize: 19 }}>
+          <AppText variant="title" numberOfLines={2} style={{ fontSize: 16.5 }}>
             {displayName || 'Profilinizi oluşturun'}
           </AppText>
           {profile.phone ? (
-            <AppText variant="label" style={{ fontSize: 15 }}>
+            <AppText variant="label" style={{ fontSize: 13 }}>
               {formatPhone(profile.phone)}
             </AppText>
           ) : null}
           {profile.showLocation && area.label ? (
-            <AppText variant="label" style={{ fontSize: 15 }}>
+            <AppText variant="label" style={{ fontSize: 13 }}>
               {area.label}
             </AppText>
           ) : null}
@@ -106,7 +106,7 @@ export default function SettingsScreen() {
           accessibilityRole="button"
           style={({ pressed }) => [styles.editBtn, pressed && { opacity: 0.85 }]}
         >
-          <AppText variant="label" color={colors.text} style={{ fontSize: 13 }}>
+          <AppText variant="label" color={colors.text} style={{ fontSize: 11.5 }}>
             Profil Düzenle
           </AppText>
           <Ionicons name="chevron-forward" size={16} color={colors.text} />

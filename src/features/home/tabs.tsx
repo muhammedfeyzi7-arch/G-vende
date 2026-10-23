@@ -265,7 +265,7 @@ function AssemblyList({
             <Ionicons name="people" size={18} color={colors.safe} />
           </View>
           <View style={{ flex: 1 }}>
-            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 16 }}>
+            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
               {p.name}
             </AppText>
             <AppText variant="caption" numberOfLines={1}>
@@ -306,7 +306,7 @@ export function AssemblyTab(props: {
               <Ionicons name="flag" size={18} color={colors.safe} />
             </View>
             <View style={{ flex: 1 }}>
-              <AppText variant="heading" numberOfLines={1} style={{ fontSize: 16 }}>
+              <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
                 {myPoint.name}
               </AppText>
               <AppText variant="caption" numberOfLines={1}>

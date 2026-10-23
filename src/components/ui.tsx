@@ -31,7 +31,7 @@ const textStyles = StyleSheet.create({
   display: { color: colors.text, fontSize: font.size.display, fontWeight: font.weight.bold, letterSpacing: -0.5 },
   title: { color: colors.text, fontSize: font.size.xl, fontWeight: font.weight.bold },
   heading: { color: colors.text, fontSize: font.size.lg, fontWeight: font.weight.semibold },
-  body: { color: colors.text, fontSize: font.size.md, lineHeight: 21 },
+  body: { color: colors.text, fontSize: font.size.md, lineHeight: 18.5 },
   label: { color: colors.textSecondary, fontSize: font.size.sm, fontWeight: font.weight.medium },
   caption: { color: colors.textMuted, fontSize: font.size.xs },
 });
@@ -81,7 +81,7 @@ export function Button({
     >
       {loading ? <ActivityIndicator color={fg} /> : icon ? <Ionicons name={icon} size={size === 'sm' ? 16 : 20} color={fg} /> : null}
       <Text
-        style={[styles.buttonText, size === 'sm' && { fontSize: 13 }, { color: fg }]}
+        style={[styles.buttonText, size === 'sm' && { fontSize: 11.5 }, { color: fg }]}
         numberOfLines={size === 'sm' ? 1 : undefined}
         maxFontSizeMultiplier={1.4}
       >
@@ -189,7 +189,7 @@ export function Banner({
 export function Pill({ label, color = colors.textSecondary }: { label: string; color?: string }) {
   return (
     <View style={[styles.pill, { borderColor: color + '66', backgroundColor: color + '1A' }]}>
-      <Text style={{ color, fontSize: 11, fontWeight: '700', letterSpacing: 0.3 }} maxFontSizeMultiplier={1.3}>
+      <Text style={{ color, fontSize: 9.5, fontWeight: '700', letterSpacing: 0.3 }} maxFontSizeMultiplier={1.3}>
         {label}
       </Text>
     </View>

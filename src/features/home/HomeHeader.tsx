@@ -20,7 +20,7 @@ export function Logo({ compact }: { compact?: boolean }) {
       <AppText variant="title" style={{ fontSize: compact ? 18 : 22, letterSpacing: 0.5, fontWeight: '800' }}>
         GÜVENDE
       </AppText>
-      <AppText variant="caption" color={colors.textSecondary} style={{ fontSize: 11 }}>
+      <AppText variant="caption" color={colors.textSecondary} style={{ fontSize: 9.5 }}>
         Afet Anında Yanınızda
       </AppText>
     </View>
@@ -52,12 +52,12 @@ export function HomeHeader() {
         <Ionicons name="location" size={24} color={colors.primary} />
         <View style={{ flexShrink: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 17, flexShrink: 1 }}>
+            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 15, flexShrink: 1 }}>
               {city ?? 'Konum seç'}
             </AppText>
             <Ionicons name="chevron-down" size={16} color={colors.text} />
           </View>
-          <AppText variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>
+          <AppText variant="caption" numberOfLines={1} style={{ fontSize: 9.5 }}>
             {sub}
           </AppText>
         </View>

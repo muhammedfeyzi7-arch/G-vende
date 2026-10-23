@@ -58,6 +58,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     color: colors.text,
     padding: spacing.md,
-    fontSize: 16,
+    fontSize: 14,
   },
 });

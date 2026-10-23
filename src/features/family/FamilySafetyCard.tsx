@@ -29,7 +29,7 @@ export function FamilySafetyCard({ groups, myUserId }: { groups: FamilyGroup[]; 
   return (
     <View style={styles.card}>
       <View style={styles.head}>
-        <AppText variant="title" style={{ fontSize: 20 }}>
+        <AppText variant="title" style={{ fontSize: 17.5 }}>
           Ailem Güvende mi?
         </AppText>
         <Pressable onPress={() => router.push('/ailem')} accessibilityRole="link" style={{ padding: 4 }}>
@@ -55,15 +55,15 @@ export function FamilySafetyCard({ groups, myUserId }: { groups: FamilyGroup[]; 
           >
             <Avatar
               name={p.source === 'me' ? profile.name || 'Ben' : p.name}
-              uri={p.source === 'me' ? profile.photoUri : null}
-              size={64}
+              uri={p.source === 'me' ? profile.photoUri : p.photoUri}
+              size={54}
               status={p.status}
               ring={p.color}
             />
-            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14, marginTop: 6 }}>
+            <AppText variant="heading" numberOfLines={1} style={{ fontSize: 12.5, marginTop: 6 }}>
               {p.name}
             </AppText>
-            <AppText variant="label" color={p.color} numberOfLines={1} style={{ fontSize: 12 }}>
+            <AppText variant="label" color={p.color} numberOfLines={1} style={{ fontSize: 10.5 }}>
               {p.label}
             </AppText>
             <AppText variant="caption" numberOfLines={1}>

@@ -38,7 +38,7 @@ function SectionTitle({
 }) {
   return (
     <View style={styles.sectionTitle}>
-      <AppText variant="title" style={{ fontSize: 20, flex: 1 }}>
+      <AppText variant="title" style={{ fontSize: 17.5, flex: 1 }}>
         {title}
       </AppText>
       {right}
@@ -77,7 +77,7 @@ export function HomeScreen() {
     () => events.filter((e) => Date.now() - Date.parse(e.primary.occurredAt) < 24 * 3600_000 || e.id === focus?.id),
     [events, focus],
   );
-  const mapHeight = Math.max(300, Math.min(440, height * 0.42));
+  const mapHeight = Math.max(250, Math.min(340, height * 0.31));
 
   const groups =
     family.state.status === 'ready'

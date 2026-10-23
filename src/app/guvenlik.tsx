@@ -136,6 +136,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     color: colors.text,
     paddingHorizontal: spacing.md,
-    fontSize: 16,
+    fontSize: 14,
   },
 });

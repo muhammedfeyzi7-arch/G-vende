@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   communityNotifications: false,
   locationSharing: false,
   hideLocationFrom: [],
-  mapStyle: 'dark',
+  mapStyle: 'satellite',
   biometricLock: false,
   manualProvince: null,
   quakeNotifications: true,

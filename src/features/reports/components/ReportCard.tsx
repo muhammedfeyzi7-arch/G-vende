@@ -29,7 +29,7 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
             {relativeTimeTr(report.createdAt)}
           </AppText>
         </View>
-        <AppText variant="heading" numberOfLines={2} style={{ fontSize: 15 }}>
+        <AppText variant="heading" numberOfLines={2} style={{ fontSize: 13 }}>
           {title}
         </AppText>
         <AppText variant="caption" numberOfLines={1}>

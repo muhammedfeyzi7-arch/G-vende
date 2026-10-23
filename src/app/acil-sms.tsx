@@ -124,7 +124,7 @@ export default function EmergencySms() {
         >
           <IconTile icon={t.icon} color={t.color} size={44} />
           <View style={{ flex: 1, gap: 2 }}>
-            <AppText variant="heading" style={{ fontSize: 16 }}>
+            <AppText variant="heading" style={{ fontSize: 14 }}>
               {t.title}
             </AppText>
             <AppText variant="caption" numberOfLines={2}>

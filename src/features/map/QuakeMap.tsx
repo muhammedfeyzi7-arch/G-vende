@@ -242,7 +242,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
                     </AppText>
                   </View>
                   <View style={[styles.famLabel, { backgroundColor: c + 'E6' }]}>
-                    <AppText variant="caption" color="#fff" numberOfLines={1} style={{ fontSize: 11, fontWeight: '700' }}>
+                    <AppText variant="caption" color="#fff" numberOfLines={1} style={{ fontSize: 9.5, fontWeight: '700' }}>
                       {f.label ?? f.name}
                       {f.stale ? ' · eski' : ''}
                     </AppText>

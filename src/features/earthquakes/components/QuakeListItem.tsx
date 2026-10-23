@@ -24,12 +24,12 @@ export function QuakeListItem({ event, user, onPress }: { event: EarthquakeEvent
         <AppText variant="heading" color={c}>
           {formatMagnitude(p.magnitude)}
         </AppText>
-        <AppText variant="caption" color={c} style={{ fontSize: 10 }}>
+        <AppText variant="caption" color={c} style={{ fontSize: 9 }}>
           {p.magnitudeType ?? '?'}
         </AppText>
       </View>
       <View style={{ flex: 1, gap: 2 }}>
-        <AppText variant="heading" numberOfLines={1} style={{ fontSize: 16 }}>
+        <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
           {placeTitle(event)}
         </AppText>
         <AppText variant="label" numberOfLines={1}>

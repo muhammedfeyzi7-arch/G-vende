@@ -102,7 +102,7 @@ export default function FullscreenMap() {
         <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Tam ekrandan çık" style={styles.close}>
           <Ionicons name="contract-outline" size={22} color={colors.text} />
         </Pressable>
-        <AppText variant="title" style={{ flex: 1, fontSize: 22 }}>
+        <AppText variant="title" style={{ flex: 1, fontSize: 19.5 }}>
           Harita
         </AppText>
         <View style={styles.segment} accessibilityRole="tablist">

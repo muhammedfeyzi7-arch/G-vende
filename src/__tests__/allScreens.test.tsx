@@ -125,6 +125,9 @@ describe('alt sekmeler', () => {
     const { router } = require('expo-router');
     await open(<Map />);
     expect(screen.getByText(/Canlı akış henüz bağlı değil/)).toBeTruthy();
+    // Bildirim Ekle düğmesi akışa kaydırınca görünür.
+    expect(screen.queryByLabelText('Bildirim ekle')).toBeNull();
+    await fireEvent.scroll(screen.getByTestId('harita-scroll'), { nativeEvent: { contentOffset: { y: 600 } } });
     expect(screen.getByLabelText('Bildirim ekle')).toBeTruthy();
     const checks: [string, RegExp][] = [
       ['Resmî Veriler', /Veri kaynakları/],
@@ -301,9 +304,9 @@ describe('alt ekranlar', () => {
     const AsyncStorage = require('@react-native-async-storage/async-storage');
     const Screen = require('@/app/tercihler').default;
     await open(<Screen />);
-    await fireEvent.press(screen.getByText('Uydu'));
+    await fireEvent.press(screen.getAllByText('Koyu')[0]!);
     await flush();
-    expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:settings')).mapStyle).toBe('satellite');
+    expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:settings')).mapStyle).toBe('dark');
   });
 
   it('Gizlilik: konum paylaşımı onayla açılır ve durdurulur', async () => {

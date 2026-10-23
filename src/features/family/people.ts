@@ -13,6 +13,8 @@ export interface PersonSummary {
   /** Durum nereden geliyor: yerel işaretleme mi, çevrimiçi aile grubu mu */
   source: 'me' | 'local' | 'group';
   contactId?: string;
+  /** Yerel kişi fotoğrafı (yalnızca cihazda) */
+  photoUri?: string | null;
   /** Çevrimiçi gruptaki son konum (yalnızca paylaşım açıksa) ve eski olup olmadığı */
   location?: { latitude: number; longitude: number; stale: boolean } | null;
 }
@@ -60,6 +62,7 @@ export function buildPeople(
       at: s?.at ?? null,
       source: 'local',
       contactId: c.id,
+      photoUri: c.photoUri ?? null,
     });
   }
   const seen = new Set<string>();

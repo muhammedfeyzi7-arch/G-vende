@@ -40,7 +40,7 @@ export default function GuideDetail() {
               {i + 1}
             </AppText>
           </View>
-          <AppText variant="body" style={{ flex: 1, fontSize: 16, lineHeight: 23 }}>
+          <AppText variant="body" style={{ flex: 1, fontSize: 14, lineHeight: 20 }}>
             {s}
           </AppText>
         </View>

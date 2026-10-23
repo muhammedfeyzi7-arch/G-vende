@@ -36,7 +36,7 @@ function Choice({
         color={selected ? colors.primary : colors.textSecondary}
       />
       <View style={{ flex: 1 }}>
-        <AppText variant="body" style={{ fontSize: 16 }}>
+        <AppText variant="body" style={{ fontSize: 14 }}>
           {label}
         </AppText>
         {description ? <AppText variant="caption">{description}</AppText> : null}

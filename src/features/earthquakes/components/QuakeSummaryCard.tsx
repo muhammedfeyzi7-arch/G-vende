@@ -33,14 +33,14 @@ function Metric({
       style={styles.metric}
     >
       <View style={styles.metricIcon}>
-        <Ionicons name={icon as never} size={18} color={colors.text} />
+        <Ionicons name={icon as never} size={19} color={colors.text} />
       </View>
       <View style={{ flexShrink: 1 }}>
-        <AppText variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>
+        <AppText variant="caption" numberOfLines={1} style={{ fontSize: 10 }}>
           {label}
         </AppText>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
+          <AppText variant="heading" numberOfLines={1} style={{ fontSize: 13 }}>
             {value}
           </AppText>
           {trailing ? <Ionicons name={trailing as never} size={14} color={colors.primary} /> : null}
@@ -64,7 +64,7 @@ export function QuakeSummaryCard({ event, user, feltReports }: { event: Earthqua
       <View style={styles.top}>
         <Ionicons name="pulse" size={34} color={c} style={{ textShadowColor: c, textShadowRadius: 10 }} />
         <View>
-          <AppText variant="display" style={{ fontSize: 26, lineHeight: 30 }}>
+          <AppText variant="display" style={{ fontSize: 23, lineHeight: 26.5 }}>
             M {formatMagnitude(p.magnitude)}
           </AppText>
           <AppText variant="caption" color={colors.danger}>
@@ -73,7 +73,7 @@ export function QuakeSummaryCard({ event, user, feltReports }: { event: Earthqua
         </View>
         <View style={styles.vsep} />
         <View style={{ flex: 1 }}>
-          <AppText variant="heading" numberOfLines={1} style={{ fontSize: 15 }}>
+          <AppText variant="heading" numberOfLines={1} style={{ fontSize: 13 }}>
             {placeTitle(event)}
           </AppText>
           <Pressable
@@ -87,7 +87,7 @@ export function QuakeSummaryCard({ event, user, feltReports }: { event: Earthqua
             accessibilityLabel={`Koordinatları kopyala: ${coords}`}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
           >
-            <AppText variant="caption" numberOfLines={1} style={{ fontSize: 12 }}>
+            <AppText variant="caption" numberOfLines={1} style={{ fontSize: 10.5 }}>
               {copied ? 'Kopyalandı' : coords}
             </AppText>
             <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={13} color={colors.textSecondary} />
@@ -98,7 +98,7 @@ export function QuakeSummaryCard({ event, user, feltReports }: { event: Earthqua
           accessibilityRole="button"
           style={({ pressed }) => [styles.detailBtn, pressed && { opacity: 0.85 }]}
         >
-          <AppText variant="label" color={colors.text} style={{ fontSize: 13 }}>
+          <AppText variant="label" color={colors.text} style={{ fontSize: 11.5 }}>
             Detaylar
           </AppText>
           <Ionicons name="chevron-forward" size={14} color={colors.text} />
@@ -146,9 +146,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
     paddingTop: spacing.md,
-    flexWrap: 'wrap',
-    rowGap: spacing.sm,
+    gap: 4,
   },
-  metric: { flexBasis: '50%', flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0 },
-  metricIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  metric: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5, minWidth: 0 },
+  metricIcon: { width: 20, alignItems: 'center', justifyContent: 'center' },
 });

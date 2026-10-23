@@ -106,7 +106,8 @@ export default function MapScreen() {
     );
   }, [family.state]);
 
-  const mapHeight = Math.max(320, Math.min(520, height * 0.5));
+  const mapHeight = Math.max(320, Math.min(460, height * 0.47));
+  const [scrolledToFeed, setScrolledToFeed] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -117,7 +118,10 @@ export default function MapScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScrollView
+        testID="harita-scroll"
         stickyHeaderIndices={[3]}
+        scrollEventThrottle={64}
+        onScroll={(e) => setScrolledToFeed(e.nativeEvent.contentOffset.y > mapHeight * 0.6)}
         contentContainerStyle={{ paddingBottom: tabBarHeight + 96 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textSecondary} />}
       >
@@ -251,7 +255,8 @@ export default function MapScreen() {
         </View>
       </ScrollView>
 
-      {tab === 'feed' ? (
+      {/* Harita kartlarının üstüne binmesin: akış görünür olunca çıkar. */}
+      {tab === 'feed' && scrolledToFeed ? (
         <Pressable
           onPress={() => router.push('/rapor/yeni')}
           accessibilityRole="button"
@@ -270,13 +275,10 @@ export default function MapScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
+  // Referanstaki gibi kenardan kenara harita.
   map: {
-    marginHorizontal: spacing.xs,
-    borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#0A1824',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
   },
   mapBottom: {
     position: 'absolute',

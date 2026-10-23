@@ -44,10 +44,10 @@ function ActionTile({
         <IconTile icon={icon} color={color} size={40} solid />
         <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
       </View>
-      <AppText variant="heading" numberOfLines={2} style={{ fontSize: 14, lineHeight: 17, marginTop: spacing.sm }}>
+      <AppText variant="heading" numberOfLines={2} style={{ fontSize: 12.5, lineHeight: 15, marginTop: spacing.sm }}>
         {title}
       </AppText>
-      <AppText variant="caption" numberOfLines={3} style={{ fontSize: 12, lineHeight: 15 }}>
+      <AppText variant="caption" numberOfLines={3} style={{ fontSize: 10.5, lineHeight: 13 }}>
         {subtitle}
       </AppText>
     </Pressable>
@@ -99,7 +99,7 @@ export default function EmergencyScreen() {
             style={({ pressed }) => [styles.modeBtn, pressed && { opacity: 0.85 }]}
           >
             <Ionicons name="megaphone-outline" size={18} color={colors.danger} />
-            <AppText variant="label" color={colors.danger} style={{ fontSize: 13, fontWeight: '700' }}>
+            <AppText variant="label" color={colors.danger} style={{ fontSize: 11.5, fontWeight: '700' }}>
               Acil Durum Modu
             </AppText>
             <Ionicons name="chevron-forward" size={16} color={colors.danger} />
@@ -129,10 +129,10 @@ export default function EmergencyScreen() {
           <AppText variant="label" color="#F6C9CE">
             Acil Çağrı
           </AppText>
-          <AppText variant="display" style={{ fontSize: 40, lineHeight: 44 }}>
+          <AppText variant="display" style={{ fontSize: 35, lineHeight: 38.5 }}>
             112
           </AppText>
-          <AppText variant="caption" color="#F6C9CE" style={{ fontSize: 11.5, lineHeight: 15 }}>
+          <AppText variant="caption" color="#F6C9CE" style={{ fontSize: 10, lineHeight: 13 }}>
             {'Sağlık · İtfaiye · Polis\nAFAD · Jandarma'}
           </AppText>
         </View>
@@ -143,7 +143,7 @@ export default function EmergencyScreen() {
           style={({ pressed }) => [styles.callBtn, pressed && { opacity: 0.85 }]}
         >
           <Ionicons name="call" size={18} color="#fff" />
-          <AppText variant="heading" color="#fff" style={{ fontSize: 15 }}>
+          <AppText variant="heading" color="#fff" style={{ fontSize: 13 }}>
             Hemen Ara
           </AppText>
         </Pressable>
@@ -178,7 +178,7 @@ export default function EmergencyScreen() {
       {/* Çök – Kapan – Tutun */}
       <View style={styles.card}>
         <View style={styles.cardHead}>
-          <AppText variant="title" style={{ fontSize: 19, flex: 1 }}>
+          <AppText variant="title" style={{ fontSize: 16.5, flex: 1 }}>
             Deprem Anında Ne Yapmalıyım?
           </AppText>
           <Pressable onPress={() => router.push('/rehber')} accessibilityRole="link" style={{ padding: 4 }}>
@@ -204,10 +204,10 @@ export default function EmergencyScreen() {
                   </AppText>
                 </View>
               </View>
-              <AppText variant="heading" style={{ fontSize: 15, fontWeight: '800', marginTop: 6 }}>
+              <AppText variant="heading" style={{ fontSize: 13, fontWeight: '800', marginTop: 6 }}>
                 {title}
               </AppText>
-              <AppText variant="caption" style={{ fontSize: 11.5, lineHeight: 15 }}>
+              <AppText variant="caption" style={{ fontSize: 10, lineHeight: 13 }}>
                 {text}
               </AppText>
             </Pressable>
@@ -224,7 +224,7 @@ export default function EmergencyScreen() {
               <AppText variant="label" color={colors.safe} style={{ fontWeight: '700' }}>
                 Toplanma Noktamız
               </AppText>
-              <AppText variant="heading" numberOfLines={2} style={{ fontSize: 15 }}>
+              <AppText variant="heading" numberOfLines={2} style={{ fontSize: 13 }}>
                 {point ? point.name : 'Henüz belirlenmedi'}
               </AppText>
               {point ? (
@@ -292,7 +292,7 @@ export default function EmergencyScreen() {
           <Pressable onPress={() => router.push('/canta')} style={styles.halfHead} accessibilityRole="button">
             <IconTile icon="mci:bag-personal" color={accent.red} size={34} />
             <View style={{ flex: 1 }}>
-              <AppText variant="heading" style={{ fontSize: 15 }}>
+              <AppText variant="heading" style={{ fontSize: 13 }}>
                 Acil Durum Çantası
               </AppText>
               <AppText variant="caption">Hazırlık kontrol listesi</AppText>
@@ -302,11 +302,11 @@ export default function EmergencyScreen() {
           <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
             <View style={{ alignItems: 'center', gap: 4 }}>
               <ProgressRing value={kitDone} total={KIT_ITEMS.length} size={70}>
-                <AppText variant="heading" style={{ fontSize: 17 }}>
+                <AppText variant="heading" style={{ fontSize: 15 }}>
                   {kitDone}/{KIT_ITEMS.length}
                 </AppText>
               </ProgressRing>
-              <AppText variant="caption" style={{ fontSize: 10.5, textAlign: 'center' }}>
+              <AppText variant="caption" style={{ fontSize: 9, textAlign: 'center' }}>
                 Hazır olma{'\n'}durumunuz
               </AppText>
             </View>
@@ -322,7 +322,7 @@ export default function EmergencyScreen() {
                     style={styles.kitRow}
                   >
                     <Ionicons name={on ? 'checkbox' : 'square-outline'} size={18} color={on ? colors.safe : colors.textMuted} />
-                    <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: 12.5 }}>
+                    <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: 11 }}>
                       {KIT_SHORT[k.id]}
                     </AppText>
                   </Pressable>
@@ -339,7 +339,7 @@ export default function EmergencyScreen() {
         <Pressable onPress={() => router.push('/duyurular')} style={[styles.cardHead, { alignItems: 'center' }]} accessibilityRole="button">
           <IconTile icon="radio-outline" color={accent.red} size={44} />
           <View style={{ flex: 1 }}>
-            <AppText variant="heading" style={{ fontSize: 17 }}>
+            <AppText variant="heading" style={{ fontSize: 15 }}>
               Resmî Bilgiler ve Duyurular
             </AppText>
             <AppText variant="caption">AFAD ve Kandilli’nin yayımladığı son önemli deprem kayıtları.</AppText>
@@ -361,7 +361,7 @@ export default function EmergencyScreen() {
                   accessibilityRole="button"
                 >
                   <View style={styles.srcBadge}>
-                    <AppText variant="label" color="#fff" style={{ fontWeight: '800', fontSize: 12 }}>
+                    <AppText variant="label" color="#fff" style={{ fontWeight: '800', fontSize: 10.5 }}>
                       {SOURCES[src.source].label.toUpperCase().slice(0, 5)}
                     </AppText>
                   </View>
@@ -370,7 +370,7 @@ export default function EmergencyScreen() {
                       {fresh ? <Pill label="Son Dakika" color={colors.danger} /> : null}
                       <AppText variant="caption">{relativeTimeTr(e.primary.occurredAt)}</AppText>
                     </View>
-                    <AppText variant="heading" numberOfLines={2} style={{ fontSize: 15 }}>
+                    <AppText variant="heading" numberOfLines={2} style={{ fontSize: 13 }}>
                       {placeTitle(e)} · {src.magnitude?.toFixed(1).replace('.', ',') ?? '?'} büyüklüğünde deprem
                     </AppText>
                     <AppText variant="caption">

@@ -64,7 +64,7 @@ export default function NotificationCenter() {
                 <AppText variant="caption">
                   {k.label} · {relativeTimeTr(item.at)}
                 </AppText>
-                <AppText variant="heading" style={{ fontSize: 16, fontWeight: item.read ? '500' : '700' }}>
+                <AppText variant="heading" style={{ fontSize: 14, fontWeight: item.read ? '500' : '700' }}>
                   {item.title}
                 </AppText>
                 <AppText variant="label">{item.body}</AppText>

@@ -10,7 +10,7 @@ import { formatDepth, placeTitle } from '../format';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const ICON = 18;
+const ICON = 21;
 
 function Item({
   icon,
@@ -21,19 +21,21 @@ function Item({
   lines = 1,
 }: {
   icon: IconName;
-  label: string;
+  label?: string;
   value: string;
   sub?: string;
   flex?: number;
   lines?: number;
 }) {
   return (
-    <View style={[styles.item, { flex }]} accessible accessibilityLabel={`${label} ${value} ${sub ?? ''}`}>
-      <Ionicons name={icon} size={ICON} color={colors.text} style={{ marginTop: 2 }} />
+    <View style={[styles.item, { flex }]} accessible accessibilityLabel={`${label ?? 'Zaman'} ${value} ${sub ?? ''}`}>
+      <Ionicons name={icon} size={ICON} color={colors.text} style={{ marginTop: 4 }} />
       <View style={{ flexShrink: 1 }}>
-        <AppText variant="caption" numberOfLines={1}>
-          {label}
-        </AppText>
+        {label ? (
+          <AppText variant="caption" numberOfLines={1}>
+            {label}
+          </AppText>
+        ) : null}
         <AppText variant="heading" numberOfLines={lines} style={styles.value}>
           {value}
         </AppText>
@@ -53,15 +55,14 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
     <View style={styles.row}>
       <Item
         icon="time-outline"
-        label="Zaman"
         value={formatTimeTr(event.primary.occurredAt)}
         sub={relativeTimeTr(event.primary.occurredAt)}
-        flex={1}
+        flex={0.9}
       />
-      <Item icon="location-outline" label="Merkez" value={placeTitle(event)} flex={1.15} lines={2} />
-      <Item icon="locate-outline" label="Derinlik" value={formatDepth(event.primary.depthKm)} flex={0.85} />
+      <Item icon="location-outline" label="Merkez üssü" value={placeTitle(event)} flex={1.5} lines={2} />
+      <Item icon="locate-outline" label="Derinlik" value={formatDepth(event.primary.depthKm)} flex={0.75} />
       <Pressable
-        style={[styles.item, { flex: 1 }]}
+        style={[styles.item, { flex: 1.05 }]}
         hitSlop={hitSlop}
         accessibilityRole="button"
         accessibilityLabel={`Size uzaklık ${formatDistance(d)}`}
@@ -75,17 +76,17 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
           )
         }
       >
-        <Ionicons name="navigate-outline" size={ICON} color={colors.text} style={{ marginTop: 2 }} />
+        <Ionicons name="navigate-outline" size={ICON} color={colors.text} style={{ marginTop: 4 }} />
         <View style={{ flexShrink: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-            <AppText variant="caption" numberOfLines={1}>
-              Uzaklık
-            </AppText>
-            <Ionicons name="information-circle-outline" size={12} color={colors.textMuted} />
-          </View>
-          <AppText variant="heading" numberOfLines={1} style={styles.value}>
-            {formatDistance(d)}
+          <AppText variant="caption" numberOfLines={1}>
+            Sana uzaklığı
           </AppText>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <AppText variant="heading" numberOfLines={1} style={styles.value}>
+              {formatDistance(d)}
+            </AppText>
+            <Ionicons name="information-circle-outline" size={15} color={colors.primary} />
+          </View>
         </View>
       </Pressable>
     </View>
@@ -93,7 +94,7 @@ export function EventInfoRow({ event, user, locationHint }: { event: EarthquakeE
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 6, paddingVertical: spacing.md, paddingHorizontal: spacing.xs },
-  item: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' },
-  value: { fontSize: 15 },
+  row: { flexDirection: 'row', gap: 6, paddingVertical: spacing.sm, paddingHorizontal: spacing.xs },
+  item: { flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
+  value: { fontSize: 14, fontWeight: '700' },
 });

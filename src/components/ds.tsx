@@ -42,13 +42,13 @@ export function ScreenHeader({ title, subtitle, right }: { title: string; subtit
   return (
     <View style={{ gap: 4 }}>
       <View style={styles.header}>
-        <AppText variant="display" accessibilityRole="header" style={{ fontSize: 32, lineHeight: 38, flex: 1 }}>
+        <AppText variant="display" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 33.5, flex: 1 }}>
           {title}
         </AppText>
         {right}
       </View>
       {subtitle ? (
-        <AppText variant="label" style={{ fontSize: 15, lineHeight: 20 }}>
+        <AppText variant="label" style={{ fontSize: 13, lineHeight: 17.5 }}>
           {subtitle}
         </AppText>
       ) : null}
@@ -137,7 +137,7 @@ export function SectionCard({
       >
         <IconTile icon={icon} color={color} size={48} />
         <View style={{ flex: 1 }}>
-          <AppText variant="heading" style={{ fontSize: 18 }}>
+          <AppText variant="heading" style={{ fontSize: 16 }}>
             {title}
           </AppText>
           {subtitle ? <AppText variant="label">{subtitle}</AppText> : null}
@@ -210,11 +210,11 @@ export function ListRow({
         )
       ) : null}
       <View style={{ flex: 1, gap: 1 }}>
-        <AppText variant="body" color={danger ? colors.danger : colors.text} style={{ fontSize: 16, fontWeight: '500' }}>
+        <AppText variant="body" color={danger ? colors.danger : colors.text} style={{ fontSize: 14, fontWeight: '500' }}>
           {title}
         </AppText>
         {subtitle ? (
-          <AppText variant="label" style={{ fontSize: 13.5 }}>
+          <AppText variant="label" style={{ fontSize: 12 }}>
             {subtitle}
           </AppText>
         ) : null}
@@ -385,10 +385,10 @@ export function QuickCard({
     >
       <IconTile icon={icon} color={color} size={30} solid />
       <View style={{ flex: 1 }}>
-        <AppText variant="caption" numberOfLines={2} style={{ fontSize: 11, lineHeight: 13 }}>
+        <AppText variant="caption" numberOfLines={2} style={{ fontSize: 9.5, lineHeight: 11.5 }}>
           {label}
         </AppText>
-        <AppText variant="heading" color={valueColor ?? colors.text} numberOfLines={1} style={{ fontSize: 14 }}>
+        <AppText variant="heading" color={valueColor ?? colors.text} numberOfLines={1} style={{ fontSize: 12.5 }}>
           {value}
         </AppText>
       </View>
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.bg,
   },
-  badgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  badgeText: { color: '#fff', fontSize: 9.5, fontWeight: '700' },
   section: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
@@ -539,7 +539,7 @@ export function Stepper({
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(e) => set(value + (e.nativeEvent.actionName === 'increment' ? step : -step))}
     >
-      <AppText variant="body" style={{ flex: 1, fontSize: 16 }}>
+      <AppText variant="body" style={{ flex: 1, fontSize: 14 }}>
         {label}
       </AppText>
       <Pressable onPress={() => set(value - step)} style={styles.stepBtn} accessibilityLabel="Azalt" hitSlop={hitSlop}>

@@ -30,7 +30,7 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
           />
           <Icon name={t.icon} size={28} color={t.color} />
           {t.big ? (
-            <AppText variant="title" color="#fff" style={{ fontSize: 22, lineHeight: 26 }}>
+            <AppText variant="title" color="#fff" style={{ fontSize: 19.5, lineHeight: 23 }}>
               {t.title}
             </AppText>
           ) : (
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.xs },
   tile: {
     flex: 1,
-    minHeight: 112,
+    minHeight: 100,
     borderRadius: radius.lg,
     borderWidth: 1,
     overflow: 'hidden',
@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     gap: 2,
   },
-  title: { textAlign: 'center', fontSize: 12, fontWeight: '700', lineHeight: 15 },
-  sub: { textAlign: 'center', fontSize: 11, lineHeight: 14 },
+  title: { textAlign: 'center', fontSize: 12, fontWeight: '700', lineHeight: 14.5 },
+  sub: { textAlign: 'center', fontSize: 11, lineHeight: 13.5 },
 });

@@ -27,7 +27,7 @@ export function TopTabs<K extends string>({
               <AppText
                 variant="heading"
                 color={active ? colors.primary : colors.textSecondary}
-                style={{ fontSize: 16, fontWeight: active ? '700' : '500' }}
+                style={{ fontSize: 14, fontWeight: active ? '700' : '500' }}
               >
                 {t.label}
               </AppText>
