@@ -1,13 +1,20 @@
+import * as Clipboard from 'expo-clipboard';
+import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { AppText, Button, StateMessage } from '@/components/ui';
+import { parseAuthLink, signInWithAuthLink } from '@/features/auth/authLink';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError, requireSupabase } from '@/services/supabase';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 
-/** E-posta ile tek kullanımlık kod girişi (parola saklanmaz). */
+/**
+ * E-posta ile parolasız giriş. Supabase'in varsayılan e-postası bir "Sign in" bağlantısı içerir:
+ * telefonda dokunulunca uygulama açılır (AuthLinkHandler) ya da bağlantı kopyalanıp buraya yapıştırılır.
+ * E-posta şablonu kod içerecek şekilde düzenlenmişse 6 haneli kod da kabul edilir.
+ */
 export default function SignIn() {
   const { session } = useApp();
   const [email, setEmail] = useState('');
@@ -37,7 +44,10 @@ export default function SignIn() {
   const sendCode = async () => {
     setBusy(true);
     try {
-      const { error } = await requireSupabase().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } });
+      const { error } = await requireSupabase().auth.signInWithOtp({
+        email: email.trim(),
+        options: { shouldCreateUser: true, emailRedirectTo: Linking.createURL('/giris') },
+      });
       if (error) throw error;
       setStep('code');
     } catch (e) {
@@ -46,17 +56,32 @@ export default function SignIn() {
       setBusy(false);
     }
   };
-  const verify = async () => {
+  const verify = async (input = code) => {
+    const value = input.trim();
+    const link = parseAuthLink(value);
+    if (!link && !/^\d{6,10}$/.test(value)) {
+      Alert.alert('Tanınmadı', 'E-postadaki “Sign in” bağlantısını kopyalayıp yapıştırın.');
+      return;
+    }
     setBusy(true);
     try {
-      const { error } = await requireSupabase().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' });
-      if (error) throw error;
+      const auth = requireSupabase().auth;
+      if (link) await signInWithAuthLink(auth, link);
+      else {
+        const { error } = await auth.verifyOtp({ email: email.trim(), token: value, type: 'email' });
+        if (error) throw error;
+      }
       router.back();
     } catch (e) {
-      Alert.alert('Doğrulanamadı', friendlyError(e));
+      Alert.alert('Giriş yapılamadı', `${friendlyError(e)}\n\nBağlantı tek kullanımlıktır; gerekirse yeni e-posta isteyin.`);
     } finally {
       setBusy(false);
     }
+  };
+  const pasteLink = async () => {
+    const text = (await Clipboard.getStringAsync()).trim();
+    setCode(text);
+    if (text) verify(text);
   };
 
   return (
@@ -79,24 +104,34 @@ export default function SignIn() {
               style={styles.input}
               accessibilityLabel="E-posta adresi"
             />
-            <Button label="Kod gönder" onPress={sendCode} loading={busy} disabled={!/^\S+@\S+\.\S+$/.test(email.trim())} />
+            <Button label="Giriş bağlantısı gönder" onPress={sendCode} loading={busy} disabled={!/^\S+@\S+\.\S+$/.test(email.trim())} />
           </>
         ) : (
           <>
-            <AppText variant="label">{email} adresine gönderilen kodu girin.</AppText>
+            <AppText variant="heading" style={{ fontSize: 16 }}>
+              E-postanızı kontrol edin
+            </AppText>
+            <AppText variant="label">
+              {email} adresine “Your sign-in link” konulu bir e-posta gönderdik (gereksiz klasörüne de bakın).
+            </AppText>
+            <AppText variant="label">
+              E-postadaki “Sign in” bağlantısına dokunmadan basılı tutun, “Bağlantıyı Kopyala” deyin ve aşağıdaki düğmeye basın.
+            </AppText>
+            <Button label="Kopyaladığım bağlantıyla giriş yap" icon="clipboard-outline" onPress={pasteLink} loading={busy} />
             <TextInput
               value={code}
               onChangeText={setCode}
-              placeholder="Doğrulama kodu"
+              placeholder="veya bağlantıyı / kodu buraya yapıştırın"
               placeholderTextColor={colors.textMuted}
-              keyboardType="number-pad"
+              autoCapitalize="none"
+              autoCorrect={false}
               autoComplete="one-time-code"
               textContentType="oneTimeCode"
-              maxLength={10}
               style={styles.input}
-              accessibilityLabel="Doğrulama kodu"
+              accessibilityLabel="Giriş bağlantısı veya kodu"
             />
-            <Button label="Doğrula ve giriş yap" onPress={verify} loading={busy} disabled={code.trim().length < 6} />
+            <Button label="Giriş yap" variant="secondary" onPress={() => verify()} loading={busy} disabled={code.trim().length < 6} />
+            <Button label="Yeniden gönder" variant="ghost" onPress={sendCode} disabled={busy} />
             <Button label="E-postayı değiştir" variant="ghost" onPress={() => setStep('email')} />
           </>
         )}

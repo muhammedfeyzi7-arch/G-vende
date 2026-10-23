@@ -1,3 +1,4 @@
+import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import { Stack, router } from 'expo-router';
 import { useEffect } from 'react';
@@ -9,7 +10,9 @@ import { InboxProvider, useInbox } from '@/providers/InboxProvider';
 import { ReportsProvider } from '@/providers/ReportsProvider';
 import { TrustProvider } from '@/features/trust/TrustProvider';
 import { ThemeGate } from '@/theme/ThemeGate';
-import { ToastProvider } from '@/components/Toast';
+import { ToastProvider, useToast } from '@/components/Toast';
+import { parseAuthLink, signInWithAuthLink } from '@/features/auth/authLink';
+import { friendlyError, getSupabase } from '@/services/supabase';
 import { ConnectivityToasts } from '@/components/ConnectivityToasts';
 import { colors } from '@/theme';
 
@@ -53,6 +56,28 @@ function useNotificationRouting() {
 
 function NotificationRouting() {
   useNotificationRouting();
+  return null;
+}
+
+/** E-postadaki giriş bağlantısına dokunulup uygulama açıldığında oturumu tamamlar. */
+function AuthLinkHandler() {
+  const toast = useToast();
+  useEffect(() => {
+    const handle = async (url: string | null) => {
+      const link = url ? parseAuthLink(url) : null;
+      const sb = getSupabase();
+      if (!link || !sb) return;
+      try {
+        await signInWithAuthLink(sb.auth, link);
+        toast.show({ text: 'Giriş yapıldı', tone: 'success' });
+      } catch (e) {
+        toast.show({ text: `Giriş bağlantısı kullanılamadı: ${friendlyError(e)}`, tone: 'error' });
+      }
+    };
+    Linking.getInitialURL().then(handle);
+    const sub = Linking.addEventListener('url', (e) => handle(e.url));
+    return () => sub.remove();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
 
@@ -124,6 +149,7 @@ export default function RootLayout() {
               <ThemeGate>
                 <ToastProvider>
                   <ConnectivityToasts />
+                  <AuthLinkHandler />
                   <BiometricGate>
                     <RootStack />
                   </BiometricGate>
