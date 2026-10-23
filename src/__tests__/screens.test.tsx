@@ -124,3 +124,33 @@ describe('LiveFeedTab', () => {
     expect(onRetry).toHaveBeenCalled();
   });
 });
+
+describe('Expo Go yedek haritası', () => {
+  it('yerel modül olmadan çizilir; Mercator dönüşümü tutarlı', async () => {
+    const { SvgQuakeMap } = require('@/features/map/SvgQuakeMap');
+    const { View } = require('react-native');
+    const onSelect = jest.fn();
+    await render(
+      <View style={{ width: 400, height: 300 }}>
+        <SvgQuakeMap
+          events={[]}
+          focus={null}
+          reports={[]}
+          assemblyPoints={[{ id: 'a1', name: 'Örnek Park', latitude: 40.84, longitude: 31.16, distanceKm: 1, isUserSaved: true } as never]}
+          user={null}
+          userIsPrecise={false}
+          layers={DEFAULT_LAYERS}
+          onSelect={onSelect}
+          initialCenter={{ latitude: 40.84, longitude: 31.16 }}
+          initialZoom={8}
+        />
+      </View>,
+    );
+    expect(screen.getByLabelText('Deprem haritası (basit görünüm)')).toBeTruthy();
+    expect(screen.getByLabelText('Yakınlaştır')).toBeTruthy();
+    const { toWorld, fromWorld } = require('@/features/map/SvgQuakeMap');
+    const back = fromWorld(...toWorld(31.16, 40.84));
+    expect(back.latitude).toBeCloseTo(40.84, 6);
+    expect(back.longitude).toBeCloseTo(31.16, 6);
+  });
+});

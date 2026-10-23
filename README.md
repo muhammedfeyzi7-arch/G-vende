@@ -24,6 +24,16 @@ _(Web önizlemesi: kaplama katmanları gerçek çizimdir, taban harita karoları
    - Bulutta Android: `npx eas-cli@latest build --profile development --platform android`
 4. Push bildirimleri için bir kez `npx eas-cli@latest init` çalıştırın (EAS `projectId` oluşturur).
 
+## iPhone'da hızlı deneme (Expo Go, Apple hesabı gerekmez)
+
+1. iPhone'a App Store'dan **Expo Go** uygulamasını kurun.
+2. Bilgisayarda: `npm install`, ardından `npx expo start --tunnel`.
+3. Ekrandaki QR kodu iPhone **Kamera** uygulamasıyla okutun; Expo Go'da açılır.
+
+Expo Go yerel harita modülünü (MapLibre) içermez; bu modda uygulama gömülü Türkiye altlığıyla çizilen
+**basit harita** kullanır (uydu/sokak ayrıntısı yok). Tam harita için geliştirme derlemesi gerekir
+(`eas build --profile development --platform ios`, Apple Developer hesabı ister).
+
 ## Ortam değişkenleri (`.env`)
 
 | Değişken | Açıklama |
