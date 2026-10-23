@@ -36,4 +36,15 @@ describe('durum mesajı', () => {
     expect(m).toMatch(/Buluşma noktası: Okul bahçesi/);
     expect(m).toMatch(/112/);
   });
+  it('açık adres varsa harita bağlantısından önce yazılır; konum yoksa adres de eklenmez', () => {
+    const loc = { latitude: 40.1, longitude: 30.6 };
+    const m = buildStatusMessage('safe', {
+      location: loc,
+      meetingPoint: null,
+      now,
+      address: 'Cumhuriyet Mah., Atatürk Cad. No: 12, Merkez / Düzce',
+    });
+    expect(m).toMatch(/Adresim: Cumhuriyet Mah\., Atatürk Cad\. No: 12, Merkez \/ Düzce\. Konumum: https/);
+    expect(buildStatusMessage('safe', { location: null, meetingPoint: null, now, address: 'X' })).not.toMatch(/Adresim/);
+  });
 });

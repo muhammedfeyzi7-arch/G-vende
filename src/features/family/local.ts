@@ -82,11 +82,12 @@ export type StatusKind = 'safe' | 'need_help';
 
 export function buildStatusMessage(
   kind: StatusKind,
-  opts: { location: LatLng | null; meetingPoint: LocalMeetingPoint | null; note?: string; now?: Date },
+  opts: { location: LatLng | null; meetingPoint: LocalMeetingPoint | null; note?: string; now?: Date; address?: string | null },
 ): string {
   const now = opts.now ?? new Date();
   const parts = [kind === 'safe' ? 'Ben güvendeyim.' : 'Yardıma ihtiyacım var!'];
   if (opts.note?.trim()) parts.push(opts.note.trim());
+  if (opts.location && opts.address) parts.push(`Adresim: ${opts.address}.`);
   if (opts.location) {
     const { latitude: la, longitude: lo } = opts.location;
     parts.push(`Konumum: https://maps.google.com/?q=${la.toFixed(5)},${lo.toFixed(5)}`);

@@ -26,6 +26,7 @@ import { colors, radius, spacing, themedStyles } from '@/theme';
 import { relativeTimeTr } from '@/utils/time';
 import { HomeHeader } from './HomeHeader';
 import { QuickTiles } from './QuickTiles';
+import { CheckInCard } from './CheckInCard';
 import { SyncStatusLine } from '@/features/earthquakes/components/SyncStatusLine';
 
 function SectionTitle({
@@ -133,6 +134,7 @@ export function HomeScreen() {
           error={quakes.error}
           onPress={focus ? () => router.push({ pathname: '/deprem/[id]', params: { id: focus.id } }) : undefined}
         />
+        <CheckInCard alert={alert} myStatus={fam.myStatus} onSafe={() => fam.sendStatus('safe')} onHelp={fam.confirmHelp} />
         {focus ? (
           <View style={styles.infoCard}>
             <EventInfoRow event={focus} user={userCoords} locationHint={location.status === 'manual' ? location.label : undefined} />

@@ -8,7 +8,13 @@ const dir = () => new Directory(Paths.document, 'family');
 export async function pickPhoto(): Promise<string | null | 'denied'> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return 'denied';
-  const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6, exif: false });
+  const r = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.6,
+    exif: false,
+  });
   if (r.canceled || !r.assets[0]) return null;
   return r.assets[0].uri;
 }

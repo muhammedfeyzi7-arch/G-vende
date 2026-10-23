@@ -46,7 +46,10 @@ export function useLocalFamily() {
       if (!phone) return 'Telefon numarası geçersiz.';
       if (contacts.length >= MAX_LOCAL_CONTACTS) return `En fazla ${MAX_LOCAL_CONTACTS} kişi eklenebilir.`;
       if (contacts.some((c) => c.phone === phone)) return 'Bu numara zaten listede.';
-      persist([...contacts, { id: `${Date.now()}`, name: name.trim(), phone, relation: relation?.trim() || null, status: null, photoUri: photoUri ?? null }]);
+      persist([
+        ...contacts,
+        { id: `${Date.now()}`, name: name.trim(), phone, relation: relation?.trim() || null, status: null, photoUri: photoUri ?? null },
+      ]);
       return null;
     },
     [contacts, persist],
@@ -88,5 +91,16 @@ export function useLocalFamily() {
     saveMyStatus(s);
   }, []);
 
-  return { contacts, meetingPoint, myStatus, loaded, addContact, removeContact, setContactStatus, setContactPhoto, updateMeetingPoint, setMyStatus };
+  return {
+    contacts,
+    meetingPoint,
+    myStatus,
+    loaded,
+    addContact,
+    removeContact,
+    setContactStatus,
+    setContactPhoto,
+    updateMeetingPoint,
+    setMyStatus,
+  };
 }

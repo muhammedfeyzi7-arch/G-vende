@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { Alert, Share } from 'react-native';
 import { useApp } from '@/providers/AppProvider';
 import { coarsen, type LatLng } from '@/utils/geo';
+import { addressFor } from '@/features/location/currentAddress';
 import { ASK_STATUS_MESSAGE, buildStatusMessage, sendSms, type StatusKind } from './local';
 import { useLocalFamily } from './useLocalFamily';
 
@@ -43,12 +44,14 @@ export function useFamilyActions() {
       const withLoc = fam.contacts.filter((c) => !settings.hideLocationFrom.includes(c.id));
       const withoutLoc = fam.contacts.filter((c) => settings.hideLocationFrom.includes(c.id));
       const groups = loc && withoutLoc.length ? [[withLoc, loc] as const, [withoutLoc, null] as const] : [[fam.contacts, loc] as const];
+      // Açık adres yalnızca konum paylaşılan kişilere eklenir (4 sn'de bulunamazsa yalnızca harita bağlantısı).
+      const address = loc ? await addressFor(gps!) : null;
       let anySent = false;
       for (const [list, l] of groups) {
         if (!list.length) continue;
         const r = await sendSms(
           list.map((c) => c.phone),
-          buildStatusMessage(kind, { location: l, meetingPoint: fam.meetingPoint }),
+          buildStatusMessage(kind, { location: l, meetingPoint: fam.meetingPoint, address: l ? address : null }),
         );
         if (!r.ok) return Alert.alert('Gönderilemedi', r.reason);
         if (r.status !== 'cancelled') anySent = true;
