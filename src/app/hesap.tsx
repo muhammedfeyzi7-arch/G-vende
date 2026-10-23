@@ -77,7 +77,7 @@ export default function AccountScreen() {
                 icon="log-in-outline"
                 iconColor={accent.blue}
                 title="Giriş yap"
-                subtitle="E-posta ile tek kullanımlık kod"
+                subtitle="E-posta ile tek kullanımlık bağlantı"
                 onPress={() => router.push('/giris')}
               />
             )}

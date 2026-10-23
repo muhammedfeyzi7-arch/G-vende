@@ -388,12 +388,7 @@ export default function FamilyScreen() {
 
       <View style={styles.stats}>
         <StatTile icon="shield-checkmark" color={accent.green} value={counts.safe} label="Güvende" />
-        <StatTile
-          icon="warning"
-          color={accent.red}
-          value={counts.waiting + counts.help}
-          label={counts.help ? 'Yardım/Cevap' : 'Cevap yok'}
-        />
+        <StatTile icon="warning" color={accent.red} value={counts.waiting + counts.help} label={counts.help ? 'Yardım' : 'Yanıtsız'} />
         <StatTile icon="home" color={accent.gray} value={counts.home} label="Evde" />
         <StatTile icon="person-add" color={accent.gray} value={counts.total} label="Toplam" />
       </View>
@@ -420,7 +415,7 @@ export default function FamilyScreen() {
         ) : null}
       </View>
       <AppText variant="caption" style={{ marginHorizontal: 4 }}>
-        Uygulama kişilerin durumunu kendiliğinden bilemez: “Cevap yok” durum sorduğunuzda, diğerleri siz işaretlediğinizde kaydedilir. Yanıt
+        Uygulama kişilerin durumunu kendiliğinden bilemez: “Yanıtsız” durum sorduğunuzda, diğerleri siz işaretlediğinizde kaydedilir. Yanıt
         vermeyen kişi tehlikede sayılmaz.
       </AppText>
 
@@ -448,7 +443,7 @@ export default function FamilyScreen() {
               Toplanma Noktası
             </AppText>
             <AppText variant="caption" numberOfLines={2}>
-              {fam.meetingPoint ? fam.meetingPoint.name : 'Herkes için buluşma yeri belirle'}
+              {fam.meetingPoint ? fam.meetingPoint.name : 'Buluşma yeri belirle'}
             </AppText>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />

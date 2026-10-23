@@ -30,7 +30,8 @@ export default function SettingsScreen() {
   const area = useAreaLabel();
   const [contactCount, setContactCount] = useState(0);
   // İki sütunlu satır grupları yalnızca geniş ekranlarda; dar telefonda alt alta.
-  const wide = useWindowDimensions().width >= 430;
+  // İki sütun yalnızca tablet genişliğinde; telefonda satırlar tam genişlikte okunaklı kalır.
+  const wide = useWindowDimensions().width >= 700;
 
   useEffect(() => {
     loadContacts().then((c) => setContactCount(c.length));
@@ -186,7 +187,13 @@ export default function SettingsScreen() {
       >
         <View style={wide ? styles.twoCol : styles.oneCol}>
           <RowGroup style={wide ? { flex: 1 } : undefined}>
-            <ListRow first icon="key-outline" title="Giriş ve şifre" subtitle="E-posta kodu" onPress={() => router.push('/guvenlik')} />
+            <ListRow
+              first
+              icon="key-outline"
+              title="Giriş ve şifre"
+              subtitle="E-posta ile şifresiz giriş"
+              onPress={() => router.push('/guvenlik')}
+            />
             <ListRow
               icon="phone-portrait-outline"
               title="Aktif cihazlar"
@@ -238,9 +245,7 @@ export default function SettingsScreen() {
               onPress={() => router.push('/tercihler')}
             />
             <ListRow icon="map-outline" title="Harita" value={mapLabel} onPress={() => router.push('/tercihler')} />
-          </RowGroup>
-          <RowGroup style={wide ? { flex: 1 } : undefined}>
-            <ListRow first icon="globe-outline" title="Dil" value="Türkçe" onPress={() => router.push('/tercihler')} />
+            <ListRow icon="globe-outline" title="Dil" value="Türkçe" onPress={() => router.push('/tercihler')} />
           </RowGroup>
         </View>
       </SectionCard>

@@ -22,7 +22,7 @@ export interface PersonSummary {
 export const STATUS_LABEL: Record<Exclude<AvatarStatus, null>, { label: string; color: string }> = {
   safe: { label: 'Güvende', color: colors.safe },
   help: { label: 'Yardım istiyor', color: colors.danger },
-  waiting: { label: 'Cevap yok', color: colors.warning },
+  waiting: { label: 'Yanıtsız', color: colors.warning },
   home: { label: 'Evde', color: colors.info },
   unknown: { label: 'Bilinmiyor', color: colors.textMuted },
 };

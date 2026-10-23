@@ -180,7 +180,7 @@ export function NearbyAssemblyButton({ onPress, count, mine }: { onPress: () => 
       </View>
       <View style={{ flexShrink: 1 }}>
         <AppText variant="label" color={colors.text} numberOfLines={2}>
-          Yakınımdaki toplanma alanları
+          Toplanma alanları
         </AppText>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.text} />

@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { env, isBackendConfigured } from './env';
 
 /**
@@ -38,7 +38,13 @@ export function getSupabase(): SupabaseClient | null {
   if (!isBackendConfigured()) return null;
   if (!client) {
     client = createClient(env.supabaseUrl, env.supabaseAnonKey, {
-      auth: { storage: secureStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false },
+      auth: {
+        // Web'de Keychain yok; supabase-js varsayılan olarak localStorage kullanır (yalnızca önizleme).
+        storage: Platform.OS === 'web' ? undefined : secureStorage,
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+      },
     });
     AppState.addEventListener('change', (s) => {
       if (s === 'active') client?.auth.startAutoRefresh();

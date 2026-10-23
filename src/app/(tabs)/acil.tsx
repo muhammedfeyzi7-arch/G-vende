@@ -189,18 +189,12 @@ export default function EmergencyScreen() {
           subtitle="Hazır mesaj gönder"
           onPress={() => router.push('/acil-sms')}
         />
-        <ActionTile
-          icon="location"
-          color={accent.green}
-          title="Konum Paylaş"
-          subtitle="Konumunu ailene gönder"
-          onPress={fam.shareLocation}
-        />
+        <ActionTile icon="location" color={accent.green} title="Konumum" subtitle="Konumunu ailene gönder" onPress={fam.shareLocation} />
         <ActionTile icon="people" color={accent.purple} title="Aileye Bildir" subtitle="Herkese durum sor" onPress={fam.askEveryone} />
         <ActionTile
           icon="megaphone-outline"
           color={accent.orange}
-          title="Acil Duyurular"
+          title="Duyurular"
           subtitle="Resmî kayıtları takip et"
           onPress={() => router.push('/duyurular')}
         />
@@ -260,7 +254,7 @@ export default function EmergencyScreen() {
                 minimumFontScale={0.8}
                 style={{ fontWeight: '700' }}
               >
-                Toplanma Noktamız
+                Toplanma Alanım
               </AppText>
               <AppText variant="heading" numberOfLines={2} style={{ fontSize: 12.5 }}>
                 {point ? point.name : 'Henüz belirlenmedi'}
@@ -344,7 +338,7 @@ export default function EmergencyScreen() {
             <IconTile icon="mci:bag-personal" color={accent.red} size={30} solid />
             <View style={{ flex: 1 }}>
               <AppText variant="heading" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={{ fontSize: 13 }}>
-                Acil Durum Çantası
+                Acil Çanta
               </AppText>
               <AppText variant="caption">Hazırlık kontrol listesi</AppText>
             </View>

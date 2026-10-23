@@ -11,7 +11,7 @@ import { friendlyError, getSupabase } from '@/services/supabase';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /**
- * Güvenlik. GÜVENDE parola kullanmaz: giriş, e-postaya gelen tek kullanımlık kodla yapılır;
+ * Güvenlik. GÜVENDE parola kullanmaz: giriş, e-postaya gelen tek kullanımlık bağlantıyla yapılır;
  * bu yüzden "şifre değiştir" yerine e-posta değiştirme sunulur. Oturum belirteçleri
  * cihazın güvenli deposunda (Keychain / Keystore) tutulur.
  */
@@ -80,7 +80,7 @@ export default function SecurityScreen() {
           Şifre kullanılmıyor
         </AppText>
         <AppText variant="caption">
-          Giriş, e-postanıza gelen tek kullanımlık kodla yapılır; çalınabilecek veya unutulabilecek bir şifre saklanmaz.
+          Giriş, e-postanıza gelen tek kullanımlık bağlantıyla yapılır; çalınabilecek veya unutulabilecek bir şifre saklanmaz.
         </AppText>
         {session ? (
           <>
@@ -113,7 +113,7 @@ export default function SecurityScreen() {
         <ListRow
           first
           icon="phone-portrait-outline"
-          title={`${Device.modelName ?? 'Bu cihaz'} (bu cihaz)`}
+          title={Device.modelName ? `${Device.modelName} (bu cihaz)` : 'Bu cihaz'}
           subtitle={`${Device.osName ?? ''} ${Device.osVersion ?? ''}`.trim() || undefined}
         />
         {session ? <ListRow icon="log-out-outline" title="Diğer tüm cihazlardan çıkış yap" danger onPress={signOutOthers} /> : null}
