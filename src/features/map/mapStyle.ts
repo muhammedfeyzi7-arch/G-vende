@@ -51,7 +51,7 @@ function detailLayers(c: { urban: string; road: string; roadMinor: string; label
       minzoom: 8,
       filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary']]],
       layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: { 'line-color': c.road, 'line-opacity': 0.85, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 15, 5] },
+      paint: { 'line-color': c.road, 'line-opacity': 0.8, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.8, 15, 3.5] },
     },
     {
       id: 'omt-place',
@@ -60,7 +60,7 @@ function detailLayers(c: { urban: string; road: string; roadMinor: string; label
       'source-layer': 'place',
       minzoom: 9,
       filter: ['in', ['get', 'class'], ['literal', ['town', 'village', 'suburb', 'city']]],
-      layout: { 'text-field': name, 'text-font': ['Noto Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 9, 11, 14, 15] },
+      layout: { 'text-field': name, 'text-font': ['Noto Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 9, 10, 14, 13] },
       paint: { 'text-color': c.label, 'text-halo-color': c.halo, 'text-halo-width': 1.4 },
     },
   ];
@@ -97,7 +97,7 @@ export const SATELLITE_STYLE = {
       paint: { 'raster-brightness-max': 0.55, 'raster-saturation': -0.25, 'raster-contrast': 0.15 },
     },
     ...offlineLineLayers(NIGHT_SATELLITE),
-    ...detailLayers({ urban: '#2A2A33', road: '#E3AA3C', roadMinor: '#B98634', label: '#F2F6FA', halo: '#030B14' }),
+    ...detailLayers({ urban: '#1C2633', road: '#C98F35', roadMinor: '#36506D', label: '#E6EDF5', halo: '#030B14' }),
   ],
 } as unknown as StyleSpecification;
 

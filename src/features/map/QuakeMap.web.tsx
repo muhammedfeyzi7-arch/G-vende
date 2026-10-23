@@ -68,7 +68,8 @@ export const QuakeMap = forwardRef<QuakeMapHandle, any>(function Q(
     const light = isLightMap(mapStyle, currentScheme());
     const drawLabels = () => {
       lbl.forEach((x) => x.remove());
-      lbl = visibleLabels(m.getZoom(), user ? [user] : []).map((l) => {
+      // Yakın planda çevrimiçi ayrıntı katmanının kendi yer adları var; gömülü şehir adları yalnızca ayrıntı yoksa çizilir.
+      lbl = (m.getZoom() >= 10 && !reported ? [] : visibleLabels(m.getZoom(), user ? [user] : [])).map((l) => {
         const d = document.createElement('div');
         const col = l.sea ? (light ? '#3F6E9E' : '#4C86C6') : light ? '#1F2D3D' : '#F2F6FA';
         const sz = l.sea ? 11 : l.rank === 1 ? 16 : l.rank === 2 ? 13 : 11;
