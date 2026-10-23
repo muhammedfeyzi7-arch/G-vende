@@ -106,8 +106,8 @@ export default function SettingsScreen() {
         <QuickCard
           icon="mci:shield-account"
           color={accent.orange}
-          label="GÜVENDE"
-          value={session ? 'Hesap bağlı' : 'Misafir'}
+          label="Hesap"
+          value={session ? 'Giriş yapıldı' : 'Giriş yok'}
           onPress={() => router.push('/hesap')}
         />
         <QuickCard icon="people" color={accent.blue} label="Ailem" value={`${contactCount} kişi`} onPress={() => router.push('/ailem')} />

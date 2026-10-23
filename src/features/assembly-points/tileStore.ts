@@ -35,6 +35,7 @@ export type VersionFetcher = () => Promise<number | null>;
 type Entry = { points: AssemblyPoint[]; version: number; at: number };
 
 const MAX_AGE_MS = 30 * 24 * 3600_000;
+const VERSION_WAIT_MS = 1500;
 const MAX_STORED = 300;
 /** Supabase API yanıt sınırı (db-max-rows). Bu kadar satır gelirse yanıt kesilmiş olabilir. */
 export const ROW_CAP = 1000;
@@ -124,7 +125,8 @@ export class TileStore {
    * hiç veri yoksa hata fırlatılır.
    */
   async load(tiles: Tile[]): Promise<{ points: AssemblyPoint[]; fromCache: boolean }> {
-    await this.syncVersionOnce();
+    // Sürüm sorgusu en fazla 1,5 sn beklenir; geç gelirse setVersion dinleyicileri yeniden yükletir.
+    await Promise.race([this.syncVersionOnce(), new Promise((r) => setTimeout(r, VERSION_WAIT_MS))]);
     const v = await this.getVersion();
     const keys = [...new Set(tiles.map(tileKey))];
     const stale = new Map<string, Entry>();

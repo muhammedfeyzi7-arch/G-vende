@@ -190,5 +190,37 @@ export const CITY_LABELS: CityLabel[] = [...data.seas.features.map((f) => toLabe
 
 /** Yakınlaştırmaya göre gösterilecek etiketler (kalabalığı önlemek için). */
 export function visibleLabels(zoom: number): CityLabel[] {
-  return CITY_LABELS.filter((l) => (l.sea ? zoom < 8.5 : l.rank === 1 ? zoom < 11 : l.rank === 2 ? zoom >= 4.8 && zoom < 11 : zoom >= 5.7 && zoom < 11));
+  const candidates = CITY_LABELS.filter((l) =>
+    l.sea ? zoom < 8.5 : l.rank === 1 ? zoom < 11 : l.rank === 2 ? zoom >= 4.8 && zoom < 11 : zoom >= 5.7 && zoom < 11,
+  );
+  return withoutCollisions(candidates, zoom);
+}
+
+/** Etiketin ekrandaki yaklaşık kutusu (px): yazı boyutu sıraya göre (16/13/11 px), harf başına ~0,6 em. */
+function labelBox(l: CityLabel, zoom: number) {
+  const scale = 512 * 2 ** zoom; // MapLibre karo boyutu 512
+  const x = ((l.longitude + 180) / 360) * scale;
+  const r = (l.latitude * Math.PI) / 180;
+  const y = ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * scale;
+  const size = l.sea ? 11 : l.rank === 1 ? 16 : l.rank === 2 ? 13 : 11;
+  const w = l.name.length * size * 0.6 + 8;
+  const h = size + 10; // noktası ve boşluğuyla
+  return { x0: x - w / 2, x1: x + w / 2, y0: y - h, y1: y + 4 };
+}
+
+/**
+ * Üst üste binen etiketleri ayıklar ("Kocaeli" ile "Sakarya" gibi). Büyük şehir önce yerleşir,
+ * deniz adları en son; çakışan küçük etiket o yakınlaştırmada gösterilmez.
+ */
+export function withoutCollisions(labels: CityLabel[], zoom: number): CityLabel[] {
+  const order = [...labels].sort((a, b) => (a.sea ? 9 : a.rank) - (b.sea ? 9 : b.rank));
+  const placed: ReturnType<typeof labelBox>[] = [];
+  const keep = new Set<CityLabel>();
+  for (const l of order) {
+    const b = labelBox(l, zoom);
+    if (placed.some((p) => b.x0 < p.x1 && b.x1 > p.x0 && b.y0 < p.y1 && b.y1 > p.y0)) continue;
+    placed.push(b);
+    keep.add(l);
+  }
+  return labels.filter((l) => keep.has(l));
 }
