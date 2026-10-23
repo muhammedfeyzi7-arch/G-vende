@@ -169,11 +169,31 @@ describe('alt sekmeler', () => {
     expect(screen.getByText('Kayıt yok')).toBeTruthy();
   });
 
-  it('Acil Durum: 112, hızlı eylemler, çanta ve rehber', async () => {
+  it('Acil Durum sekmesi: rehber kartları, çanta, 112 ve acil araçlar', async () => {
     const Acil = require('@/app/(tabs)/acil').default;
     const { router } = require('expo-router');
-    const alert = jest.spyOn(Alert, 'alert');
     await open(<Acil />);
+    expect(screen.getByText('Acil Durum Rehberi')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText(/^Şu an sarsıntı mı var\?/));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'during-indoor' } });
+    await fireEvent.press(screen.getByLabelText('Deprem öncesi hazırlık. Evinizi ve ailenizi hazırlayın.'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/kategori/[id]', params: { id: 'before' } });
+    await fireEvent.press(screen.getByLabelText('Enkaz altında kaldım. Sakin kalın, yardım sinyali verin.'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'trapped' } });
+    await fireEvent.press(screen.getByLabelText('Dışarıda veya araçtayım. Bulunduğunuz yere göre davranın.'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/kategori/[id]', params: { id: 'outside' } });
+    expect(screen.getByText('0/15 tamamlandı')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('112’yi ara'));
+    expect(openURL).toHaveBeenCalledWith('tel:112');
+    await fireEvent.press(screen.getByLabelText(/^Acil araçlar/));
+    expect(router.push).toHaveBeenCalledWith('/acil-araclar');
+  });
+
+  it('Acil araçlar: 112, hızlı eylemler, çanta', async () => {
+    const Screen = require('@/app/acil-araclar').default;
+    const { router } = require('expo-router');
+    const alert = jest.spyOn(Alert, 'alert');
+    await open(<Screen />);
     await fireEvent.press(screen.getByLabelText('Hemen ara'));
     expect(openURL).toHaveBeenCalledWith('tel:112');
     await fireEvent.press(screen.getByLabelText('Acil SMS. Hazır mesaj gönder'));
@@ -186,6 +206,36 @@ describe('alt sekmeler', () => {
     expect(screen.getByText('1/15')).toBeTruthy();
     await fireEvent.press(screen.getByText('Acil Durum Modu'));
     expect(router.push).toHaveBeenCalledWith('/acil-mod');
+  });
+
+  it('Rehber kategorisi: hazırlık ilerlemesi ve grup satırları', async () => {
+    mockParams = { id: 'before' };
+    const Screen = require('@/app/rehber/kategori/[id]').default;
+    const { router } = require('expo-router');
+    await open(<Screen />);
+    expect(screen.getByText('Deprem öncesi hazırlık')).toBeTruthy();
+    expect(screen.getByText('%0')).toBeTruthy();
+    expect(screen.getByText(/adımın 0'ı tamamlandı\./)).toBeTruthy();
+    for (const t of ['Ev güvenliği', 'Acil durum çantası', 'Aile iletişim ve buluşma planı', 'Eşya ve mobilya güvenliği', 'Özel ihtiyaçlar'])
+      expect(screen.getByText(t)).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText(/^Eşya ve mobilya güvenliği\. 0\/5/));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/hazirlik', params: { grup: 'furniture' } });
+    await fireEvent.press(screen.getByLabelText('Devam et: Ev güvenliği'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/hazirlik', params: { grup: 'home' } });
+    mockParams = {};
+  });
+
+  it('Rehber kategorisi: konu satırları konuya gider; bilinmeyen bölüm açılmaz', async () => {
+    mockParams = { id: 'outside' };
+    const Screen = require('@/app/rehber/kategori/[id]').default;
+    const { router } = require('expo-router');
+    await open(<Screen />);
+    await fireEvent.press(screen.getByLabelText(/^Araçtaysanız\./));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'during-vehicle' } });
+    mockParams = { id: 'yok' };
+    await open(<Screen />);
+    expect(screen.getByText('Bölüm bulunamadı')).toBeTruthy();
+    mockParams = {};
   });
 
   it('Ailem: uzun basınca hızlı işlemler; Güvende işaretlenir', async () => {
@@ -321,6 +371,7 @@ describe('alt ekranlar', () => {
     ['canta', /Hazır olma durumunuz/],
     ['rehber/index', /Şu an sarsıntı mı var\?/],
     ['rehber/hazirlik', /Hazırlık durumunuz/],
+    ['rehber/kaynaklar', /resmî uygulaması değildir/],
     ['saglik-bilgilerim', /Kan grubu/],
     ['acil-mod', /112’yi Ara/],
     ['aile/bulusma', /buluşacağınız yeri/],

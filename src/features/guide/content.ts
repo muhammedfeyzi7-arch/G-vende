@@ -9,7 +9,7 @@
  *   (bkz. docs/rehber-inceleme.md).
  * - İçerik değişince CONTENT_VERSION artırılır ve CHECKED_AT güncellenir.
  */
-export const CONTENT_VERSION = '2026.10.23-1';
+export const CONTENT_VERSION = '2026.10.23-2';
 /** Kaynakların en son karşılaştırıldığı gün (YYYY-AA-GG) */
 export const CHECKED_AT = '2026-10-23';
 /** Bu süreden eski doğrulama "güncel olmayabilir" uyarısı gösterir. */
@@ -64,12 +64,15 @@ export type Item = {
   status?: 'review';
   /** İnceleme notu (yalnızca geliştiriciler ve inceleme listesi için) */
   note?: string;
+  /** Hazırlık listesinde ayrı grupta gösterilir (Eşya ve mobilya güvenliği) */
+  g?: 'furniture';
 };
 
 export type Category = 'before' | 'during' | 'after' | 'trapped' | 'family';
 export type ArtId =
   | 'prep-home'
   | 'prep-plan'
+  | 'prep-special'
   | 'kit'
   | 'indoor'
   | 'outdoor'
@@ -324,11 +327,11 @@ export const TOPICS: Topic[] = [
     short: 'Eşya sabitleme, çıkış yolları',
     art: 'prep-home',
     doList: [
-      { t: 'Dolapları ve devrilebilecek eşyaları birbirine ve duvara sabitleyin.', src: [A] },
-      { t: 'Kombi, şofben, buzdolabı, fırın ve soba gibi cihazları duvara veya yere sabitleyin.', src: [A, B] },
-      { t: 'Avize ve klima gibi asılı cihazları ağırlığını taşıyacak şekilde, pencerelerden uzağa asın.', src: [A] },
-      { t: 'Ağır eşya bulunan dolap kapaklarına kilit takın; raflara bant veya tel ekleyin.', src: [A] },
-      { t: 'Yatağı pencere ve devrilebilecek ağır dolapların yanına koymayın; üstünde ağır eşyalı raf bulundurmayın.', src: [A] },
+      { t: 'Dolapları ve devrilebilecek eşyaları birbirine ve duvara sabitleyin.', src: [A], g: 'furniture' },
+      { t: 'Kombi, şofben, buzdolabı, fırın ve soba gibi cihazları duvara veya yere sabitleyin.', src: [A, B], g: 'furniture' },
+      { t: 'Avize ve klima gibi asılı cihazları ağırlığını taşıyacak şekilde, pencerelerden uzağa asın.', src: [A], g: 'furniture' },
+      { t: 'Ağır eşya bulunan dolap kapaklarına kilit takın; raflara bant veya tel ekleyin.', src: [A], g: 'furniture' },
+      { t: 'Yatağı pencere ve devrilebilecek ağır dolapların yanına koymayın; üstünde ağır eşyalı raf bulundurmayın.', src: [A], g: 'furniture' },
       { t: 'Çıkış yollarını eşyalardan temizleyin, işaretleyin ve aydınlatın.', src: [A] },
       { t: 'Yanıcı ve zehirli maddeleri kilitli, alt raflarda ve kırılmayacak biçimde saklayın.', src: [A, B] },
       { t: 'Uygun bir yangın söndürme cihazı bulundurun; yerini herkes bilsin, bakımı yapılsın.', src: [A] },
@@ -356,6 +359,22 @@ export const TOPICS: Topic[] = [
     why: [{ t: 'Afet anında eve ulaşılamayabilir ve şebekeler kesilebilir; önceden yapılan plan ailenin birbirini bulmasını sağlar.', src: [A] }],
     dontList: [{ t: 'Önemli belgelerin tek kopyasını evde bırakmayın.', src: [A] }],
     link: { label: 'Ailem', href: '/ailem' },
+  },
+  {
+    id: 'prep-special',
+    cat: 'before',
+    title: 'Özel ihtiyaçlar',
+    short: 'Bebekler, yaşlılar, hamileler ve engelli bireyler',
+    art: 'prep-special',
+    doList: [
+      // AFAD: planı evdeki herkesle yapın + deprem sonrasında bu bireylere yardım edin (iki maddenin birleşimi).
+      { t: 'Hazırlık planında, deprem sonrasında yaşlı, bebek, hamile ve engelli aile bireylerine kimin yardım edeceğini belirleyin.', src: [A, B] },
+      // AFAD: tekerlekli sandalyede tekerlekleri kilitle, baş ve boynu koru + planı tatbik edin.
+      { t: 'Evde tekerlekli sandalye kullanan biri varsa, sarsıntıda tekerlekleri kilitleyip başını ve boynunu korumayı birlikte tatbik edin.', src: [A] },
+    ],
+    why: [{ t: 'Deprem sonrasında yaşlı, bebek, hamile ve engelli bireyler başkalarının yardımına ihtiyaç duyabilir.', src: [A, B] }],
+    dontList: [],
+    link: { label: 'Hazırlık kontrol listesi', href: '/rehber/hazirlik' },
   },
   {
     id: 'prep-kit',

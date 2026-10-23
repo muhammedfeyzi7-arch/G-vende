@@ -13,7 +13,7 @@ import {
   topicById,
   topicSources,
 } from '../content';
-import { prepChecklist, prepProgress } from '../prep';
+import { possessive, prepChecklist, prepGroups, prepProgress } from '../prep';
 
 describe('acil durum rehberi içeriği', () => {
   it('gösterilen her madde en az bir kaynağa dayanır; kaynaklar tanımlı ve https', () => {
@@ -78,14 +78,32 @@ describe('acil durum rehberi içeriği', () => {
     expect(keys.length).toBeGreaterThan(8);
     expect(new Set(keys).size).toBe(keys.length);
     expect(prepProgress([]).percent).toBe(0);
-    expect(prepProgress(keys).percent).toBe(100);
+    const kitKeys = prepGroups().find((g) => g.id === 'kit')!.items.map((i) => i.key);
+    expect(prepProgress(keys).percent).toBeLessThan(100);
+    expect(prepProgress(keys, kitKeys).percent).toBe(100);
     expect(prepProgress(keys.slice(0, 1)).done).toBe(1);
+  });
+  it('hazırlık grupları: 5 grup; mobilya maddeleri ev güvenliğinden ayrı; çanta ayrı sayılır', () => {
+    const g = prepGroups();
+    expect(g.map((x) => x.id)).toEqual(['home', 'kit', 'plan', 'furniture', 'special']);
+    for (const x of g) expect(x.items.length).toBeGreaterThan(0);
+    const home = g.find((x) => x.id === 'home')!.items.map((i) => i.text).join(' ');
+    expect(home).not.toMatch(/Dolapları/);
+    const kit = g.find((x) => x.id === 'kit')!;
+    const all = prepProgress([], kit.items.map((i) => i.key));
+    expect(all.done).toBe(kit.items.length);
+  });
+  it('Türkçe iyelik eki', () => {
+    expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 22, 30, 40, 50, 60, 70, 80, 90, 100].map(possessive)).toEqual([
+      "0'ı", "1'i", "2'si", "3'ü", "4'ü", "5'i", "6'sı", "7'si", "8'i", "9'u", "10'u", "13'ü", "20'si", "22'si", "30'u", "40'ı", "50'si",
+      "60'ı", "70'i", "80'i", "90'ı", "100'ü",
+    ]);
   });
 });
 
 describe('uygulama içi bağlantılar', () => {
-  it('Acil Durum sekmesindeki Çök-Kapan-Tutun adımları var olan konulara gider', () => {
-    const src = require('fs').readFileSync(require('path').join(__dirname, '../../../app/(tabs)/acil.tsx'), 'utf8') as string;
+  it('Acil araçlardaki Çök-Kapan-Tutun adımları var olan konulara gider', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '../../../app/acil-araclar.tsx'), 'utf8') as string;
     const ids = [...src.matchAll(/'\/rehber\/\[id\]', params: \{ id: n === 4 \? '([^']+)' : '([^']+)'/g)].flatMap((m) => [m[1], m[2]]);
     expect(ids.length).toBe(2);
     for (const id of ids) expect(topicById(id!)).not.toBeNull();

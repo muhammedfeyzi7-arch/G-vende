@@ -10,7 +10,7 @@ type QuickTarget = (typeof QUICK_LINKS)[number]['target'];
 
 export function openGuideTarget(t: QuickTarget) {
   if (t.kind === 'topic') router.push({ pathname: '/rehber/[id]', params: { id: t.id } });
-  else if (t.kind === 'cat') router.push({ pathname: '/rehber', params: { kategori: t.id } });
+  else if (t.kind === 'cat') router.push({ pathname: '/rehber/kategori/[id]', params: { id: t.id } });
   else router.push(t.href);
 }
 

@@ -122,14 +122,17 @@ function RootStack() {
       <Stack.Screen name="depremler" options={{ title: 'Deprem Geçmişi' }} />
       <Stack.Screen name="acil-mod" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <Stack.Screen name="acil-sms" options={{ title: 'Hazır Mesajlar' }} />
+      <Stack.Screen name="acil-araclar" options={{ title: 'Acil Araçlar' }} />
+      <Stack.Screen name="rehber/index" options={{ headerShown: false }} />
+      <Stack.Screen name="rehber/kategori/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="rehber/hazirlik" options={{ title: 'Hazırlık Kontrol Listesi' }} />
+      <Stack.Screen name="rehber/kaynaklar" options={{ title: 'Kaynaklar' }} />
       <Stack.Screen name="arama" options={{ title: 'Acil Arama' }} />
       <Stack.Screen name="sarsinti" options={{ title: 'Sarsıntı Ölçer' }} />
       <Stack.Screen name="hosgeldin" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="rapor/benim" options={{ title: 'Olay Bildirimlerim' }} />
       <Stack.Screen name="duyurular" options={{ title: 'Resmî Bilgiler' }} />
       <Stack.Screen name="canta" options={{ title: 'Acil Durum Çantası' }} />
-      <Stack.Screen name="rehber/index" options={{ title: 'Acil Durum Rehberi' }} />
-      <Stack.Screen name="rehber/hazirlik" options={{ title: 'Hazırlık Kontrol Listesi' }} />
       <Stack.Screen name="rehber/[id]" options={{ title: 'Rehber' }} />
       <Stack.Screen name="saglik-bilgilerim" options={{ title: 'Sağlık Bilgilerim' }} />
       <Stack.Screen name="aile/ekle" options={{ title: 'Üye Ekle', presentation: 'modal' }} />

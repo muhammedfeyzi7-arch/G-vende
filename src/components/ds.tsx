@@ -399,18 +399,20 @@ export function ProgressRing({
     >
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
         <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.borderStrong} strokeWidth={stroke} fill="none" />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke={color}
-          strokeWidth={stroke}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={`${c * pct} ${c}`}
-          // Halka saat 12 yönünden başlar (rotation+origin web'de geçersiz DOM özniteliği üretiyor).
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
+        {pct > 0 ? (
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke={color}
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={`${c * pct} ${c}`}
+            // Halka saat 12 yönünden başlar (rotation+origin web'de geçersiz DOM özniteliği üretiyor).
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          />
+        ) : null}
       </Svg>
       {children}
     </View>

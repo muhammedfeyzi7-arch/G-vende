@@ -1,6 +1,6 @@
 # Acil Durum Rehberi — Kaynaklar, Telif ve Uzman İnceleme Listesi
 
-İçerik sürümü: **2026.10.23-1** · Son kaynak karşılaştırması: **23 Ekim 2026**
+İçerik sürümü: **2026.10.23-2** · Son kaynak karşılaştırması: **23 Ekim 2026**
 İçerik dosyası: `src/features/guide/content.ts` (her madde kaynağa bağlı; `status: 'review'` maddeler uygulamada gösterilmez).
 
 ## 1. Kullanılan resmî kaynaklar
@@ -20,7 +20,7 @@ Sayfalar, geliştirme ortamının internet erişimi kısıtlı olduğu için Sup
 
 - AFAD sayfalarının altında "© 2026 T.C. İçişleri Bakanlığı Afet ve Acil Durum Yönetimi Başkanlığı" ibaresi var; açık lisans ifadesi bulunmuyor. Bu nedenle:
   - Metinler **birebir kopyalanmadı**; bilgiye dayanan kısa, özgün ifadeler yazıldı.
-  - **AFAD görseli, infografiği veya logosu kullanılmadı.** Tüm illüstrasyonlar GÜVENDE için çizilmiş vektörlerdir (`src/features/guide/Art.tsx`, `src/features/emergency/DropCoverHold.tsx`).
+  - **AFAD görseli, infografiği veya logosu kullanılmadı.** Rehber illüstrasyonları proje sahibinin verdiği tasarım görsellerinden kırpılmış raster dosyalardır (`assets/guide/`, `src/features/guide/Art.tsx`). Kaynak görseller ekran tasarımı boyutunda olduğundan 2× büyütüldü; yüksek çözünürlüklü asılları gelirse aynı adlarla değiştirilmelidir. Eski `DropCoverHold.tsx` vektörü yalnızca Acil Araçlar ekranında kalır.
   - Uygulamada "GÜVENDE, AFAD'ın veya başka bir kurumun resmî uygulaması değildir" ibaresi her konu sayfasında ve rehber merkezinde gösterilir.
 - **Hukuki değerlendirme önerilir:** Kaynak gösterilerek özetleme yapılması (FSEK m.35 alıntı/özet sınırları) ve kurum adının kaynak olarak anılması uygun kabul edilse de yayın öncesi bir hukukçunun onayı alınmalıdır.
 
@@ -43,6 +43,11 @@ Sayfalar, geliştirme ortamının internet erişimi kısıtlı olduğu için Sup
 
 - **Acil durum çantası madde listesi** (`src/features/emergency/content.ts`, `/canta`): AFAD ilk 72 saat için çanta önerir ve belge kopyalarının su geçirmez saklanmasını söyler; ancak su, gıda, fener, düdük, powerbank gibi madde madde liste AFAD'ın ayrıntılı listesiyle **karşılaştırılamadı**. Ekranda bu durum açıkça yazılıdır.
 - **Özel ihtiyaçlar:** Tekerlekli sandalye (tekerlekleri kilitle, baş-boynu koru) ve deprem sonrası yaşlı/bebek/hamile/engelli bireylere yardım AFAD kaynaklıdır. **Evcil hayvanlar ve engelli bireyler için hazırlık** konusunda okunan kaynaklarda içerik yok; bu bölüm eklenmedi.
+
+## 5b. Türetilmiş maddeler
+
+- **Özel ihtiyaçlar** (`prep-special`): iki AFAD maddesinin birleşimidir — "Afete hazırlık planını evdeki herkesle birlikte yapın, tatbikat yapın" ile "Yaşlı, bebek, hamile ve engelli bireylere yardımcı olun" / "Tekerlekli sandalyede tekerlekleri kilitleyin, baş ve boynu koruyun". **Evcil hayvanlar için kaynaklı içerik yok**; bu yüzden metinde yer almaz (görselde kedi bulunur).
+- **Hazırlık grupları:** "Ev güvenliği" ve "Eşya ve mobilya güvenliği", `prep-home` konusunun maddeleridir (`g: 'furniture'` ile ayrılır). "Acil durum çantası" grubu `/canta` listesini sayar.
 
 ## 6. Güncelleme süreci
 

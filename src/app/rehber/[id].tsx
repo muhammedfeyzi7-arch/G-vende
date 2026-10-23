@@ -9,7 +9,19 @@ import { CATEGORIES, EMERGENCY_NUMBER, shown, topicById, topicSources, type Item
 import { OfflineNote, SourceList } from '@/features/guide/ui';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 
-function Section({ title, icon, tone, items, numbered }: { title: string; icon: 'checkmark-circle' | 'close-circle'; tone: string; items: Item[]; numbered?: boolean }) {
+function Section({
+  title,
+  icon,
+  tone,
+  items,
+  numbered,
+}: {
+  title: string;
+  icon: 'checkmark-circle' | 'close-circle';
+  tone: string;
+  items: Item[];
+  numbered?: boolean;
+}) {
   if (!items.length) return null;
   return (
     <View style={{ gap: spacing.sm }}>
@@ -41,7 +53,8 @@ export default function GuideTopic() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
   const t = topicById(id ?? '');
-  if (!t) return <StateMessage icon="book-outline" title="Rehber bulunamadı" message="Bu konu kaldırılmış veya doğrulama bekliyor olabilir." />;
+  if (!t)
+    return <StateMessage icon="book-outline" title="Rehber bulunamadı" message="Bu konu kaldırılmış veya doğrulama bekliyor olabilir." />;
   const cat = CATEGORIES.find((c) => c.id === t.cat)!;
   const why = shown(t.why);
 

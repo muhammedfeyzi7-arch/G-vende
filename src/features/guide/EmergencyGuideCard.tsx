@@ -74,5 +74,13 @@ const styles = themedStyles(() => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 64, paddingVertical: spacing.xs },
   divider: { borderTopWidth: 1, borderTopColor: colors.border },
   thumb: { borderRadius: 10, borderWidth: 2, overflow: 'hidden' },
-  all: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 48, borderTopWidth: 1, borderTopColor: colors.border },
+  all: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    minHeight: 48,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
 }));
