@@ -187,24 +187,61 @@ describe('alt sekmeler', () => {
     expect(screen.getByText('Kayıt yok')).toBeTruthy();
   });
 
-  it('Acil Durum sekmesi: rehber kartları, çanta, 112 ve acil araçlar', async () => {
+  it('Acil Durum sekmesi: 112 önce, hizmet kartları 112’yi arar, araçlar ve rehber', async () => {
     const Acil = require('@/app/(tabs)/acil').default;
     const { router } = require('expo-router');
     await open(<Acil />);
-    expect(screen.getByText('Acil Durum Rehberi')).toBeTruthy();
-    await fireEvent.press(screen.getByLabelText(/^Şu an sarsıntı mı var\?/));
+    await fireEvent.press(screen.getByLabelText('112 Acil Çağrı. Hemen arayın. Polis, itfaiye, sağlık ve AFAD'));
+    expect(openURL).toHaveBeenLastCalledWith('tel:112');
+    // Hizmet kartları ayrı numara uydurmaz; hepsi 112
+    for (const s of ['Polis', 'İtfaiye', 'Sağlık']) {
+      openURL.mockClear();
+      await fireEvent.press(screen.getByLabelText(`${s}: 112'yi ara`));
+      expect(openURL).toHaveBeenCalledWith('tel:112');
+    }
+    await fireEvent.press(screen.getByLabelText("AFAD resmî internet sitesi. Acil yardım için 112'yi arayın"));
+    expect(openURL).toHaveBeenLastCalledWith('https://www.afad.gov.tr');
+    await fireEvent.press(screen.getByLabelText('Enkaz Altı Modu. İnternetsiz siren ve flaş'));
+    expect(router.push).toHaveBeenCalledWith('/enkaz');
+    await fireEvent.press(screen.getByLabelText('Fener. Cihazınızın fenerini açın'));
+    expect(router.push).toHaveBeenCalledWith('/isik?led=1');
+    await fireEvent.press(screen.getByLabelText('Acil SMS. Hazır mesajlarla yardım isteyin'));
+    expect(router.push).toHaveBeenCalledWith('/acil-sms');
+    await fireEvent.press(screen.getByLabelText('Toplanma Alanları. Yakınınızdaki güvenli alanlar'));
+    expect(router.push).toHaveBeenCalledWith('/harita');
+    await fireEvent.press(screen.getByLabelText('Deprem anında ne yapmalıyım?. Çök · Kapan · Tutun'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'during-indoor' } });
-    await fireEvent.press(screen.getByLabelText('Deprem öncesi hazırlık. Evinizi ve ailenizi hazırlayın.'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/kategori/[id]', params: { id: 'before' } });
-    await fireEvent.press(screen.getByLabelText('Enkaz altında kaldım. Sakin kalın, yardım sinyali verin.'));
+    await fireEvent.press(screen.getByLabelText('Enkaz altında kaldım. Sakin kalın, yardım sinyali verin'));
     expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'trapped' } });
-    await fireEvent.press(screen.getByLabelText('Dışarıda veya araçtayım. Bulunduğunuz yere göre davranın.'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/kategori/[id]', params: { id: 'outside' } });
-    expect(screen.getByText('0/15 tamamlandı')).toBeTruthy();
-    await fireEvent.press(screen.getByLabelText('112’yi ara'));
-    expect(openURL).toHaveBeenCalledWith('tel:112');
-    await fireEvent.press(screen.getByLabelText(/^Acil araçlar/));
+    await fireEvent.press(screen.getByLabelText('Acil Durum Araçları: tümünü gör'));
     expect(router.push).toHaveBeenCalledWith('/acil-araclar');
+    await fireEvent.press(screen.getByLabelText('Acil Durum Rehberi: tümünü gör'));
+    expect(router.push).toHaveBeenCalledWith('/rehber');
+  });
+
+  it('Acil Durum: 112 açılamazsa kullanıcıya söylenir', async () => {
+    const Acil = require('@/app/(tabs)/acil').default;
+    const alert = jest.spyOn(Alert, 'alert');
+    openURL.mockRejectedValueOnce(new Error('no tel'));
+    await open(<Acil />);
+    await fireEvent.press(screen.getByLabelText('112 Acil Çağrı. Hemen arayın. Polis, itfaiye, sağlık ve AFAD'));
+    await flush();
+    expect(alert).toHaveBeenCalledWith('Arama ekranı açılamadı', expect.stringMatching(/112/));
+  });
+
+  it('Acil Durum: konum paylaşımı kullanıcı başlatır; konum yoksa paylaşım yapılmaz', async () => {
+    const Acil = require('@/app/(tabs)/acil').default;
+    const alert = jest.spyOn(Alert, 'alert');
+    await open(<Acil />);
+    await fireEvent.press(screen.getByLabelText('Konum paylaş'));
+    await flush();
+    expect(alert).toHaveBeenCalledWith('Konum alınamadı', expect.any(String), expect.any(Array));
+  });
+
+  it('Rehber merkezi (/rehber) rehber ekranını açar', async () => {
+    const Screen = require('@/app/rehber/index').default;
+    await open(<Screen />);
+    expect(screen.getByText('Acil Durum Rehberi')).toBeTruthy();
   });
 
   it('Acil araçlar: 112, hızlı eylemler, çanta', async () => {

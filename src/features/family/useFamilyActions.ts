@@ -105,7 +105,7 @@ export function useFamilyActions() {
     const p = coarsen(gps, 0.0001);
     const text = `GÜVENDE: Şu anki konumum https://maps.google.com/?q=${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`;
     const targets = fam.contacts.filter((c) => !settings.hideLocationFrom.includes(c.id));
-    Alert.alert('Konumunu paylaş', 'Konumunuz yalnızca bu bir defalığına, seçtiğiniz kişilerle paylaşılır.', [
+    Alert.alert('Konumunu paylaş', `Konumunuz yalnızca bu bir defalığına, seçtiğiniz kişilerle paylaşılır. Gönder’e siz basarsınız.\n\nPaylaşılacak mesaj:\n${text}`, [
       { text: 'Vazgeç', style: 'cancel' },
       ...(targets.length
         ? [

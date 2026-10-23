@@ -1,7 +1,7 @@
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
-import { GuideHome } from '@/features/guide/GuideHome';
+import { EmergencyHome } from '@/features/emergency/EmergencyHome';
 
-/** Acil Durum sekmesi: Acil Durum Rehberi (internetsiz). 112 ve diğer araçlar ekranın altında. */
+/** Acil Durum sekmesi: 112 ve hızlı yardım önce; araçlar ve kısa rehber ardından (internetsiz). */
 export default function EmergencyTab() {
-  return <GuideHome bottomPad={useBottomTabBarHeight()} />;
+  return <EmergencyHome bottomPad={useBottomTabBarHeight()} />;
 }

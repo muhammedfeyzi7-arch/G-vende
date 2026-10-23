@@ -3,10 +3,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Skeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
+import { call112 } from '@/features/emergency/call';
 import { AppText } from '@/components/ui';
 import { Icon } from '@/components/ds';
 import { KIT_ITEMS } from '@/features/emergency/content';
@@ -25,12 +26,7 @@ import { alpha, colors, radius, spacing, themedStyles } from '@/theme';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import { relativeTimeTr } from '@/utils/time';
 
-/** 112'yi telefonun arama ekranında açar; aramanın yapıldığını iddia etmez, açılamazsa söyler. */
-export function call112() {
-  Linking.openURL('tel:112').catch(() =>
-    Alert.alert('Arama ekranı açılamadı', 'Bu cihaz telefon araması yapamıyor olabilir. Telefonunuzun tuş takımından 112’yi arayın.'),
-  );
-}
+export { call112 } from '@/features/emergency/call';
 
 /** Metni tek satıra sığdıran yazı boyutu (web'de adjustsFontSizeToFit yok; her platformda aynı sonuç). */
 const fit = (text: string, width: number, max: number, bold = true) =>
