@@ -3,7 +3,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { router } from 'expo-router';
 import { Accelerometer } from 'expo-sensors';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import Svg, { Line, Polyline } from 'react-native-svg';
 import { AppText, Button, StateMessage } from '@/components/ui';
 import { Page } from '@/components/ds';
@@ -28,6 +28,7 @@ export default function VibrationMeter() {
   const lastLevel = useRef<string>('still');
 
   useEffect(() => {
+    if (Platform.OS === 'web') return setAvailable(false);
     Accelerometer.isAvailableAsync()
       .then(setAvailable)
       .catch(() => setAvailable(false));
@@ -35,9 +36,14 @@ export default function VibrationMeter() {
 
   useEffect(() => {
     if (!available || !running) return;
-    Accelerometer.setUpdateInterval(SAMPLE_INTERVAL_MS);
-    const sub = Accelerometer.addListener((a) => setState((s) => step(s, a)));
-    return () => sub.remove();
+    let sub: { remove: () => void } | null = null;
+    try {
+      Accelerometer.setUpdateInterval(SAMPLE_INTERVAL_MS);
+      sub = Accelerometer.addListener((a) => setState((s) => step(s, a)));
+    } catch {
+      setAvailable(false);
+    }
+    return () => sub?.remove();
   }, [available, running]);
 
   const now = rms(state.samples);
