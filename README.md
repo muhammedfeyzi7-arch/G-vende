@@ -54,13 +54,52 @@ npx supabase functions deploy ingest-earthquakes delete-account notify-family ve
 
 - **Gizli değerler:** `20261023000007_jobs.sql` Vault'ta rastgele `ingest_secret`, `webhook_secret`, `identity_hash_pepper` üretir; fonksiyonlar bunları `internal_secret` (yalnızca service_role) ile okur. Panelde elle secret girmek gerekmez (girilirse ortam değişkeni önceliklidir). Push için isteğe bağlı: `EXPO_ACCESS_TOKEN`.
 - **Proje adresi (bir kez, SQL düzenleyicide):** `select vault.create_secret('https://<proje>.supabase.co', 'project_url');`
-- **Auth:** E-posta OTP'yi açın; e-posta şablonunda `{{ .Token }}` (6 haneli kod) gösterilmeli.
-- **ingest-earthquakes:** `pg_cron` her dakika `pg_net` ile `x-ingest-secret` başlığıyla çağırır (migration kurar).
+- **Auth:** E-posta girişi varsayılan "Sign in" bağlantısıyla çalışır (özel SMTP olmadan şablon düzenlenemez). Bağlantıya dokununca uygulamaya dönmesi için *Authentication → URL Configuration → Redirect URLs*'e `guvende://**` ve (Expo Go için) `exp://**` ekleyin; eklenmezse kullanıcı bağlantıyı kopyalayıp uygulamaya yapıştırır.
+- **ingest-earthquakes:** `pg_cron` **2 dakikada bir** `pg_net` ile `x-ingest-secret` başlığıyla çağırır (migration kurar). Kaynakların kullanım koşulları yazılı olarak doğrulanmadığı için 1 dk yerine 2 dk seçildi.
 - **notify-family:** `safety_checkins` INSERT tetikleyicisi `x-webhook-secret` ile çağırır (migration kurar; konum gönderilmez).
 - **verify-identity (kimlik doğrulama):** NVİ KPSPublic servisine bağlanır; Vault'taki `identity_hash_pepper` (veya `IDENTITY_HASH_PEPPER`) olmadan çalışmaz. T.C. no / ad / doğum yılı saklanmaz.
 - **Kurumsal hesap (Resmî rozet):** Yalnızca SQL düzenleyicisinden (service role) atanır:
   `update public.profiles set role = 'official', org_name = 'AFAD Düzce' where id = '<kullanıcı-uuid>';` (kurtarma ekibi için `role = 'rescue'`).
 - **Toplanma alanları:** `scripts/import-assembly-points.mjs` ile yalnızca resmî kaynak dosyalarından (varsayılan kuru çalıştırma).
+
+### Deprem veri akışı
+
+```
+AFAD · Kandilli · EMSC · USGS ──(yalnızca sunucu, 2 dk)──▶ ingest-earthquakes ──▶ earthquake_readings + quake_sync_state
+                                                                    │                         │ (Realtime)
+                                                                    └─▶ push (Expo)          ▼
+                                                                                     Mobil uygulama (okur)
+```
+
+- **Cihazlar kaynakları sürekli sorgulamaz.** Uygulama `earthquake_readings`'i okur, Realtime ile yeni/değişen kayıtları alır ve 5 dk'da bir yalnızca GÜVENDE sunucusunu yeniden okur. Kaynaklar cihazdan doğrudan yalnızca sunucu yapılandırılmamışsa veya sunucuya ulaşılamadığında (tek deneme) sorgulanır.
+- **Artımlı senkron:** her kaynak için son başarılı çekimden 2 saat geriye (örtüşme; kaynak revizyonları için), en fazla 24 saat. Yalnızca yeni veya değişmiş okumalar yazılır; aynı kaynak+olay kimliği birincil anahtar olduğundan tekrar eklenmez, değişen değerler güncellenir (`updated_at`).
+- **Hata yönetimi:** istek başına 15 sn zaman aşımı, ağ/429/5xx için 3 deneme (1 sn, 3 sn), ardışık hatalarda kaynak 1→2→4…60 dk ertelenir. Hata durumunda eski veriler silinmez.
+- **Durum ayrımı (`quake_sync_state`):** `last_attempt_at` (son deneme), `last_success_at` (son başarılı çekim), `last_event_at` (kaynaktaki en yeni olay), `status` (`ok`/`error`/`schema_changed`), `last_error`. `sample_keys` gerçek yanıttaki alan adlarını tutar; beklenen alanlar kaybolursa durum `schema_changed` olur.
+- **Eskime:** son başarılı senkron 10 dakikadan eskiyse uygulama verinin güncel olmadığını açıkça yazar.
+- **Push:** yeni olay (son 30 dk, M≥3) için tercihlere (açık/kapalı, eşik, bölge yarıçapı, en kısa aralık, ülke geneli M5+) göre; `notified_events` ile her olay bir kez. İçerik: büyüklük, yer, olay saati (TSİ), kaynak. Expo'nun `DeviceNotRegistered` dediği belirteçler silinir. "accepted" = Expo'nun kabul ettiği mesajdır; teslim veya okunma anlamına gelmez.
+- **Erken uyarı yoktur.** Tüm bildirimler gerçekleşmiş deprem kayıtlarıdır; doğrulanmış bir erken uyarı sağlayıcısı entegre değildir.
+
+### Migration'lar
+
+| Dosya | İçerik |
+| --- | --- |
+| `…01_init` | Temel şema, RLS |
+| `…02_storage` | Fotoğraf deposu |
+| `…03_push_dispatch` | Bildirim tekrar önleme |
+| `…04_prefs_feedback` | Bildirim tercihleri, geri bildirim |
+| `…05_trust` | Kimlik, konum/foto kuralları, topluluk oyları (3 onay), ihlal/askı |
+| `…06_harden_grants` | Fonksiyon yetkilerinin daraltılması |
+| `…07_jobs` | Vault gizli değerleri, cron, aile push tetikleyicisi |
+| `…08_readonly_public_tables` | Deprem/toplanma tablolarına istemci yazamaz |
+| `…09_emsc_source` | EMSC kaynağı |
+| `…10_quake_sync` | Senkron durumu, değişiklik zamanları, Realtime yayını, 2 dk cron |
+| `…11_vote_anti_collusion` | Kimliği <24 sa olan hesap oy veremez; aynı yazara 24 sa'te en fazla 3 onay |
+
+### Ortam değişkenleri (adlar; değerler kaynak koda yazılmaz)
+
+- İstemci: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (herkese açık anon anahtar), `EXPO_PUBLIC_MAP_STYLE_URL`, `EXPO_PUBLIC_QUAKE_SOURCES`, `EXPO_PUBLIC_DEMO_REPORTS`.
+- Sunucu (Supabase otomatik verir): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — yalnızca Edge Function ortamında.
+- Sunucu (isteğe bağlı; yoksa Vault kullanılır): `INGEST_SECRET`, `WEBHOOK_SECRET`, `IDENTITY_HASH_PEPPER`, `EXPO_ACCESS_TOKEN`.
 
 ## Komutlar
 
