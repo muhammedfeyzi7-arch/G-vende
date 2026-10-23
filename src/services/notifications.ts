@@ -5,6 +5,7 @@ import type { Settings } from '@/features/settings/settings';
 import type { LatLng } from '@/utils/geo';
 import { coarsen } from '@/utils/geo';
 import { getSupabase } from './supabase';
+import { userMessage } from './errors';
 
 /**
  * Push bildirimleri yalnızca sunucuya kaydedilmiş deprem kayıtlarından (gecikmeli) üretilir.
@@ -40,10 +41,10 @@ export async function registerForPush(): Promise<PushRegistration> {
     const { error } = await sb
       .from('push_tokens')
       .upsert({ token, platform: Platform.OS === 'ios' ? 'ios' : 'android', updated_at: new Date().toISOString() });
-    if (error) return { ok: false, reason: error.message };
+    if (error) return { ok: false, reason: userMessage(error, 'Bildirim kaydı yapılamadı. Lütfen tekrar deneyin.') };
     return { ok: true, token };
   } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : 'Push belirteci alınamadı' };
+    return { ok: false, reason: userMessage(e, 'Bu cihaz için bildirim kaydı yapılamadı.') };
   }
 }
 

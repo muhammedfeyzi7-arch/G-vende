@@ -12,6 +12,7 @@ import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { colors, radius, spacing, themedStyles, surface } from '@/theme';
 import { formatDateTimeTr } from '@/utils/time';
+import { userMessage } from '@/services/errors';
 
 /**
  * Kimlik doğrulama: NVİ (Nüfus ve Vatandaşlık İşleri) servisiyle T.C. kimlik no + ad + soyad + doğum yılı
@@ -42,7 +43,7 @@ export default function IdentityScreen() {
         { text: 'Tamam', onPress: () => router.back() },
       ]);
     } catch (e) {
-      Alert.alert('Doğrulanamadı', (e as Error).message);
+      Alert.alert('Doğrulanamadı', userMessage(e));
     } finally {
       setBusy(false);
     }

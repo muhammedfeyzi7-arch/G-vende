@@ -23,6 +23,7 @@ import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
 import { colors, font, radius, spacing, themedStyles } from '@/theme';
 import { distanceKm } from '@/utils/geo';
+import { userMessage } from '@/services/errors';
 
 type TabKey = 'feed' | 'official' | 'assembly' | 'help' | 'details';
 const TABS: { key: TabKey; label: string }[] = [
@@ -236,7 +237,7 @@ export default function MapScreen() {
               onHelpful={(id) => {
                 const r = feed.reports.find((x) => x.id === id);
                 if (!r) return;
-                feed.toggleHelpful(id).catch((e: Error) => Alert.alert('İşlem yapılamadı', e.message));
+                feed.toggleHelpful(id).catch((e: Error) => Alert.alert('İşlem yapılamadı', userMessage(e)));
               }}
               onRetry={feed.refresh}
               online={online}

@@ -30,7 +30,7 @@ export async function readCurrent(): Promise<LocationState> {
       at: new Date(pos.timestamp).toISOString(),
     };
   } catch (e) {
-    return { status: 'unavailable', message: e instanceof Error ? e.message : 'Konum alınamadı' };
+    return { status: 'unavailable', message: 'Konum alınamadı. Konum servislerinin açık olduğundan emin olun.' };
   }
 }
 

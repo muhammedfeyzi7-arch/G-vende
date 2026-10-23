@@ -19,6 +19,7 @@ import { useApp } from './AppProvider';
 import { useInbox } from './InboxProvider';
 import { CATEGORY_META } from '@/features/reports/categories';
 import { syncMyReports, type MyReport } from '@/features/reports/myReports';
+import { UserError } from '@/services/errors';
 
 type FeedStatus = 'idle' | 'loading' | 'ready' | 'error' | 'not-configured';
 
@@ -230,7 +231,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         setHelpful(helpful);
         refresh();
-        throw new Error(friendlyError(e));
+        throw new UserError(friendlyError(e));
       }
     },
     [helpful, refresh],
@@ -240,7 +241,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     try {
       await flagReport(id, reason);
     } catch (e) {
-      throw new Error(friendlyError(e));
+      throw new UserError(friendlyError(e));
     }
   }, []);
 
@@ -249,7 +250,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       try {
         await voteReport(id, v, device);
       } catch (e) {
-        throw new Error(friendlyError(e));
+        throw new UserError(friendlyError(e));
       }
       setVotes((m) => new Map(m).set(id, v));
       // Doğrulama/kaldırma sunucuda hesaplanır; güncel durumu çek.

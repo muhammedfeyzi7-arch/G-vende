@@ -10,6 +10,7 @@ import type { ReportFilter } from '@/features/reports/components/CategoryChips';
 import { useApp } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
 import { colors, font, radius, spacing, themedStyles } from '@/theme';
+import { userMessage } from '@/services/errors';
 
 /** Tüm kullanıcı bildirimleri (canlı akış) — kategori filtreli. */
 export default function FeedScreen() {
@@ -44,7 +45,7 @@ export default function FeedScreen() {
           onHelpful={(id) => {
             const r = feed.reports.find((x) => x.id === id);
             if (!r) return;
-            feed.toggleHelpful(id).catch((e: Error) => Alert.alert('İşlem yapılamadı', e.message));
+            feed.toggleHelpful(id).catch((e: Error) => Alert.alert('İşlem yapılamadı', userMessage(e)));
           }}
           onRetry={feed.refresh}
           online={online}

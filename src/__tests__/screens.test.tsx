@@ -12,6 +12,7 @@ jest.mock('@maplibre/maplibre-react-native', () => {
   const { View } = require('react-native');
   const { forwardRef } = require('react');
   return {
+    LogManager: { setLogLevel: () => {}, onLog: () => {} },
     Map: ({
       onDidFailLoadingMap,
       mapStyle,

@@ -9,11 +9,12 @@ import { findGateQuake, type GateQuake } from './quakeGate';
  * Olay bildirimi bu konumda açık mı? `point` verilmezse yaklaşık konum kullanılır (giriş noktalarını
  * göstermek/gizlemek için). Süzülmemiş deprem listesi kullanılır; liste ayarındaki alt sınırdan etkilenmez.
  */
-export function useReportGate(point?: LatLng | null): { located: boolean; quake: GateQuake | null } {
+export function useReportGate(point?: LatLng | null): { located: boolean; known: boolean; quake: GateQuake | null } {
   const { quakes, userCoords } = useApp();
   const at = point ?? userCoords ?? null;
   const events = quakes.snapshot?.events;
-  return useMemo(() => ({ located: !!at, quake: findGateQuake(at, events ?? []) }), [at, events]);
+  // known=false: deprem verisi hiç alınamadı; "deprem yok" denemez, yalnızca "kontrol edilemedi".
+  return useMemo(() => ({ located: !!at, known: !!events, quake: findGateQuake(at, events ?? []) }), [at, events]);
 }
 
 /**
@@ -22,6 +23,6 @@ export function useReportGate(point?: LatLng | null): { located: boolean; quake:
  */
 export function useCanReport(): boolean {
   const { trust } = useTrust();
-  const { located, quake } = useReportGate();
-  return isInstitution(trust) || !located || !!quake;
+  const { located, known, quake } = useReportGate();
+  return isInstitution(trust) || !located || !known || !!quake;
 }

@@ -3,6 +3,7 @@ import { requireSupabase } from '@/services/supabase';
 import type { FeltIntensity, NewReportInput, ReportCategory, UserReport, Verification } from '@/types/report';
 import type { SendOutcome } from './pendingQueue';
 import { trustErrorMessage } from '@/features/trust/rules';
+import { isNetworkError, NETWORK_MESSAGE, userMessage, UserError } from '@/services/errors';
 
 const BUCKET = 'report-media';
 const FEED_HOURS = 48;
@@ -87,17 +88,13 @@ async function sanitizePhoto(uri: string): Promise<ArrayBuffer> {
   return res.arrayBuffer();
 }
 
-const isNetworkError = (e: unknown) => {
-  const m = (e as { message?: string })?.message ?? '';
-  return /network|fetch|timeout|zaman aşımı|failed to fetch/i.test(m);
-};
 
 export async function sendReport(input: NewReportInput, existingServerId: string | null): Promise<SendOutcome> {
   let sb;
   try {
     sb = requireSupabase();
   } catch (e) {
-    return { kind: 'fatal', error: (e as Error).message };
+    return { kind: 'fatal', error: userMessage(e) };
   }
   const { data: sessionData } = await sb.auth.getSession();
   const uid = sessionData.session?.user.id;
@@ -128,8 +125,8 @@ export async function sendReport(input: NewReportInput, existingServerId: string
       if (error.message?.includes('rate_limited')) return { kind: 'retry', error: 'Hız sınırı: birkaç dakika sonra tekrar denenecek.' };
       const rule = trustErrorMessage(error.message);
       if (rule) return { kind: 'fatal', error: rule };
-      if (isNetworkError(error)) return { kind: 'retry', error: 'Bağlantı yok' };
-      return { kind: 'fatal', error: error.message };
+      if (isNetworkError(error)) return { kind: 'retry', error: NETWORK_MESSAGE };
+      return { kind: 'fatal', error: userMessage(error) };
     }
     serverId = data.id as string;
   }
@@ -147,7 +144,7 @@ export async function sendReport(input: NewReportInput, existingServerId: string
     const rule = trustErrorMessage((e as Error).message);
     // Canlı fotoğraf süresi dolduysa tekrar denemek işe yaramaz.
     if (rule) return { kind: 'fatal', error: rule };
-    return { kind: 'partial', serverId, error: `Fotoğraf yüklenemedi: ${(e as Error).message}` };
+    return { kind: 'partial', serverId, error: `Fotoğraf yüklenemedi. ${userMessage(e)}` };
   }
   return { kind: 'sent', serverId };
 }
@@ -194,8 +191,8 @@ export async function voteReport(reportId: string, vote: Vote, device: { latitud
     device_accuracy_m: device?.accuracy ?? null,
   });
   if (error) {
-    if (error.code === '23505') throw new Error('Bu bildirimi zaten oyladınız.');
-    throw new Error(trustErrorMessage(error.message) ?? error.message);
+    if (error.code === '23505') throw new UserError('Bu bildirimi zaten oyladınız.');
+    throw new UserError(userMessage(error));
   }
 }
 

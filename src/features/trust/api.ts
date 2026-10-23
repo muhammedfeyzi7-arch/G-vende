@@ -1,5 +1,6 @@
 import { requireSupabase } from '@/services/supabase';
 import type { TrustInfo } from './rules';
+import { UserError } from '@/services/errors';
 
 export async function fetchMyTrust(): Promise<TrustInfo> {
   const sb = requireSupabase();
@@ -51,5 +52,5 @@ export async function verifyIdentity(form: IdentityForm): Promise<void> {
   } catch {
     // yanıt gövdesi okunamadı
   }
-  throw new Error(IDENTITY_ERRORS[code] ?? 'Doğrulama tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.');
+  throw new UserError(IDENTITY_ERRORS[code] ?? 'Doğrulama tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.');
 }

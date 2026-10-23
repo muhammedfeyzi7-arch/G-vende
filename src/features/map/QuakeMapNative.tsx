@@ -2,6 +2,7 @@ import {
   Camera,
   GeoJSONSource,
   Layer,
+  LogManager,
   Map,
   Marker,
   type CameraRef,
@@ -14,6 +15,7 @@ import { Image } from 'expo-image';
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText, StateMessage } from '@/components/ui';
+import { isNetworkError } from '@/services/errors';
 import { relativeTimeTr } from '@/utils/time';
 import { env } from '@/services/env';
 import { currentScheme, type Scheme, colors, themedStyles } from '@/theme';
@@ -29,6 +31,11 @@ import { visibleLabels } from './offline/base';
 import { CATEGORY_META } from '@/features/reports/categories';
 
 import type { FamilyPin, MapLayers, MapSelection, QuakeMapHandle, QuakeMapProps as Props } from './mapTypes';
+
+// Yerel harita motorunun ağ hataları (karo indirilemedi vb.) geliştirici konsoluna/hata kutusuna
+// düşmez; stil yüklenemezse onDidFailLoadingMap ile çevrimdışı altlığa geçilir.
+LogManager.setLogLevel('error');
+LogManager.onLog((e) => e.level === 'error' && isNetworkError(e.message));
 
 const TURKEY_CENTER: [number, number] = [35.2, 39.0];
 const MAX_REPORT_MARKERS = 30;

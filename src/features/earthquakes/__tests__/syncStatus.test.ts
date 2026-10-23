@@ -33,5 +33,6 @@ describe('hata metinleri', () => {
     expect(trError('AFAD HTTP 503')).toBe('Kaynak sunucusu geçici olarak hata veriyor');
     expect(trError(null)).toBe('Ulaşılamadı');
     expect(trError('Senkron gecikti')).toBe('Senkron gecikti');
+    expect(trError('TypeError: undefined is not an object')).toBe('Kaynak şu anda yanıt vermiyor');
   });
 });

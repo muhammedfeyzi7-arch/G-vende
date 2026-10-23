@@ -161,12 +161,20 @@ export function OfficialDataTab({
 }
 
 /** Ağ hatalarının İngilizce ham metnini kullanıcıya Türkçe gösterir. */
+const OWN_HEALTH_TEXT = new Set([
+  'Sunucu bu kaynağı henüz senkronize etmedi',
+  'Kaynağa ulaşılamadı',
+  'Kaynak yanıt biçimi değişmiş olabilir',
+  'Senkron gecikti',
+]);
+
 export function trError(e: string | null | undefined): string {
   if (!e) return 'Ulaşılamadı';
   if (/failed to fetch|network|aborted|timeout|zaman aşımı/i.test(e)) return 'Bağlantı kurulamadı';
   if (/HTTP 5\d\d/.test(e)) return 'Kaynak sunucusu geçici olarak hata veriyor';
   if (/HTTP 429/.test(e)) return 'Kaynak istek sınırına ulaşıldı';
-  return e;
+  // Uygulamanın kendi Türkçe durum metinleri gösterilir; sunucudan gelen ham/teknik metin gösterilmez.
+  return OWN_HEALTH_TEXT.has(e) ? e : 'Kaynak şu anda yanıt vermiyor';
 }
 
 export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapshot | null; onRetry?: () => void }) {

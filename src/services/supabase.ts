@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { AppState, Platform } from 'react-native';
 import { env, isBackendConfigured } from './env';
+import { userMessage } from './errors';
 
 /**
  * Oturum belirteçleri cihazın güvenli deposunda (Keychain / Keystore) tutulur.
@@ -67,16 +68,7 @@ export function requireSupabase(): SupabaseClient {
   return c;
 }
 
-/** Postgres/PostgREST hatalarını kullanıcıya gösterilebilir Türkçe mesaja çevirir. */
+/** Postgres/PostgREST hatalarını kullanıcıya gösterilebilir Türkçe mesaja çevirir (teknik metin göstermez). */
 export function friendlyError(e: unknown): string {
-  const err = e as { message?: string; code?: string } | null;
-  const msg = err?.message ?? '';
-  if (msg.includes('rate_limited')) return 'Kısa sürede çok fazla bildirim gönderdiniz. Lütfen birkaç dakika sonra tekrar deneyin.';
-  if (msg.includes('auth_required') || err?.code === '42501') return 'Bu işlem için giriş yapmanız gerekiyor.';
-  if (msg.includes('invite_invalid')) return 'Davet bağlantısı geçersiz veya süresi dolmuş.';
-  if (msg.includes('group_full')) return 'Bu aile grubu dolu (en fazla 12 kişi).';
-  if (msg.includes('too_many_groups')) return 'En fazla 5 aile grubu oluşturabilirsiniz.';
-  if (e instanceof BackendNotConfiguredError) return e.message;
-  if (/network|fetch|timeout|zaman aşımı/i.test(msg)) return 'Bağlantı kurulamadı. İnternet bağlantınızı kontrol edin.';
-  return msg || 'Beklenmeyen bir hata oluştu.';
+  return userMessage(e);
 }

@@ -3,6 +3,7 @@ import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { loadProfile, saveProfile } from '@/features/settings/profile';
+import { userMessage, UserError } from '@/services/errors';
 
 /**
  * "Apple ile Giriş" (yalnızca iOS). Apple'ın kimlik belirteci Supabase'e verilir (signInWithIdToken);
@@ -27,8 +28,7 @@ export function appleErrorMessage(e: unknown): string {
     return 'Apple ile giriş sunucuda henüz açılmadı. Şimdilik e-posta ile giriş yapabilirsiniz.';
   if (/audience|aud/i.test(m)) return 'Apple ile giriş bu uygulama kimliği için sunucuda tanımlı değil (Client IDs).';
   if (/nonce/i.test(m)) return 'Güvenlik doğrulaması başarısız oldu. Lütfen tekrar deneyin.';
-  if (/network|fetch|timeout/i.test(m)) return 'Bağlantı kurulamadı. İnternet bağlantınızı kontrol edin.';
-  return m || 'Apple ile giriş yapılamadı.';
+  return userMessage(e, 'Apple ile giriş yapılamadı. Lütfen tekrar deneyin.');
 }
 
 export async function signInWithApple(sb: SupabaseClient): Promise<void> {
@@ -38,7 +38,7 @@ export async function signInWithApple(sb: SupabaseClient): Promise<void> {
     requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL],
     nonce: hashedNonce,
   });
-  if (!cred.identityToken) throw new Error('Apple kimlik belirteci alınamadı.');
+  if (!cred.identityToken) throw new UserError('Apple kimlik belirteci alınamadı.');
   const { error } = await sb.auth.signInWithIdToken({ provider: 'apple', token: cred.identityToken, nonce: rawNonce });
   if (error) throw error;
 

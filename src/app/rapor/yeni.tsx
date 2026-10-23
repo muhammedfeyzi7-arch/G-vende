@@ -38,7 +38,7 @@ const ORDER: ReportCategory[] = ['shake', 'damage', 'road', 'safe', 'help', 'oth
 
 export default function NewReport() {
   const insets = useSafeAreaInsets();
-  const { location, userCoords, requestLocation, settings, session, online } = useApp();
+  const { location, userCoords, requestLocation, settings, session, online, refreshQuakes } = useApp();
   const events = useVisibleQuakes();
   const { submit, mine } = useReports();
   const toast = useToast();
@@ -162,7 +162,9 @@ export default function NewReport() {
       }
     : null;
   // Konum biliniyor ve yakında resmî deprem kaydı yok: herkese açık form yerine açıklama gösterilir.
-  const closed = isBackendConfigured() && !inst && gate.located && !gate.quake;
+  // Deprem verisi hiç alınamadıysa "deprem yok" denmez: bölge kontrol edilemedi (sunucu yine de denetler).
+  const unknown = isBackendConfigured() && !inst && !gate.known;
+  const closed = isBackendConfigured() && !inst && gate.located && gate.known && !gate.quake;
   const signedIn = !!session;
   const gates = evaluateGates({
     backend: isBackendConfigured(),
@@ -212,7 +214,7 @@ export default function NewReport() {
             tone="warning"
             text="Herkese açık yayın için sunucu gerekli (bu kurulumda yok). “Güvendeyim” ve “Yardım” için acil kişilerinize SMS gönderebilirsiniz."
           />
-        ) : closed ? null : !signedIn ? (
+        ) : closed || unknown ? null : !signedIn ? (
           <Banner
             icon="person-circle-outline"
             tone="warning"
@@ -233,6 +235,30 @@ export default function NewReport() {
             tone="warning"
             text="Çevrimdışısınız. Bildiriminiz cihazda bekletilip bağlantı gelince gönderilir."
           />
+        ) : null}
+
+        {unknown ? (
+          <Card style={{ gap: spacing.md }}>
+            <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'center' }}>
+              <Ionicons name="cloud-offline-outline" size={24} color={colors.warning} />
+              <AppText variant="heading" style={{ flex: 1 }}>
+                Lütfen internet bağlantınızı kontrol edin
+              </AppText>
+            </View>
+            <AppText variant="body">
+              Deprem kayıtları alınamadığı için bölgenizde yakın zamanda deprem olup olmadığı kontrol edilemedi. Olay bildirimi bu
+              kontrolden sonra açılır.
+            </AppText>
+            <Button label="Tekrar dene" icon="refresh" onPress={() => refreshQuakes()} />
+            <Button
+              label={`Acil kişilerime “Güvendeyim” SMS’i${family.contacts.length ? ` (${family.contacts.length})` : ''}`}
+              icon="chatbubble-ellipses-outline"
+              variant="secondary"
+              onPress={() => smsFamily('safe')}
+              accessibilityHint="İnternet gerekmez; telefonunuzun SMS uygulaması açılır"
+            />
+            <Button label="Hayati tehlike: 112’yi ara" icon="call" variant="danger" onPress={call112} />
+          </Card>
         ) : null}
 
         {closed ? (
@@ -270,7 +296,7 @@ export default function NewReport() {
           </Card>
         ) : null}
 
-        {closed ? null : (
+        {closed || unknown ? null : (
           <>
             <View style={{ gap: spacing.sm }}>
               <AppText variant="heading">Ne bildirmek istiyorsunuz?</AppText>

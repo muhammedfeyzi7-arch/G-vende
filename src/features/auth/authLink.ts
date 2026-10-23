@@ -1,3 +1,5 @@
+import { UserError } from '@/services/errors';
+
 /**
  * Supabase'in varsayılan "Sign in" e-postasındaki bağlantıdan oturum açma.
  * Özel SMTP olmadan e-posta şablonu düzenlenemediği için 6 haneli kod gönderilemez; bunun yerine
@@ -48,7 +50,8 @@ type AuthApi = {
 /** Bağlantıdaki bilgilerle oturum açar; başarısızsa hata fırlatır. */
 export async function signInWithAuthLink(auth: AuthApi, link: AuthLink): Promise<void> {
   let res: { error: unknown };
-  if (link.kind === 'error') throw new Error(link.message);
+  // Sunucunun İngilizce hata metni gösterilmez.
+  if (link.kind === 'error') throw new UserError('Giriş bağlantısı geçersiz veya süresi dolmuş. Yeni bir e-posta isteyin.');
   if (link.kind === 'session') res = await auth.setSession({ access_token: link.accessToken, refresh_token: link.refreshToken });
   else if (link.kind === 'tokenHash') res = await auth.verifyOtp({ token_hash: link.tokenHash, type: link.type });
   else res = await auth.exchangeCodeForSession(link.code);

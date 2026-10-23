@@ -15,6 +15,7 @@ import { getSupabase } from '@/services/supabase';
 import { readJson, writeJson } from '@/services/storage';
 import type { QuakeSourceId, SourceReading } from '@/types/earthquake';
 import type { LatLng } from '@/utils/geo';
+import { userMessage } from '@/services/errors';
 
 /** Sunucu yokken (yalnızca bu durumda) kaynaklar cihazdan doğrudan bu aralıkla sorgulanır. */
 const DIRECT_REFRESH_MS = 60_000;
@@ -153,7 +154,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         error: snapshot.stale ? 'Deprem kaynaklarına şu anda ulaşılamıyor.' : null,
       });
     } catch (e) {
-      setQuakes((q) => ({ ...q, loading: false, error: e instanceof Error ? e.message : 'Deprem verisi alınamadı' }));
+      setQuakes((q) => ({ ...q, loading: false, error: userMessage(e, 'Deprem verisi alınamadı. Lütfen biraz sonra tekrar deneyin.') }));
     } finally {
       inflight.current = false;
     }

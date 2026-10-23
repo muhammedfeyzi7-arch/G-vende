@@ -19,6 +19,7 @@ import { useReports } from '@/providers/ReportsProvider';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 import { distanceKm, formatDistance } from '@/utils/geo';
 import { formatDateTimeTr, relativeTimeTr } from '@/utils/time';
+import { userMessage, UserError } from '@/services/errors';
 
 export default function ReportDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -79,12 +80,12 @@ export default function ReportDetail() {
       setVoting(v);
       try {
         const perm = await Location.requestForegroundPermissionsAsync();
-        if (!perm.granted) throw new Error('Oy vermek için konum izni gerekir (yakınlık kontrolü).');
+        if (!perm.granted) throw new UserError('Oy vermek için konum izni gerekir (yakınlık kontrolü).');
         const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
         await vote(r.id, v, { latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy ?? 9999 });
         toast.show({ text: 'Oyunuz kaydedildi. Teşekkürler.' });
       } catch (e) {
-        Alert.alert('Oy verilemedi', (e as Error).message);
+        Alert.alert('Oy verilemedi', userMessage(e));
       } finally {
         setVoting(null);
       }
@@ -101,7 +102,7 @@ export default function ReportDetail() {
                 setFlagged(true);
                 toast.show({ text: 'Şikâyetiniz alındı.', tone: 'info' });
               })
-              .catch((e: Error) => Alert.alert('Gönderilemedi', e.message)),
+              .catch((e: Error) => Alert.alert('Gönderilemedi', userMessage(e))),
         })),
         { text: 'Vazgeç', style: 'cancel' as const },
       ]),
@@ -197,7 +198,7 @@ export default function ReportDetail() {
           variant="secondary"
           icon={helpful.has(r.id) ? 'heart' : 'heart-outline'}
           label={`Faydalı (${r.helpfulCount})`}
-          onPress={() => requireLogin(() => toggleHelpful(r.id).catch((e: Error) => Alert.alert('Hata', e.message)))}
+          onPress={() => requireLogin(() => toggleHelpful(r.id).catch((e: Error) => Alert.alert('İşlem yapılamadı', userMessage(e))))}
         />
         <Button
           style={{ flex: 1 }}
