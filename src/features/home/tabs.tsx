@@ -163,6 +163,15 @@ export function OfficialDataTab({
   );
 }
 
+/** Ağ hatalarının İngilizce ham metnini kullanıcıya Türkçe gösterir. */
+export function trError(e: string | null | undefined): string {
+  if (!e) return 'Ulaşılamadı';
+  if (/failed to fetch|network|aborted|timeout|zaman aşımı/i.test(e)) return 'Bağlantı kurulamadı';
+  if (/HTTP 5\d\d/.test(e)) return 'Kaynak sunucusu geçici olarak hata veriyor';
+  if (/HTTP 429/.test(e)) return 'Kaynak istek sınırına ulaşıldı';
+  return e;
+}
+
 export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapshot | null; onRetry?: () => void }) {
   return (
     <Card style={{ gap: spacing.sm }}>
@@ -189,7 +198,7 @@ export function SourceHealthCard({ snapshot, onRetry }: { snapshot: QuakeSnapsho
                   ? 'Henüz sorgulanmadı'
                   : ok
                     ? `${h.count} kayıt · senkron ${relativeTimeTr(h.lastSuccessAt!)}${h.lastEventAt ? ` · son olay ${relativeTimeTr(h.lastEventAt)}` : ''}`
-                    : `${h.error ?? 'Ulaşılamadı'} · son başarılı: ${h.lastSuccessAt ? relativeTimeTr(h.lastSuccessAt) : 'yok'}`}
+                    : `${trError(h.error)} · son başarılı: ${h.lastSuccessAt ? relativeTimeTr(h.lastSuccessAt) : 'yok'}`}
               </AppText>
             </View>
           </View>

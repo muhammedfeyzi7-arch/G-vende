@@ -73,3 +73,19 @@ describe('sunucu akışı', () => {
     expect(upsertSync([sync('afad')], sync('afad', { status: 'error' }))).toHaveLength(1);
   });
 });
+
+describe('sunucu zaman aşımı', () => {
+  it('sunucu yanıt vermezse istek iptal edilir ve hata fırlatılır', async () => {
+    const { fetchServerReadings } = require('../serverFeed');
+    const hang = (signal: AbortSignal) => new Promise((_, reject) => signal.addEventListener('abort', () => reject(new Error('aborted'))));
+    const q = () => {
+      let sig: AbortSignal;
+      const b: Record<string, unknown> = {};
+      for (const m of ['select', 'in', 'gte', 'order', 'limit']) b[m] = () => b;
+      b.abortSignal = (s: AbortSignal) => ((sig = s), hang(sig));
+      return b;
+    };
+    const sb = { from: () => q() };
+    await expect(fetchServerReadings(sb, ['afad'], 1.5, 20)).rejects.toThrow('aborted');
+  });
+});

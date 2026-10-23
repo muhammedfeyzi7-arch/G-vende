@@ -33,12 +33,22 @@ const COLUMNS =
 export async function fetchFeed(): Promise<UserReport[]> {
   const sb = requireSupabase();
   const since = new Date(Date.now() - FEED_HOURS * 3600_000).toISOString();
-  const { data, error } = await sb
-    .from('user_reports')
-    .select(COLUMNS)
-    .gte('created_at', since)
-    .order('created_at', { ascending: false })
-    .limit(150);
+  // Sunucu yanıt vermezse 12 sn sonra iptal: ekran sonsuza dek "yükleniyor"da kalmaz, hata ve "Tekrar" gösterilir.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12_000);
+  let res;
+  try {
+    res = await sb
+      .from('user_reports')
+      .select(COLUMNS)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(150)
+      .abortSignal(ctrl.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+  const { data, error } = res;
   if (error) throw error;
   const rows = (data ?? []) as unknown as ReportRow[];
 

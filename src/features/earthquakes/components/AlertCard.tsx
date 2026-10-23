@@ -33,7 +33,7 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
     subtitle = `Son kayıt: ${placeTitle(event)} · ${relativeTimeTr(event.primary.occurredAt)}`;
   } else if (loading) {
     title = 'Deprem verileri yükleniyor';
-    subtitle = 'AFAD, Kandilli ve USGS kayıtları alınıyor…';
+    subtitle = 'AFAD, Kandilli, EMSC ve USGS kayıtları alınıyor…';
   } else if (error) {
     title = 'Deprem verisi alınamadı';
     subtitle = error;

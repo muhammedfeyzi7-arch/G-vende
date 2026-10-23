@@ -25,3 +25,13 @@ describe('senkron durum satırı', () => {
     expect(syncStatusText({ ...base, via: 'direct' }, 'off').text).toContain('kaynaklardan doğrudan');
   });
 });
+
+describe('hata metinleri', () => {
+  const { trError } = require('../../home/tabs');
+  it('ağ hatalarını Türkçeleştirir', () => {
+    expect(trError('Failed to fetch')).toBe('Bağlantı kurulamadı');
+    expect(trError('AFAD HTTP 503')).toBe('Kaynak sunucusu geçici olarak hata veriyor');
+    expect(trError(null)).toBe('Ulaşılamadı');
+    expect(trError('Senkron gecikti')).toBe('Senkron gecikti');
+  });
+});

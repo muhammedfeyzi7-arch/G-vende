@@ -59,7 +59,20 @@ export function buildServerSnapshot(readings: SourceReading[], rows: SyncRow[], 
   return { events: mergeReadings(readings), health, lastSuccessAt, stale, via: 'server' };
 }
 
-export async function fetchServerReadings(sb: SupabaseClient, sources: QuakeSourceId[], minMagnitude = 1.5) {
+/** Sunucu bu sürede yanıt vermezse istek iptal edilir; uygulama sonsuza dek "yükleniyor"da kalmaz. */
+export const SERVER_TIMEOUT_MS = 12_000;
+
+export async function fetchServerReadings(sb: SupabaseClient, sources: QuakeSourceId[], minMagnitude = 1.5, timeoutMs = SERVER_TIMEOUT_MS) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await queryServer(sb, sources, minMagnitude, ctrl.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function queryServer(sb: SupabaseClient, sources: QuakeSourceId[], minMagnitude: number, signal: AbortSignal) {
   const since = new Date(Date.now() - FEED_DAYS * 24 * 3600_000).toISOString();
   const [readingsRes, syncRes] = await Promise.all([
     sb
@@ -69,8 +82,12 @@ export async function fetchServerReadings(sb: SupabaseClient, sources: QuakeSour
       .gte('occurred_at', since)
       .gte('magnitude', minMagnitude)
       .order('occurred_at', { ascending: false })
-      .limit(2000),
-    sb.from('quake_sync_state').select('source, status, last_attempt_at, last_success_at, last_event_at, last_error, consecutive_failures'),
+      .limit(2000)
+      .abortSignal(signal),
+    sb
+      .from('quake_sync_state')
+      .select('source, status, last_attempt_at, last_success_at, last_event_at, last_error, consecutive_failures')
+      .abortSignal(signal),
   ]);
   if (readingsRes.error) throw readingsRes.error;
   if (syncRes.error) throw syncRes.error;

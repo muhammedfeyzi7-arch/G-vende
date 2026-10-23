@@ -11,7 +11,7 @@ import { useApp } from '@/providers/AppProvider';
 import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
 
 const FEATURES = [
-  { icon: 'pulse', color: accent.red, title: 'Resmî deprem kayıtları', text: 'AFAD, Kandilli ve USGS verisi tek ekranda; size uzaklığıyla.' },
+  { icon: 'pulse', color: accent.red, title: 'Resmî deprem kayıtları', text: 'AFAD, Kandilli, EMSC ve USGS verisi tek ekranda; size uzaklığıyla.' },
   { icon: 'people', color: accent.blue, title: 'Ailem güvende mi?', text: 'Tek dokunuşla “Güvendeyim” gönderin, ailenize durum sorun.' },
   { icon: 'medkit', color: accent.green, title: 'Acil durum araçları', text: '112, hazır SMS, düdük, fener, toplanma alanı — internetsiz de.' },
   { icon: 'shield-checkmark', color: accent.purple, title: 'Şeffaf bilgi katmanı', text: 'Kimliği doğrulanmış kişilerden, yerinde ve canlı fotoğraflı bildirimler; topluluk desteği resmî doğrulama sayılmaz.' },
