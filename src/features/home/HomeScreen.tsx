@@ -7,7 +7,7 @@ import { Alert, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, useW
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from '@/components/Toast';
 import { AppText } from '@/components/ui';
-import { BellButton, Icon } from '@/components/ds';
+import { Icon } from '@/components/ds';
 import { KIT_ITEMS } from '@/features/emergency/content';
 import { computeAlertState, type AlertState } from '@/features/earthquakes/alertState';
 import { formatMagnitude, placeTitle } from '@/features/earthquakes/format';
@@ -30,6 +30,10 @@ export function call112() {
     Alert.alert('Arama ekranı açılamadı', 'Bu cihaz telefon araması yapamıyor olabilir. Telefonunuzun tuş takımından 112’yi arayın.'),
   );
 }
+
+/** Metni tek satıra sığdıran yazı boyutu (web'de adjustsFontSizeToFit yok; her platformda aynı sonuç). */
+const fit = (text: string, width: number, max: number, bold = true) =>
+  Math.max(8, Math.min(max, width / (text.length * (bold ? 0.56 : 0.56))));
 
 type Tone = 'ok' | 'alert' | 'warn' | 'unknown';
 const TONE_COLOR: Record<Tone, string> = { ok: '#19C37D', alert: '#FF3548', warn: '#FF8A24', unknown: '#7B8A9C' };
@@ -120,6 +124,8 @@ export function HomeScreen() {
   const k = Math.min(1, quickW / 82);
   // Küçük telefonlar (ör. iPhone SE 320 pt): çevrimdışı rozeti yalnız simge, alt kartlar alt alta.
   const narrow = pageW < 360;
+  const mapTextW = pageW - spacing.md * 4 - 150;
+  const pairTextW = (narrow ? pageW - spacing.md * 2 : (pageW - spacing.md * 2 - gap) / 2) - 42 - 20 - 12 - 14;
 
   const alert = useMemo(() => computeAlertState(events, userCoords), [events, userCoords]);
   const status = quakeStatus(alert, quakes.snapshot, quakes.loading, !!userCoords);
@@ -196,7 +202,16 @@ export function HomeScreen() {
               </AppText>
             )}
           </Pressable>
-          <BellButton count={unread} onPress={() => router.push('/bildirimler')} />
+          <Pressable
+            onPress={() => router.push('/bildirimler')}
+            accessibilityRole="button"
+            accessibilityLabel={unread ? `Bildirimler, ${unread} okunmamış` : 'Bildirimler'}
+            hitSlop={6}
+            style={({ pressed }) => [styles.bell, pressed && { opacity: 0.8 }]}
+          >
+            <Ionicons name="notifications-outline" size={20} color={colors.text} />
+            {unread > 0 ? <View style={styles.bellDot} /> : null}
+          </Pressable>
         </View>
 
         {/* B. Acil Durum */}
@@ -256,20 +271,20 @@ export function HomeScreen() {
               accessibilityLabel={q.key === '112' ? '112 Acil Çağrı' : `${q.title}. ${q.sub}`}
               style={({ pressed }) => [styles.quick, { width: quickW }, 'red' in q && styles.quickRed, pressed && { opacity: 0.85 }]}
             >
-              <Icon name={q.icon} size={24 * k} color={'red' in q ? '#fff' : colors.text} />
+              <Icon name={q.icon} size={26 * k} color={'red' in q ? '#fff' : colors.text} />
               <AppText
                 variant="heading"
                 color={'red' in q ? '#fff' : colors.text}
-                numberOfLines={2}
-                style={{ fontSize: 11 * k, lineHeight: 14 * k, marginTop: 6, textAlign: 'center' }}
+                numberOfLines={1}
+                style={{ fontSize: fit(q.title, quickW - 8, 12), marginTop: 8, textAlign: 'center' }}
               >
                 {q.title}
               </AppText>
               <AppText
                 variant="caption"
                 color={'red' in q ? '#FFE3E5' : colors.textSecondary}
-                numberOfLines={2}
-                style={{ fontSize: 9 * k, lineHeight: 11.5 * k, textAlign: 'center' }}
+                numberOfLines={1}
+                style={{ fontSize: fit(q.sub, quickW - 6, 10, false), marginTop: 2, textAlign: 'center' }}
               >
                 {q.sub}
               </AppText>
@@ -298,7 +313,7 @@ export function HomeScreen() {
             <GuideImage img="quake-card" style={{ width: '100%', height: '100%' }} />
             {status.tone === 'ok' ? (
               <View style={styles.shield}>
-                <Ionicons name="shield-checkmark" size={38} color="#19C37D" />
+                <Ionicons name="shield-checkmark" size={44} color="#19C37D" />
               </View>
             ) : null}
           </View>
@@ -332,10 +347,14 @@ export function HomeScreen() {
         <View style={[styles.card, { padding: 0, overflow: 'hidden' }]}>
           <View style={styles.mapHead}>
             <View style={{ flex: 1, gap: 4 }}>
-              <AppText variant="title" style={{ fontSize: narrow ? 14.5 : 15.5, lineHeight: 20 }}>
+              <AppText variant="title" numberOfLines={1} style={{ fontSize: fit('Yakınımdaki risk durumu', mapTextW, 15) }}>
                 Yakınımdaki risk durumu
               </AppText>
-              <AppText variant="caption" style={{ fontSize: 11.5 }}>
+              <AppText
+                variant="caption"
+                numberOfLines={1}
+                style={{ fontSize: fit('Harita üzerinden güncel durumu takip edin.', mapTextW, 11, false) }}
+              >
                 Harita üzerinden güncel durumu takip edin.
               </AppText>
             </View>
@@ -393,14 +412,20 @@ export function HomeScreen() {
             accessibilityLabel="Ailem. Sevdiklerinizin durumunu takip edin."
             style={({ pressed }) => [styles.card, styles.pair, pressed && { opacity: 0.88 }]}
           >
+            <LinearGradient
+              colors={[alpha('#7A5CF0', 0.22), alpha('#7A5CF0', 0.04)]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
             <LinearGradient colors={['#7A5CF0', '#5134C4']} style={styles.pairIcon}>
               <Ionicons name="people" size={24} color="#fff" />
             </LinearGradient>
             <View style={{ flex: 1, gap: 4 }}>
-              <AppText variant="heading" style={{ fontSize: 13.5 }}>
+              <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
                 Ailem
               </AppText>
-              <AppText variant="caption" style={{ fontSize: 10.5, lineHeight: 14 }}>
+              <AppText variant="caption" style={{ fontSize: 9.5, lineHeight: 13 }}>
                 Sevdiklerinizin durumunu takip edin.
               </AppText>
             </View>
@@ -412,11 +437,17 @@ export function HomeScreen() {
             accessibilityLabel={`Acil durum çantam. ${kitDone}/${KIT_ITEMS.length} tamamlandı`}
             style={({ pressed }) => [styles.card, styles.pair, pressed && { opacity: 0.88 }]}
           >
+            <LinearGradient
+              colors={[alpha('#2F8BFF', 0.2), alpha('#2F8BFF', 0.04)]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
             <LinearGradient colors={['#2F8BFF', '#1557D6']} style={styles.pairIcon}>
               <Icon name="mci:bag-personal" size={24} color="#fff" />
             </LinearGradient>
             <View style={{ flex: 1, gap: 6 }}>
-              <AppText variant="heading" style={{ fontSize: 12.5, lineHeight: 16 }}>
+              <AppText variant="heading" numberOfLines={1} style={{ fontSize: fit('Acil durum çantam', pairTextW, 14) }}>
                 Acil durum çantam
               </AppText>
               <View style={styles.track}>
@@ -482,6 +513,26 @@ const styles = themedStyles(() => ({
     backgroundColor: alpha(colors.safe, 0.08),
     flexShrink: 1,
   },
+  bell: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1.5,
+    borderColor: colors.borderStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bellDot: {
+    position: 'absolute',
+    top: 6,
+    right: 7,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: colors.danger,
+    borderWidth: 1.5,
+    borderColor: colors.bg,
+  },
   sos: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -504,7 +555,7 @@ const styles = themedStyles(() => ({
     boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
   },
   quick: {
-    minHeight: 80,
+    minHeight: 78,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -524,7 +575,7 @@ const styles = themedStyles(() => ({
   },
   quake: { minHeight: 118, overflow: 'hidden', justifyContent: 'space-between', gap: spacing.md, paddingLeft: spacing.lg },
   quakeBar: { position: 'absolute', left: 0, top: 16, width: 3, height: 28, borderRadius: 2 },
-  quakeArt: { position: 'absolute', right: 0, bottom: 0, width: '48%', height: '86%', opacity: 0.95 },
+  quakeArt: { position: 'absolute', right: 0, bottom: 0, width: '46%', height: '96%' },
   shield: { position: 'absolute', right: '22%', bottom: 6 },
   quakeStatus: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, maxWidth: '62%' },
   dot: { width: 14, height: 14, borderRadius: 7, marginTop: 3 },
@@ -550,7 +601,7 @@ const styles = themedStyles(() => ({
     borderWidth: 1,
     borderColor: colors.borderStrong,
   },
-  mapBox: { height: 128, backgroundColor: colors.mapPlaceholder },
+  mapBox: { height: 112, backgroundColor: colors.mapPlaceholder },
   legend: { position: 'absolute', left: spacing.sm, bottom: spacing.sm },
   locChip: {
     position: 'absolute',
@@ -569,9 +620,10 @@ const styles = themedStyles(() => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    minHeight: 70,
-    paddingHorizontal: spacing.sm,
+    minHeight: 66,
+    paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.sm,
+    overflow: 'hidden',
   },
   pairIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   track: { height: 6, borderRadius: 3, backgroundColor: alpha(colors.textSecondary, 0.2), overflow: 'hidden' },
