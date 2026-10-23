@@ -11,8 +11,7 @@ import {
   type Vote,
 } from '@/features/reports/api';
 import { applyOutcome, enqueue, isRetryable, nextAttemptDelayMs } from '@/features/reports/pendingQueue';
-import { buildSampleReports } from '@/features/reports/sampleReports';
-import { env, isBackendConfigured } from '@/services/env';
+import { isBackendConfigured } from '@/services/env';
 import { readJson, writeJson } from '@/services/storage';
 import { friendlyError } from '@/services/supabase';
 import type { NewReportInput, PendingReport, UserReport } from '@/types/report';
@@ -97,7 +96,6 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     if (!isBackendConfigured()) {
       setStatus('not-configured');
-      if (env.demoReports) setReports(buildSampleReports());
       return;
     }
     setStatus((s) => (s === 'ready' ? s : 'loading'));

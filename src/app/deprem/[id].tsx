@@ -157,8 +157,8 @@ export default function EarthquakeDetail() {
                 key={r.id}
                 report={r}
                 helpful={helpful.has(r.id)}
-                onHelpful={() => !r.isSample && toggleHelpful(r.id).catch(() => {})}
-                onPress={() => !r.isSample && router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
+                onHelpful={() => toggleHelpful(r.id).catch(() => {})}
+                onPress={() => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
               />
             ))}
           </View>

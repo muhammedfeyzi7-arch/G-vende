@@ -2,7 +2,7 @@ import { ListSkeleton } from '@/components/Skeleton';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
-import { AppText, Banner, Button, Card, Pill, StateMessage } from '@/components/ui';
+import { AppText, Banner, Button, Card, StateMessage } from '@/components/ui';
 import { EDEVLET_ASSEMBLY_URL, openDirections } from '@/features/assembly-points/api';
 import type { NearbyState } from '@/features/assembly-points/useNearbyAssembly';
 import { QuakeListItem } from '@/features/earthquakes/components/QuakeListItem';
@@ -61,9 +61,6 @@ export function LiveFeedTab({
         {!online && lastSyncedAt ? (
           <Banner icon="cloud-offline-outline" tone="warning" text={`Çevrimdışı. Son eşitleme: ${relativeTimeTr(lastSyncedAt)}`} />
         ) : null}
-        {status === 'not-configured' && filtered.length > 0 ? (
-          <Banner icon="flask-outline" tone="warning" text="Geliştirme modu: aşağıdaki kayıtlar ÖRNEK VERİDİR, gerçek bildirim değildir." />
-        ) : null}
       </View>
 
       {status === 'not-configured' && filtered.length === 0 ? (
@@ -108,7 +105,7 @@ export function LiveFeedTab({
               report={r}
               helpful={helpful.has(r.id)}
               onHelpful={() => onHelpful(r.id)}
-              onPress={() => !r.isSample && router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
+              onPress={() => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
             />
           ))}
           <AppText variant="caption" style={styles.footnote}>
@@ -385,7 +382,6 @@ export function HelpTab({ helpReports, onOpenReport }: { helpReports: UserReport
                 {r.description ?? 'Açıklama yok'} · {relativeTimeTr(r.createdAt)}
               </AppText>
             </View>
-            {r.isSample ? <Pill label="ÖRNEK" color={colors.warning} /> : null}
           </Pressable>
         ))
       )}

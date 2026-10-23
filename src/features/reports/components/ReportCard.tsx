@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { AppText, Pill } from '@/components/ui';
+import { AppText } from '@/components/ui';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { relativeTimeTr } from '@/utils/time';
@@ -42,7 +42,6 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
           <AppText variant="caption">{report.helpfulCount}</AppText>
           <Ionicons name="shield-checkmark-outline" size={14} color={colors.textSecondary} style={{ marginLeft: 6 }} />
           <AppText variant="caption">{report.confirmCount}</AppText>
-          {report.isSample ? <Pill label="ÖRNEK" color={colors.warning} /> : null}
         </View>
       </View>
       {thumb ? (

@@ -63,9 +63,7 @@ export function SelectionCard({
             {r.description}
           </AppText>
         ) : null}
-        {!r.isSample ? (
-          <Button label="Bildirimi aç" variant="secondary" onPress={() => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })} />
-        ) : null}
+        <Button label="Bildirimi aç" variant="secondary" onPress={() => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })} />
       </>
     );
   } else {

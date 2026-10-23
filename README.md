@@ -44,7 +44,6 @@ Expo Go yerel harita modülünü (MapLibre) içermez; bu modda uygulama gömül�
 | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Yalnızca herkese açık anon anahtar. **service_role anahtarı asla buraya yazılmaz.** |
 | `EXPO_PUBLIC_MAP_STYLE_URL` | MapLibre stil URL'si. Boşsa OpenFreeMap `dark` (anahtarsız). |
 | `EXPO_PUBLIC_QUAKE_SOURCES` | `afad,kandilli,usgs` |
-| `EXPO_PUBLIC_DEMO_REPORTS` | `1` ise yalnızca geliştirme derlemesinde, backend yokken “ÖRNEK VERİ” etiketli örnek akış. Üretimde yok sayılır. |
 
 ## Supabase kurulumu
 
@@ -127,7 +126,7 @@ AFAD · Kandilli · EMSC · USGS ──(yalnızca sunucu, 2 dk)──▶ ingest-
 
 ### Ortam değişkenleri (adlar; değerler kaynak koda yazılmaz)
 
-- İstemci: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (herkese açık anon anahtar), `EXPO_PUBLIC_MAP_STYLE_URL`, `EXPO_PUBLIC_QUAKE_SOURCES`, `EXPO_PUBLIC_DEMO_REPORTS`.
+- İstemci: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (herkese açık anon anahtar), `EXPO_PUBLIC_MAP_STYLE_URL`, `EXPO_PUBLIC_QUAKE_SOURCES`.
 - Sunucu (Supabase otomatik verir): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — yalnızca Edge Function ortamında.
 - Sunucu (isteğe bağlı; yoksa Vault kullanılır): `INGEST_SECRET`, `WEBHOOK_SECRET`, `IDENTITY_HASH_PEPPER`, `EXPO_ACCESS_TOKEN`.
 

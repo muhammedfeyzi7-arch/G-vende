@@ -28,7 +28,6 @@ export const env = {
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY,
   mapStyleUrl: process.env.EXPO_PUBLIC_MAP_STYLE_URL || 'https://tiles.openfreemap.org/styles/dark',
   quakeSources: parseSources(process.env.EXPO_PUBLIC_QUAKE_SOURCES),
-  demoReports: typeof __DEV__ !== 'undefined' && __DEV__ && process.env.EXPO_PUBLIC_DEMO_REPORTS === '1',
 };
 
 export const isBackendConfigured = () => Boolean(env.supabaseUrl && env.supabaseAnonKey);

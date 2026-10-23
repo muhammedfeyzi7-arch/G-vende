@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import type { UserReport } from '@/types/report';
 import { LiveFeedTab } from '@/features/home/tabs';
 import { DEFAULT_LAYERS, QuakeMap } from '@/features/map/QuakeMap';
-import { buildSampleReports } from '@/features/reports/sampleReports';
 
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn() } }));
 jest.mock('@/services/supabase', () => ({ requireSupabase: jest.fn(), friendlyError: (e: Error) => e.message }));
@@ -63,6 +63,27 @@ describe('QuakeMap', () => {
   });
 });
 
+/** Yalnızca test girdisi (uygulamaya dahil değil). */
+const testReport = (id: string, category: UserReport['category'], description: string): UserReport => ({
+  id,
+  category,
+  feltIntensity: null,
+  description,
+  latitude: 40.84,
+  longitude: 31.16,
+  areaLabel: 'Test bölgesi',
+  earthquakeEventId: null,
+  verification: 'unverified',
+  helpfulCount: 0,
+  confirmCount: 0,
+  denyCount: 0,
+  authorRole: null,
+  authorOrg: null,
+  createdAt: new Date().toISOString(),
+  media: [],
+});
+const FILTER_REPORTS = [testReport('r1', 'road', 'Yolda geçiş engeli var.'), testReport('r2', 'safe', 'Güvendeyiz.')];
+
 const feedProps = {
   filter: 'all' as const,
   onFilter: jest.fn(),
@@ -82,14 +103,8 @@ describe('LiveFeedTab', () => {
     expect(screen.getByText('Canlı akış henüz bağlı değil')).toBeTruthy();
   });
 
-  it('geliştirme örnek verisi açıkça etiketlenir', async () => {
-    await render(<LiveFeedTab {...feedProps} status="not-configured" reports={buildSampleReports()} />);
-    expect(screen.getAllByText('ÖRNEK VERİ').length).toBeGreaterThan(0);
-    expect(screen.getByText(/ÖRNEK VERİDİR/)).toBeTruthy();
-  });
-
   it('kategori filtresi uygulanır', async () => {
-    await render(<LiveFeedTab {...feedProps} filter="road" reports={buildSampleReports().map((r) => ({ ...r, isSample: false }))} />);
+    await render(<LiveFeedTab {...feedProps} filter="road" reports={FILTER_REPORTS} />);
     expect(screen.getByText('Yolda geçiş engeli var.')).toBeTruthy();
     expect(screen.queryByText('Güvendeyiz.')).toBeNull();
   });

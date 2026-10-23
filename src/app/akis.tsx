@@ -43,7 +43,7 @@ export default function FeedScreen() {
           helpful={feed.helpful}
           onHelpful={(id) => {
             const r = feed.reports.find((x) => x.id === id);
-            if (!r || r.isSample) return;
+            if (!r) return;
             feed.toggleHelpful(id).catch((e: Error) => Alert.alert('İşlem yapılamadı', e.message));
           }}
           onRetry={feed.refresh}

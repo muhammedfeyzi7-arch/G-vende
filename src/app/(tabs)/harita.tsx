@@ -235,7 +235,7 @@ export default function MapScreen() {
               helpful={feed.helpful}
               onHelpful={(id) => {
                 const r = feed.reports.find((x) => x.id === id);
-                if (!r || r.isSample) return;
+                if (!r) return;
                 feed.toggleHelpful(id).catch((e: Error) => Alert.alert('İşlem yapılamadı', e.message));
               }}
               onRetry={feed.refresh}
@@ -254,7 +254,7 @@ export default function MapScreen() {
           ) : tab === 'help' ? (
             <HelpTab
               helpReports={feed.reports.filter((r) => r.category === 'help')}
-              onOpenReport={(r) => !r.isSample && router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
+              onOpenReport={(r) => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
             />
           ) : (
             <DetailsTab event={focus} snapshot={quakes.snapshot} user={userCoords} />

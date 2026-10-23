@@ -21,8 +21,6 @@ export interface UserReport {
   authorOrg: string | null;
   createdAt: string;
   media: { id: string; path: string; url: string | null }[];
-  /** Yalnızca geliştirme örnek verisi için true; üretimde hiçbir zaman ayarlanmaz. */
-  isSample?: boolean;
 }
 
 export interface NewReportInput {

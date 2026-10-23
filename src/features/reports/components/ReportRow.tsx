@@ -57,11 +57,6 @@ export function ReportRow({
       <View style={styles.body}>
         <AppText variant="label" numberOfLines={1} style={styles.area}>
           {area}
-          {report.isSample ? (
-            <AppText variant="caption" color={colors.warning} style={{ fontSize: 10, fontWeight: '700' }}>
-              {'  ÖRNEK VERİ'}
-            </AppText>
-          ) : null}
         </AppText>
         <AppText variant="heading" numberOfLines={2} style={styles.headline}>
           {headline}
@@ -73,7 +68,7 @@ export function ReportRow({
         ) : null}
         <View style={styles.badges}>
           {report.verification !== 'unverified' ? <TrustBadge report={report} compact /> : null}
-          {report.isSample ? null : <OfficialMatchChip report={report} />}
+          <OfficialMatchChip report={report} />
         </View>
       </View>
       <View style={styles.side}>

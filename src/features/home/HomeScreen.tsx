@@ -238,7 +238,7 @@ export function HomeScreen() {
                 <ReportCard
                   key={r.id}
                   report={r}
-                  onPress={() => !r.isSample && router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
+                  onPress={() => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
                 />
               ))}
             </ScrollView>

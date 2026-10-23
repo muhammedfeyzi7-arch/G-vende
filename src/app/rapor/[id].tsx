@@ -53,7 +53,7 @@ export default function ReportDetail() {
         ]);
 
   const myVote = votes.get(r.id);
-  const canVote = r.verification !== 'official' && r.latitude != null && !r.isSample;
+  const canVote = r.verification !== 'official' && r.latitude != null;
   const onVote = (v: Vote) =>
     requireLogin(async () => {
       if (!trust?.verified) {
