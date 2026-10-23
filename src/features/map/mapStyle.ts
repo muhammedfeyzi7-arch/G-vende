@@ -1,156 +1,85 @@
 import type { StyleSpecification } from '@maplibre/maplibre-react-native';
+import {
+  DAYLIGHT,
+  NAVY_DARK,
+  NIGHT_SATELLITE,
+  OFFLINE_SOURCES,
+  offlineFillLayers,
+  offlineLineLayers,
+  type BasePalette,
+} from './offline/base';
 
 /**
- * GÜVENDE koyu harita stili (OpenMapTiles şeması, OpenFreeMap vektör karoları — anahtarsız).
- * Referans tasarıma göre: lacivert kara, daha koyu deniz, silik yollar, büyük beyaz şehir adları.
- * EXPO_PUBLIC_MAP_STYLE_URL tanımlıysa o kullanılır; bu stil yüklenemezse QuakeMap
- * OpenFreeMap'in hazır "dark" stiline geri döner.
+ * Harita stilleri. Hepsinin altında uygulamaya gömülü Türkiye altlığı vardır (offline/base.ts):
+ * internet yokken de kıyılar, il sınırları, ana yollar ve şehir adları görünür. İnternet varken
+ * üstüne uydu görüntüsü (EOX Sentinel-2) ve 8. yakınlaştırmadan sonra sokak ayrıntısı
+ * (OpenFreeMap vektör karoları, anahtarsız) eklenir.
  */
 const name = ['coalesce', ['get', 'name:tr'], ['get', 'name:latin'], ['get', 'name']];
 
 export const FALLBACK_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
+const GLYPHS = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
+const OMT = { type: 'vector', url: 'https://tiles.openfreemap.org/planet', attribution: '© OpenMapTiles © OpenStreetMap katkıcıları' };
+const NE_ATTRIBUTION = 'Natural Earth';
 
-export const GUVENDE_DARK_STYLE = {
-  version: 8,
-  name: 'GÜVENDE Dark',
-  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
-  sources: {
-    omt: { type: 'vector', url: 'https://tiles.openfreemap.org/planet', attribution: '© OpenMapTiles © OpenStreetMap katkıcıları' },
-  },
-  layers: [
-    { id: 'bg', type: 'background', paint: { 'background-color': '#0A1824' } },
+/** Yakın plan sokak ayrıntısı (çevrimiçi). */
+function detailLayers(c: { urban: string; road: string; roadMinor: string; label: string; halo: string }) {
+  return [
     {
-      id: 'landcover',
-      type: 'fill',
-      source: 'omt',
-      'source-layer': 'landcover',
-      paint: {
-        'fill-color': ['match', ['get', 'class'], 'wood', '#0C1E26', 'grass', '#0D1C24', 'rock', '#121F2B', '#0B1A25'],
-        'fill-opacity': 0.8,
-      },
-    },
-    {
-      id: 'landuse-urban',
+      id: 'omt-urban',
       type: 'fill',
       source: 'omt',
       'source-layer': 'landuse',
-      filter: ['in', ['get', 'class'], ['literal', ['residential', 'industrial', 'commercial']]],
-      paint: { 'fill-color': '#13253A', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.4, 11, 0.8] },
-    },
-    { id: 'water', type: 'fill', source: 'omt', 'source-layer': 'water', paint: { 'fill-color': '#030B14' } },
-    {
-      id: 'waterway',
-      type: 'line',
-      source: 'omt',
-      'source-layer': 'waterway',
       minzoom: 8,
-      paint: { 'line-color': '#06121E', 'line-width': 1 },
+      filter: ['in', ['get', 'class'], ['literal', ['residential', 'industrial', 'commercial']]],
+      paint: { 'fill-color': c.urban, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.3, 12, 0.7] },
     },
     {
-      id: 'boundary-state',
-      type: 'line',
-      source: 'omt',
-      'source-layer': 'boundary',
-      filter: ['all', ['==', ['get', 'admin_level'], 4], ['!=', ['get', 'maritime'], 1]],
-      paint: { 'line-color': '#1F3A55', 'line-width': 0.7, 'line-dasharray': [3, 2], 'line-opacity': 0.7 },
-    },
-    {
-      id: 'boundary-country',
-      type: 'line',
-      source: 'omt',
-      'source-layer': 'boundary',
-      filter: ['all', ['==', ['get', 'admin_level'], 2], ['!=', ['get', 'maritime'], 1]],
-      paint: { 'line-color': '#35577A', 'line-width': 1.2 },
-    },
-    {
-      id: 'roads-minor',
+      id: 'omt-roads-minor',
       type: 'line',
       source: 'omt',
       'source-layer': 'transportation',
       minzoom: 10,
       filter: ['in', ['get', 'class'], ['literal', ['secondary', 'tertiary', 'minor']]],
-      paint: { 'line-color': '#15293D', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 0.5, 15, 3] },
+      paint: { 'line-color': c.roadMinor, 'line-opacity': 0.7, 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 0.5, 15, 3] },
     },
     {
-      id: 'roads-major',
+      id: 'omt-roads-major',
       type: 'line',
       source: 'omt',
       'source-layer': 'transportation',
+      minzoom: 8,
       filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary']]],
       layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: {
-        'line-color': '#1F3B57',
-        'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.5, 10, 1.6, 15, 5],
-        'line-opacity': 0.9,
-      },
+      paint: { 'line-color': c.road, 'line-opacity': 0.85, 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1, 15, 5] },
     },
     {
-      id: 'water-name',
-      type: 'symbol',
-      source: 'omt',
-      'source-layer': 'water_name',
-      layout: { 'text-field': name, 'text-font': ['Noto Sans Italic'], 'text-size': 12, 'text-letter-spacing': 0.05 },
-      paint: { 'text-color': '#3E74B0', 'text-halo-color': '#030B14', 'text-halo-width': 1 },
-    },
-    {
-      id: 'place-town',
+      id: 'omt-place',
       type: 'symbol',
       source: 'omt',
       'source-layer': 'place',
-      minzoom: 7,
-      filter: ['in', ['get', 'class'], ['literal', ['town', 'village']]],
-      layout: { 'text-field': name, 'text-font': ['Noto Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 7, 11, 12, 14] },
-      paint: { 'text-color': '#B8C6D6', 'text-halo-color': '#030B14', 'text-halo-width': 1.4 },
+      minzoom: 9,
+      filter: ['in', ['get', 'class'], ['literal', ['town', 'village', 'suburb', 'city']]],
+      layout: { 'text-field': name, 'text-font': ['Noto Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 9, 11, 14, 15] },
+      paint: { 'text-color': c.label, 'text-halo-color': c.halo, 'text-halo-width': 1.4 },
     },
-    {
-      id: 'place-city',
-      type: 'symbol',
-      source: 'omt',
-      'source-layer': 'place',
-      filter: ['==', ['get', 'class'], 'city'],
-      layout: {
-        'text-field': name,
-        'text-font': ['Noto Sans Bold'],
-        // Büyük şehirler (rank küçük) daha büyük yazılır.
-        'text-size': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          4,
-          ['case', ['<=', ['get', 'rank'], 3], 15, 12],
-          9,
-          ['case', ['<=', ['get', 'rank'], 3], 22, 17],
-        ],
-        'text-padding': 6,
-        'text-allow-overlap': false,
-      },
-      paint: { 'text-color': '#F2F6FA', 'text-halo-color': '#030B14', 'text-halo-width': 1.8, 'text-halo-blur': 0.5 },
-    },
-  ],
-} as unknown as StyleSpecification;
+  ];
+}
 
-/**
- * Uydu görünümü: EOX "Sentinel-2 cloudless 2016" mozaiği (CC BY 4.0, ücretsiz; atıf zorunlu)
- * üzerine GÜVENDE sınır/yol/yer adı katmanları. Görüntü koyulaştırılarak kaplamalar öne çıkarılır.
- * Not: Karo adresi bu geliştirme ortamından doğrulanamadı.
- */
-type AnyLayer = { id: string; paint?: Record<string, unknown> };
-const overlayLayers = (GUVENDE_DARK_STYLE.layers as AnyLayer[])
-  .filter((l) => ['boundary-state', 'boundary-country', 'roads-minor', 'roads-major', 'water-name', 'place-town', 'place-city'].includes(l.id))
-  .map((l) =>
-    // Uydu görüntüsü üzerinde yollar referanstaki gibi sarımsı ve yarı saydam çizilir.
-    l.id === 'roads-major'
-      ? { ...l, paint: { ...l.paint, 'line-color': '#D9A93A', 'line-opacity': 0.55 } }
-      : l.id === 'roads-minor'
-        ? { ...l, paint: { ...l.paint, 'line-color': '#B98B3A', 'line-opacity': 0.35 } }
-        : l,
-  );
+const base = (n: string, p: BasePalette) => ({
+  version: 8,
+  name: n,
+  glyphs: GLYPHS,
+  sources: { ...OFFLINE_SOURCES, omt: OMT },
+  metadata: { attribution: NE_ATTRIBUTION, palette: p },
+});
 
+/** Varsayılan: gece uydu görünümü (referans tasarım). */
 export const SATELLITE_STYLE = {
-  ...GUVENDE_DARK_STYLE,
-  name: 'GÜVENDE Uydu',
+  ...base('GÜVENDE Uydu', NIGHT_SATELLITE),
   sources: {
-    ...GUVENDE_DARK_STYLE.sources,
+    ...OFFLINE_SOURCES,
+    omt: OMT,
     s2: {
       type: 'raster',
       tiles: ['https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg'],
@@ -160,22 +89,48 @@ export const SATELLITE_STYLE = {
     },
   },
   layers: [
-    { id: 'bg', type: 'background', paint: { 'background-color': '#030B14' } },
-    {
-      id: 'satellite',
-      type: 'raster',
-      source: 's2',
-      paint: { 'raster-brightness-max': 0.6, 'raster-saturation': -0.2, 'raster-contrast': 0.15 },
-    },
-    ...overlayLayers,
+    ...offlineFillLayers(NIGHT_SATELLITE),
+    { id: 'satellite', type: 'raster', source: 's2', paint: { 'raster-brightness-max': 0.55, 'raster-saturation': -0.25, 'raster-contrast': 0.15 } },
+    ...offlineLineLayers(NIGHT_SATELLITE),
+    ...detailLayers({ urban: '#2A2A33', road: '#E3AA3C', roadMinor: '#B98634', label: '#F2F6FA', halo: '#030B14' }),
   ],
 } as unknown as StyleSpecification;
 
-/** Açık görünüm: OpenFreeMap "liberty" hazır stili. */
-export const LIGHT_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
+/** Koyu lacivert vektör görünüm. */
+export const GUVENDE_DARK_STYLE = {
+  ...base('GÜVENDE Koyu', NAVY_DARK),
+  layers: [
+    ...offlineFillLayers(NAVY_DARK),
+    ...offlineLineLayers(NAVY_DARK),
+    ...detailLayers({ urban: '#13253A', road: '#2F5172', roadMinor: '#1B3149', label: '#D8E2EC', halo: '#030B14' }),
+  ],
+} as unknown as StyleSpecification;
+
+/** Açık tema / gündüz görünümü. */
+export const LIGHT_STYLE = {
+  ...base('GÜVENDE Açık', DAYLIGHT),
+  layers: [
+    ...offlineFillLayers(DAYLIGHT),
+    ...offlineLineLayers(DAYLIGHT),
+    ...detailLayers({ urban: '#E3E1DA', road: '#E39A2C', roadMinor: '#FFFFFF', label: '#1F2D3D', halo: '#FFFFFF' }),
+  ],
+} as unknown as StyleSpecification;
+
+/** Son çare: hiçbir ağ kaynağı kullanmayan tamamen çevrimdışı stil (asla yüklenme hatası vermez). */
+export const offlineOnlyStyle = (p: BasePalette) =>
+  ({
+    version: 8,
+    name: 'GÜVENDE Çevrimdışı',
+    sources: OFFLINE_SOURCES,
+    layers: [...offlineFillLayers(p), ...offlineLineLayers(p)],
+  }) as unknown as StyleSpecification;
+
+/** Bir stilin şehir etiketleri için açık mı koyu mu yazı kullanacağı. */
+export const isLightMap = (id: 'dark' | 'satellite' | 'light') => id === 'light';
+export const paletteFor = (id: 'dark' | 'satellite' | 'light') => (id === 'light' ? DAYLIGHT : id === 'dark' ? NAVY_DARK : NIGHT_SATELLITE);
 
 export const MAP_STYLE_OPTIONS: { id: 'dark' | 'satellite' | 'light'; label: string; description: string }[] = [
-  { id: 'satellite', label: 'Uydu', description: 'Sentinel-2 uydu görüntüsü + yollar ve yer adları (EOX, CC BY 4.0)' },
-  { id: 'dark', label: 'Koyu', description: 'Gece ve kesintide göz yormayan koyu harita (OpenStreetMap)' },
-  { id: 'light', label: 'Açık', description: 'Gündüz kullanımına uygun açık harita (OpenStreetMap)' },
+  { id: 'satellite', label: 'Uydu', description: 'Gece uydu görünümü + yollar ve şehirler (EOX Sentinel-2, CC BY 4.0)' },
+  { id: 'dark', label: 'Koyu', description: 'Gece ve kesintide göz yormayan koyu harita' },
+  { id: 'light', label: 'Açık', description: 'Gündüz kullanımına uygun açık harita' },
 ];

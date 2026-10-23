@@ -14,7 +14,8 @@ import type { LatLng } from '@/utils/geo';
 import { assemblyToGeoJSON, quakesToGeoJSON, reportsToGeoJSON, ringsToGeoJSON } from './geojson';
 import { ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './layers';
 import type { MapStyleId } from '@/features/settings/settings';
-import { FALLBACK_STYLE_URL, GUVENDE_DARK_STYLE, LIGHT_STYLE_URL, SATELLITE_STYLE } from './mapStyle';
+import { GUVENDE_DARK_STYLE, LIGHT_STYLE, offlineOnlyStyle, paletteFor, SATELLITE_STYLE } from './mapStyle';
+import { visibleLabels } from './offline/base';
 
 export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean; family: boolean };
 export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true, family: true };
@@ -72,10 +73,11 @@ const TURKEY_CENTER: [number, number] = [35.2, 39.0];
 const MAX_ASSEMBLY_MARKERS = 12;
 const HITBOX = { top: 14, right: 14, bottom: 14, left: 14 };
 
-// Sırayla denenecek stiller: ortam değişkeni (varsa) → seçilen görünüm → GÜVENDE koyu → OpenFreeMap dark.
+// Sırayla denenecek stiller: ortam değişkeni (varsa) → seçilen görünüm → tamamen çevrimdışı altlık.
+// Son halka ağ kaynağı kullanmadığı için harita internet yokken de boş kalmaz.
 function styleChain(id: MapStyleId) {
-  const preferred = id === 'satellite' ? [SATELLITE_STYLE] : id === 'light' ? [LIGHT_STYLE_URL] : [];
-  return [...(process.env.EXPO_PUBLIC_MAP_STYLE_URL ? [env.mapStyleUrl] : []), ...preferred, GUVENDE_DARK_STYLE, FALLBACK_STYLE_URL];
+  const preferred = id === 'satellite' ? SATELLITE_STYLE : id === 'light' ? LIGHT_STYLE : GUVENDE_DARK_STYLE;
+  return [...(process.env.EXPO_PUBLIC_MAP_STYLE_URL ? [env.mapStyleUrl] : []), preferred, offlineOnlyStyle(paletteFor(id))];
 }
 
 const renderLayers = (defs: { id: string }[]) => defs.map((d) => <Layer key={d.id} {...(d as LayerProps)} />);
@@ -111,6 +113,10 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
     setFallback((prev) => ({ style: mapStyle, index: f(prev.style === mapStyle ? prev.index : 0) }));
   const [attempt, setAttempt] = useState(0);
   const failed = styleIndex >= STYLES.length;
+  // Şehir adları işaretçi olarak çizilir (yazı tipi indirmeden, çevrimdışı da görünür).
+  const [zoom, setZoom] = useState(initialZoom ?? (focus ? 6.3 : 5));
+  const labels = useMemo(() => visibleLabels(zoom), [zoom]);
+  const lightLabels = mapStyle === 'light';
 
   useImperativeHandle(ref, () => ({
     flyTo: (p, zoom = 10) => camera.current?.flyTo({ center: [p.longitude, p.latitude], zoom, duration: 800 }),
@@ -178,6 +184,10 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
       touchRotate={interactive}
       contentInset={{ top: topInset, left: 0, right: 0, bottom: bottomInset }}
       accessibilityLabel="Deprem haritası"
+      onRegionDidChange={(e) => {
+        const z = Math.round(e.nativeEvent.zoom * 2) / 2;
+        if (z !== zoom) setZoom(z);
+      }}
     >
       <Camera ref={camera} initialViewState={{ center: initialCenter, zoom: initialZoom ?? (focus ? 6.3 : 5) }} minZoom={3} maxZoom={16} />
 
@@ -204,6 +214,24 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
           {renderLayers(QUAKE_LAYERS)}
         </GeoJSONSource>
       ) : null}
+
+      {labels.map((l) => (
+        <Marker key={`lbl-${l.name}`} id={`lbl-${l.name}`} lngLat={[l.longitude, l.latitude]}>
+          <View pointerEvents="none" style={{ alignItems: 'center' }}>
+            {l.sea ? null : <View style={[styles.cityDot, lightLabels && styles.cityDotLight]} />}
+            <AppText
+              variant="label"
+              color={l.sea ? (lightLabels ? '#3F6E9E' : '#4C86C6') : lightLabels ? '#1F2D3D' : '#F2F6FA'}
+              style={[
+                l.sea ? styles.seaLabel : l.rank === 1 ? styles.cityXL : l.rank === 2 ? styles.cityL : styles.cityM,
+                lightLabels ? styles.haloLight : styles.haloDark,
+              ]}
+            >
+              {l.name}
+            </AppText>
+          </View>
+        </Marker>
+      ))}
 
       {layers.assembly
         ? assemblyPoints.slice(0, MAX_ASSEMBLY_MARKERS).map((p) => (
@@ -295,6 +323,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     boxShadow: '0 0 14px rgba(20,217,154,0.65)',
   },
+  cityDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#F2F6FA', borderWidth: 1, borderColor: '#030B14', marginBottom: 1 },
+  cityDotLight: { backgroundColor: '#1F2D3D', borderColor: '#FFFFFF' },
+  cityXL: { fontSize: 16, fontWeight: '800' },
+  cityL: { fontSize: 13, fontWeight: '700' },
+  cityM: { fontSize: 11, fontWeight: '600' },
+  seaLabel: { fontSize: 11, fontStyle: 'italic', fontWeight: '600', letterSpacing: 0.4 },
+  haloDark: { textShadowColor: 'rgba(0,0,0,0.95)', textShadowRadius: 3, textShadowOffset: { width: 0, height: 1 } },
+  haloLight: { textShadowColor: 'rgba(255,255,255,0.95)', textShadowRadius: 3, textShadowOffset: { width: 0, height: 0 } },
   famPhoto: { width: 38, height: 38, borderRadius: 19 },
   famPin: {
     width: 44,

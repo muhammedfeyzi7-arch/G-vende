@@ -51,10 +51,11 @@ describe('QuakeMap', () => {
       />,
     );
     expect(screen.getByText('Harita yüklenemedi')).toBeTruthy();
-    // GÜVENDE koyu stil (nesne) ardından OpenFreeMap URL'si denendi
+    // Seçili stil ardından ağ kaynağı kullanmayan çevrimdışı altlık denendi
     expect(mockMountedStyles).toHaveLength(2);
     expect(typeof mockMountedStyles[0]).toBe('object');
-    expect(mockMountedStyles[1]).toBe('https://tiles.openfreemap.org/styles/dark');
+    const offline = mockMountedStyles[1] as { sources: Record<string, { type: string }> };
+    expect(Object.values(offline.sources).every((s) => s.type === 'geojson')).toBe(true);
     mockFailAll = false;
     await fireEvent.press(screen.getByText('Tekrar dene'));
     expect(screen.getByTestId('maplibre-map')).toBeTruthy();
