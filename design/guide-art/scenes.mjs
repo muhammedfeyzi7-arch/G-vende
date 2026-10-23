@@ -509,6 +509,36 @@ function checklist() {
   `);
 }
 
+// ───────────────────────── Ana sayfa: "Şu an deprem var mı?" kart dekoru ─────────────────────────
+// Yalnızca dekor (sismik dalga + ev). Güvende/uyarı durumu görselde değil, uygulamadaki metin ve
+// göstergede verilir; böylece görsel tek başına "güvendesiniz" iddiası taşımaz.
+function quakeCard() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="400" height="240">${defs}
+  <g opacity="0.55">
+    <rect x="236" y="70" width="40" height="120" rx="4" fill="#22385A"/>
+    <rect x="282" y="40" width="54" height="150" rx="4" fill="#1E3352"/>
+    <rect x="342" y="86" width="44" height="104" rx="4" fill="#22385A"/>
+    <path d="M292 60 h10 v10 h-10z M314 60 h10 v10 h-10z M292 84 h10 v10 h-10z M314 108 h10 v10 h-10z M350 104 h10 v10 h-10z" fill="#3B5A86"/>
+  </g>
+  <!-- sismik dalga -->
+  <polyline points="20,96 70,96 82,72 94,124 106,40 120,140 132,78 142,108 152,90 162,100 176,96 200,96" fill="none" stroke="#4DA3FF" stroke-width="12" stroke-linejoin="round" stroke-linecap="round" opacity="0.25" filter="url(#soft)"/>
+  <polyline points="20,96 70,96 82,72 94,124 106,40 120,140 132,78 142,108 152,90 162,100 176,96 200,96" fill="none" stroke="#5AB0FF" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- ağaçlar -->
+  <circle cx="206" cy="176" r="26" fill="#1E5A4E"/><rect x="203" y="190" width="6" height="30" fill="#2B3C5E"/>
+  <circle cx="372" cy="170" r="24" fill="#1E5A4E"/><rect x="369" y="182" width="6" height="36" fill="#2B3C5E"/>
+  <!-- ev -->
+  <ellipse cx="292" cy="226" rx="104" ry="10" fill="#0A1424" opacity="0.5"/>
+  <g filter="url(#sh)">
+    <rect x="234" y="150" width="118" height="74" rx="6" fill="#E7DCC8"/>
+    <path d="M222 156 L293 102 L364 156 Z" fill="#B65A3C"/>
+    <rect x="270" y="186" width="24" height="38" rx="3" fill="#5A3A2A"/>
+    <rect x="246" y="166" width="20" height="18" rx="3" fill="#FFC966"/>
+    <rect x="312" y="166" width="20" height="18" rx="3" fill="#FFC966"/>
+    <rect x="320" y="110" width="12" height="24" rx="2" fill="#8E4630"/>
+  </g>
+</svg>`;
+}
+
 // ───────────────────────── Uygulama içi küçük logo ─────────────────────────
 function logo() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 132" width="120" height="132">${defs}
@@ -533,4 +563,5 @@ export const SCENES = {
   'special-needs': { svg: special(), what: 'Özel ihtiyaçlı bireyler ve evcil hayvanlar' },
   checklist: { svg: checklist(), what: 'Hazırlık kontrol listesi' },
   logo: { svg: logo(), transparent: true, size: [120, 132], what: 'Uygulama içi logo' },
+  'quake-card': { svg: quakeCard(), transparent: true, size: [400, 240], scale: 2, what: 'Ana sayfa deprem kartı dekoru' },
 };

@@ -100,39 +100,43 @@ beforeEach(async () => {
 });
 
 describe('alt sekmeler', () => {
-  it('Ana Sayfa: başlık, kartlar, hızlı kutular ve bölümler', async () => {
+  it('Ana Sayfa: referans düzeni, gerçek veri durumu ve yönlendirmeler', async () => {
     const { HomeScreen } = require('@/features/home/HomeScreen');
     const { router } = require('expo-router');
     await open(<HomeScreen />);
     expect(screen.getByLabelText('GÜVENDE, Afet Anında Yanınızda')).toBeTruthy();
-    expect(screen.getByText('Deprem verisi alınamadı')).toBeTruthy();
-    expect(screen.getByText('Ailem Güvende mi?')).toBeTruthy();
-    expect(screen.getByText('Olay Bildirimleri')).toBeTruthy();
-    expect(screen.getByText(/Topluluk bildirimleri sunucu bağlantısı gerektirir/)).toBeTruthy();
-    expect(screen.getByText('Son Depremler')).toBeTruthy();
-    await fireEvent.press(screen.getByLabelText('112, Acil Çağrı'));
+    for (const t of ['Şu an deprem var mı?', 'Yakınımdaki risk durumu', 'Ailem', 'Acil durum çantam', 'Son gelişmeler'])
+      expect(screen.getByText(t)).toBeTruthy();
+    // Veri yokken kesin "deprem yok" denmez
+    expect(screen.queryByText(/deprem kaydı yok/)).toBeNull();
+    expect(screen.getByText(/Deprem verisi alınamadı|Deprem verileri yükleniyor|Veriler güncel olmayabilir/)).toBeTruthy();
+    expect(screen.getByText('0/15 tamamlandı')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Acil Durum. Yardıma mı ihtiyacınız var?'));
+    expect(router.push).toHaveBeenCalledWith('/acil');
+    await fireEvent.press(screen.getByLabelText('112 Acil Çağrı'));
     expect(openURL).toHaveBeenCalledWith('tel:112');
-    await fireEvent.press(screen.getByLabelText('Acil Durum Çantası'));
+    await fireEvent.press(screen.getByLabelText('Acil Araçlar. İtfaiye · Polis · Sağlık'));
+    expect(router.push).toHaveBeenCalledWith('/acil-araclar');
+    await fireEvent.press(screen.getByLabelText('Enkaz Altı Modu. Siren · Flaş · Rehber'));
+    expect(router.push).toHaveBeenCalledWith('/enkaz');
+    await fireEvent.press(screen.getByLabelText('Haritayı Aç'));
+    expect(router.push).toHaveBeenCalledWith('/harita');
+    await fireEvent.press(screen.getByLabelText('Ailem. Sevdiklerinizin durumunu takip edin.'));
+    expect(router.push).toHaveBeenCalledWith('/ailem');
+    await fireEvent.press(screen.getByLabelText('Acil durum çantam. 0/15 tamamlandı'));
     expect(router.push).toHaveBeenCalledWith('/canta');
-    await fireEvent.press(screen.getByLabelText('Deprem Rehberi'));
-    expect(router.push).toHaveBeenCalledWith('/rehber');
     await fireEvent.press(screen.getByLabelText('Bildirimler'));
     expect(router.push).toHaveBeenCalledWith('/bildirimler');
   });
 
-  it('Ana Sayfa: ACİL DURUM kartı 7 başlığı gösterir ve doğru rehbere götürür', async () => {
+  it('Ana Sayfa: 112 açılamazsa kullanıcıya söylenir, başarı iddia edilmez', async () => {
     const { HomeScreen } = require('@/features/home/HomeScreen');
-    const { router } = require('expo-router');
+    const alert = jest.spyOn(Alert, 'alert');
+    openURL.mockRejectedValueOnce(new Error('no tel'));
     await open(<HomeScreen />);
-    expect(screen.getByText('ACİL DURUM')).toBeTruthy();
-    await fireEvent.press(screen.getByLabelText('Deprem anında ne yapmalıyım?'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'during-indoor' } });
-    await fireEvent.press(screen.getByLabelText('Enkaz altında kaldım'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'trapped' } });
-    await fireEvent.press(screen.getByLabelText('Araçtaysam'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'during-vehicle' } });
-    await fireEvent.press(screen.getByLabelText('Acil durum çantam hazır mı?'));
-    expect(router.push).toHaveBeenCalledWith('/canta');
+    await fireEvent.press(screen.getByLabelText('112 Acil Çağrı'));
+    await flush();
+    expect(alert).toHaveBeenCalledWith('Arama ekranı açılamadı', expect.stringMatching(/112/));
   });
 
   it('Harita: deprem paneli sekmeleri, katman filtreleri ve Bildirim Ekle', async () => {

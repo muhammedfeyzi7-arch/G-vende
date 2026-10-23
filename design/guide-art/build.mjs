@@ -22,7 +22,7 @@ const browser = await playwright.chromium.launch();
 const page = await browser.newPage();
 for (const [name, s] of Object.entries(SCENES)) {
   const [w, h] = s.size ?? [400, 400];
-  const scale = s.size ? 3 : 768 / 400;
+  const scale = s.scale ?? (s.size ? 3 : 768 / 400);
   await page.setViewportSize({ width: w, height: h });
   await page.setContent(`<html><body style="margin:0;background:transparent">${s.svg.replace('<svg ', '<svg style="display:block" ')}</body></html>`);
   const el = await page.$('svg');

@@ -26,11 +26,12 @@ export const GUIDE_IMG = {
   'special-needs': require('../../../assets/guide/art/special-needs.jpg'),
   checklist: require('../../../assets/guide/art/checklist.jpg'),
   logo: require('../../../assets/guide/art/logo.png'),
+  'quake-card': require('../../../assets/guide/art/quake-card.png'),
 } as const;
 export type GuideImgKey = keyof typeof GUIDE_IMG;
 
 /** Saydam zeminli dosyalar (kırmızı kart, başlık logosu) */
-const TRANSPARENT: GuideImgKey[] = ['drop-cover-hold-hero', 'logo'];
+const TRANSPARENT: GuideImgKey[] = ['drop-cover-hold-hero', 'logo', 'quake-card'];
 
 /** Konu görseli → dosya ve ekran okuyucu açıklaması. */
 const SCENES: Record<ArtId, { img: GuideImgKey; label: string }> = {

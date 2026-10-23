@@ -1,315 +1,465 @@
-import { useToast } from '@/components/Toast';
-import { EmergencyGuideCard } from '@/features/guide/EmergencyGuideCard';
-import { useCanReport } from '@/features/reports/useReportGate';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { router } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
-import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppText, Banner, Button } from '@/components/ui';
-import { IconTile, accent } from '@/components/ds';
-import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
-import { computeAlertState } from '@/features/earthquakes/alertState';
-import { Skeleton } from '@/components/Skeleton';
-import { AlertCard } from '@/features/earthquakes/components/AlertCard';
-import { EventInfoRow } from '@/features/earthquakes/components/EventInfoRow';
-import { QuakeListItem } from '@/features/earthquakes/components/QuakeListItem';
-import { FamilySafetyCard } from '@/features/family/FamilySafetyCard';
+import { useToast } from '@/components/Toast';
+import { AppText } from '@/components/ui';
+import { BellButton, Icon } from '@/components/ds';
+import { KIT_ITEMS } from '@/features/emergency/content';
+import { computeAlertState, type AlertState } from '@/features/earthquakes/alertState';
+import { formatMagnitude, placeTitle } from '@/features/earthquakes/format';
+import { SOURCES, type QuakeSnapshot } from '@/features/earthquakes/repository';
 import { useFamily } from '@/features/family/useFamily';
 import { useFamilyActions } from '@/features/family/useFamilyActions';
-import { buildPeople, safeCount } from '@/features/family/people';
-import { LayerPanel, MapControls, MapLegend, NearbyAssemblyButton } from '@/features/map/MapOverlays';
-import { DEFAULT_LAYERS, QuakeMap, type MapSelection, type QuakeMapHandle } from '@/features/map/QuakeMap';
-import { SelectionCard } from '@/features/map/SelectionCard';
-import { ReportCard } from '@/features/reports/components/ReportCard';
+import { GuideImage } from '@/features/guide/Art';
+import { MapLegend } from '@/features/map/MapOverlays';
+import { DEFAULT_LAYERS, QuakeMap } from '@/features/map/QuakeMap';
 import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
+import { useInbox } from '@/providers/InboxProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { alpha, colors, radius, spacing, themedStyles } from '@/theme';
+import type { EarthquakeEvent } from '@/types/earthquake';
 import { relativeTimeTr } from '@/utils/time';
-import { HomeHeader } from './HomeHeader';
-import { QuickTiles } from './QuickTiles';
-import { CheckInCard } from './CheckInCard';
-import { SyncStatusLine } from '@/features/earthquakes/components/SyncStatusLine';
 
-function SectionTitle({
-  title,
-  action,
-  onAction,
-  right,
-}: {
-  title: string;
-  action?: string;
-  onAction?: () => void;
-  right?: React.ReactNode;
-}) {
+/** 112'yi telefonun arama ekranında açar; aramanın yapıldığını iddia etmez, açılamazsa söyler. */
+export function call112() {
+  Linking.openURL('tel:112').catch(() =>
+    Alert.alert('Arama ekranı açılamadı', 'Bu cihaz telefon araması yapamıyor olabilir. Telefonunuzun tuş takımından 112’yi arayın.'),
+  );
+}
+
+type Tone = 'ok' | 'alert' | 'warn' | 'unknown';
+const TONE_COLOR: Record<Tone, string> = { ok: '#19C37D', alert: '#FF3548', warn: '#FF8A24', unknown: '#7B8A9C' };
+
+/**
+ * "Şu an deprem var mı?" kartının durumu. Yalnızca kaynaklardan alınmış son veriye dayanır;
+ * veri yoksa veya eskiyse kesin "deprem yok" demez.
+ */
+export function quakeStatus(
+  alert: AlertState,
+  snap: QuakeSnapshot | null,
+  loading: boolean,
+  located: boolean,
+): { tone: Tone; text: string; sub: string | null } {
+  if (alert.kind === 'recent-significant') {
+    const e = alert.event;
+    return {
+      tone: 'alert',
+      text: `${alert.minutesAgo} dk önce ${placeTitle(e)} · ${formatMagnitude(e.primary.magnitude)} büyüklüğünde deprem kaydedildi.`,
+      sub: `Kaynak: ${SOURCES[e.primary.source].label}${alert.distanceKm != null ? ` · ${Math.round(alert.distanceKm)} km uzakta` : ''}`,
+    };
+  }
+  if (!snap) {
+    return loading
+      ? { tone: 'unknown', text: 'Deprem verileri yükleniyor…', sub: null }
+      : { tone: 'unknown', text: 'Deprem verisi alınamadı. Lütfen internet bağlantınızı kontrol edin.', sub: null };
+  }
+  const when = snap.lastSuccessAt ? relativeTimeTr(snap.lastSuccessAt) : null;
+  if (snap.stale || snap.via === 'cache') {
+    return {
+      tone: 'warn',
+      text: 'Veriler güncel olmayabilir; yeni deprem kayıtları alınamadı.',
+      sub: when ? `Son başarılı güncelleme ${when}` : null,
+    };
+  }
+  return {
+    tone: 'ok',
+    text: located
+      ? 'Son 30 dakikada yakınınızda önemli bir deprem kaydı yok.'
+      : 'Son 30 dakikada Türkiye genelinde 5 ve üzeri deprem kaydı yok.',
+    sub: when ? `Son güncelleme ${when}` : null,
+  };
+}
+
+function NewsCard({ e, width }: { e: EarthquakeEvent; width: number }) {
+  const src = SOURCES[e.primary.source].label;
+  const m = e.primary.magnitude ?? 0;
+  const tint = m >= 5 ? '#FF3548' : m >= 4 ? '#FF8A24' : '#E5484D';
   return (
-    <View style={styles.sectionTitle}>
-      <AppText variant="title" style={{ fontSize: 17.5, flex: 1 }}>
-        {title}
+    <Pressable
+      onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`${src}: ${placeTitle(e)}, ${formatMagnitude(e.primary.magnitude)} büyüklüğünde deprem, ${relativeTimeTr(e.primary.occurredAt)}`}
+      style={({ pressed }) => [styles.news, { width }, pressed && { opacity: 0.85 }]}
+    >
+      <View style={styles.newsTop}>
+        <View style={[styles.newsIcon, { backgroundColor: alpha(tint, 0.18) }]}>
+          <Ionicons name="pulse" size={15} color={tint} />
+        </View>
+        <AppText variant="caption" numberOfLines={1} style={{ flex: 1, fontSize: 11 }}>
+          {relativeTimeTr(e.primary.occurredAt)}
+        </AppText>
+      </View>
+      <AppText variant="heading" numberOfLines={3} style={{ fontSize: 13, lineHeight: 17.5, fontWeight: '600' }}>
+        {src}: {placeTitle(e)} · {formatMagnitude(e.primary.magnitude)} büyüklüğünde deprem
       </AppText>
-      {right}
-      {action && onAction ? (
-        <Pressable onPress={onAction} accessibilityRole="link" style={{ padding: 4 }}>
-          <AppText variant="label" color={colors.primary}>
-            {action} ›
-          </AppText>
-        </Pressable>
-      ) : null}
-    </View>
+    </Pressable>
   );
 }
 
 export function HomeScreen() {
-  const canReport = useCanReport();
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
-  const { height } = useWindowDimensions();
-  const { quakes, refreshQuakes, userCoords, location, online, settings, liveStatus } = useApp();
+  const { width } = useWindowDimensions();
+  const { quakes, refreshQuakes, userCoords, location, online, settings } = useApp();
   const events = useVisibleQuakes();
   const feed = useReports();
-  const nearby = useNearbyAssembly(userCoords);
   const family = useFamily();
   const fam = useFamilyActions();
-
-  const [layers, setLayers] = useState(DEFAULT_LAYERS);
-  const [layersOpen, setLayersOpen] = useState(false);
-  const [selection, setSelection] = useState<MapSelection | null>(null);
+  const { unread } = useInbox();
+  const toast = useToast();
   const [refreshing, setRefreshing] = useState(false);
-  const mapRef = useRef<QuakeMapHandle>(null);
+
+  const pageW = Math.min(width, 640);
+  const gap = spacing.sm;
+  const quickW = (pageW - spacing.md * 2 - gap * 3) / 4;
+  // Dar ekranlarda (≤ 360 pt) hızlı işlem metinleri orantılı küçülür, taşmaz.
+  const k = Math.min(1, quickW / 82);
+  // Küçük telefonlar (ör. iPhone SE 320 pt): çevrimdışı rozeti yalnız simge, alt kartlar alt alta.
+  const narrow = pageW < 360;
 
   const alert = useMemo(() => computeAlertState(events, userCoords), [events, userCoords]);
-  const focus = alert.kind === 'none' ? null : alert.event;
+  const status = quakeStatus(alert, quakes.snapshot, quakes.loading, !!userCoords);
   // Haritada son 24 saatin olayları
-  const mapEvents = useMemo(
-    () => events.filter((e) => Date.now() - Date.parse(e.primary.occurredAt) < 24 * 3600_000 || e.id === focus?.id),
-    [events, focus],
-  );
-  const mapHeight = Math.max(250, Math.min(340, height * 0.31));
+  const mapEvents = useMemo(() => events.filter((e) => Date.now() - Date.parse(e.primary.occurredAt) < 24 * 3600_000), [events]);
+  const kitDone = settings.kitChecked.filter((id) => KIT_ITEMS.some((x) => x.id === id)).length;
+  const kitPct = KIT_ITEMS.length ? kitDone / KIT_ITEMS.length : 0;
+  const news = events.slice(0, 6);
 
-  const groups =
-    family.state.status === 'ready'
-      ? family.state.groups
-      : family.state.status === 'error' && family.state.cached
-        ? family.state.cached.groups
-        : [];
-  const myUserId = family.state.status === 'ready' ? family.state.me : null;
-  const familyCount = useMemo(
-    () => safeCount(buildPeople({ name: '', status: fam.myStatus }, fam.contacts, groups, myUserId)),
-    [fam.myStatus, fam.contacts, groups, myUserId],
-  );
-
-  const toast = useToast();
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([refreshQuakes(), feed.refresh(), nearby.reload(), family.reload()]);
+    await Promise.all([refreshQuakes(), feed.refresh(), family.reload()]);
     setRefreshing(false);
     toast.show(
       online ? { text: 'Güncellendi', tone: 'success' } : { text: 'Çevrimdışı: son kayıtlı veriler gösteriliyor', tone: 'warning' },
     );
   };
 
-  const onLocate = () => {
-    if (userCoords) mapRef.current?.flyTo(userCoords, location.status === 'granted' ? 11 : 8);
-    else router.push('/konum');
-  };
-
-  const recentReports = feed.reports.slice(0, 10);
+  const offlineInfo = () =>
+    Alert.alert(
+      online ? 'Çevrimdışı erişilebilir' : 'İnternet bağlantısı yok',
+      `${online ? '' : 'Son kayıtlı veriler gösteriliyor. '}Acil durum rehberi internetsiz açılır; 112 araması ve “Güvendeyim” SMS’i telefon şebekesiyle çalışır.`,
+    );
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: tabBarHeight + spacing.xl, gap: spacing.md }}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.md,
+          paddingBottom: tabBarHeight + spacing.xl,
+          gap: spacing.sm + 4,
+          width: '100%',
+          maxWidth: 640,
+          alignSelf: 'center',
+        }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textSecondary} />}
       >
-        <HomeHeader />
-        {!online ? (
-          <Banner
-            icon="cloud-offline-outline"
-            tone="warning"
-            text="İnternet yok. Kayıtlı veriler gösteriliyor. “Güvendeyim” SMS’i ve 112 araması internetsiz çalışır."
-            onPress={() => router.push('/acil')}
-          />
-        ) : null}
-
-        <AlertCard
-          state={alert}
-          loading={quakes.loading}
-          error={quakes.error}
-          onPress={focus ? () => router.push({ pathname: '/deprem/[id]', params: { id: focus.id } }) : undefined}
-        />
-        <CheckInCard alert={alert} myStatus={fam.myStatus} onSafe={() => fam.sendStatus('safe')} onHelp={fam.confirmHelp} />
-        <EmergencyGuideCard />
-        {focus ? (
-          <View style={styles.infoCard}>
-            <EventInfoRow event={focus} user={userCoords} locationHint={location.status === 'manual' ? location.label : undefined} />
+        {/* A. Üst başlık */}
+        <View style={styles.header}>
+          <View style={styles.brand} accessible accessibilityRole="header" accessibilityLabel="GÜVENDE, Afet Anında Yanınızda">
+            <GuideImage img="logo" style={{ width: 30, height: 33 }} />
+            <View style={{ flexShrink: 1 }}>
+              <AppText variant="title" numberOfLines={1} style={{ fontSize: 20, lineHeight: 24, fontWeight: '800', letterSpacing: 0.3 }}>
+                GÜVENDE
+              </AppText>
+              <AppText variant="caption" numberOfLines={1} style={{ fontSize: 10 }}>
+                Afet Anında Yanınızda
+              </AppText>
+            </View>
           </View>
-        ) : null}
-
-        <View style={[styles.mapCard, { height: mapHeight }]}>
-          <QuakeMap
-            ref={mapRef}
-            mapStyle={settings.mapStyle}
-            events={mapEvents}
-            focus={focus}
-            reports={feed.reports}
-            assemblyPoints={nearby.points}
-            user={userCoords}
-            userIsPrecise={location.status === 'granted'}
-            layers={layers}
-            onSelect={(s) => {
-              setLayersOpen(false);
-              setSelection(s);
-            }}
-            bottomInset={72}
-          />
-          <MapControls
-            layersOpen={layersOpen}
-            onLayers={() => setLayersOpen((v) => !v)}
-            onLocate={onLocate}
-            onFullscreen={() => router.push({ pathname: '/harita', params: focus ? { focus: focus.id } : {} })}
-          />
-          {layersOpen ? <LayerPanel layers={layers} onChange={setLayers} /> : null}
-          <View style={styles.mapBottom} pointerEvents="box-none">
-            {selection ? (
-              <View style={{ flex: 1 }}>
-                <SelectionCard
-                  selection={selection}
-                  events={events}
-                  reports={feed.reports}
-                  assembly={nearby.points}
-                  user={userCoords}
-                  onClose={() => setSelection(null)}
-                />
-              </View>
-            ) : (
-              <>
-                <MapLegend />
-                <NearbyAssemblyButton
-                  mine={nearby.myPoint?.name ?? null}
-                  count={nearby.state.status === 'ready' ? nearby.state.points.length : nearby.state.status === 'not-configured' ? 0 : null}
-                  onPress={() => router.push('/toplanma')}
-                />
-              </>
+          <Pressable
+            onPress={offlineInfo}
+            accessibilityRole="button"
+            accessibilityLabel={online ? 'Çevrimdışı erişilebilir' : 'İnternet yok, kayıtlı veriler gösteriliyor'}
+            style={({ pressed }) => [
+              styles.offline,
+              !online && { borderColor: colors.warning, backgroundColor: alpha(colors.warning, 0.08) },
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            <Ionicons
+              name={online ? 'cloud-download-outline' : 'cloud-offline-outline'}
+              size={17}
+              color={online ? colors.safe : colors.warning}
+            />
+            {narrow ? null : (
+              <AppText
+                variant="label"
+                numberOfLines={1}
+                color={online ? colors.safe : colors.warning}
+                style={{ fontSize: 11, fontWeight: '600', flexShrink: 1 }}
+              >
+                {online ? 'Çevrimdışı erişilebilir' : 'Çevrimdışı · kayıtlı veri'}
+              </AppText>
             )}
+          </Pressable>
+          <BellButton count={unread} onPress={() => router.push('/bildirimler')} />
+        </View>
+
+        {/* B. Acil Durum */}
+        <Pressable
+          onPress={() => router.push('/acil')}
+          accessibilityRole="button"
+          accessibilityLabel="Acil Durum. Yardıma mı ihtiyacınız var?"
+          style={({ pressed }) => [styles.sos, pressed && { opacity: 0.92 }]}
+        >
+          <LinearGradient colors={['#E8323F', '#A9121F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <View style={styles.sosIcon}>
+            <Ionicons name="call" size={30} color="#fff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <AppText
+              variant="display"
+              color="#fff"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={{ fontSize: narrow ? 22 : 26, lineHeight: narrow ? 27 : 31 }}
+            >
+              Acil Durum
+            </AppText>
+            <AppText variant="body" color="#FFE3E5" style={{ fontSize: narrow ? 12.5 : 14 }}>
+              Yardıma mı ihtiyacınız var?
+            </AppText>
+          </View>
+          <Ionicons name="chevron-forward" size={28} color="#fff" />
+        </Pressable>
+
+        {/* C. Dört hızlı işlem */}
+        <View style={{ flexDirection: 'row', gap }}>
+          {(
+            [
+              { key: '112', icon: 'call', title: '112', sub: 'Acil Çağrı', onPress: call112, red: true },
+              {
+                key: 'araclar',
+                icon: 'mci:ambulance',
+                title: 'Acil Araçlar',
+                sub: 'İtfaiye · Polis · Sağlık',
+                onPress: () => router.push('/acil-araclar'),
+              },
+              { key: 'paylas', icon: 'people', title: 'Ailemle Paylaş', sub: 'Güvendeyim bildir', onPress: () => fam.sendStatus('safe') },
+              {
+                key: 'enkaz',
+                icon: 'megaphone',
+                title: 'Enkaz Altı Modu',
+                sub: 'Siren · Flaş · Rehber',
+                onPress: () => router.push('/enkaz'),
+              },
+            ] as const
+          ).map((q) => (
+            <Pressable
+              key={q.key}
+              onPress={q.onPress}
+              accessibilityRole="button"
+              accessibilityLabel={q.key === '112' ? '112 Acil Çağrı' : `${q.title}. ${q.sub}`}
+              style={({ pressed }) => [styles.quick, { width: quickW }, 'red' in q && styles.quickRed, pressed && { opacity: 0.85 }]}
+            >
+              <Icon name={q.icon} size={24 * k} color={'red' in q ? '#fff' : colors.text} />
+              <AppText
+                variant="heading"
+                color={'red' in q ? '#fff' : colors.text}
+                numberOfLines={2}
+                style={{ fontSize: 11 * k, lineHeight: 14 * k, marginTop: 6, textAlign: 'center' }}
+              >
+                {q.title}
+              </AppText>
+              <AppText
+                variant="caption"
+                color={'red' in q ? '#FFE3E5' : colors.textSecondary}
+                numberOfLines={2}
+                style={{ fontSize: 9 * k, lineHeight: 11.5 * k, textAlign: 'center' }}
+              >
+                {q.sub}
+              </AppText>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* D. Şu an deprem var mı? */}
+        <Pressable
+          onPress={() =>
+            alert.kind === 'recent-significant'
+              ? router.push({ pathname: '/deprem/[id]', params: { id: alert.event.id } })
+              : router.push('/depremler')
+          }
+          accessibilityRole="button"
+          accessibilityLabel={`Şu an deprem var mı? ${status.text}${status.sub ? ` ${status.sub}` : ''}`}
+          style={({ pressed }) => [
+            styles.card,
+            styles.quake,
+            status.tone === 'alert' && { borderColor: TONE_COLOR.alert },
+            pressed && { opacity: 0.9 },
+          ]}
+        >
+          <View style={[styles.quakeBar, { backgroundColor: status.tone === 'ok' ? colors.danger : TONE_COLOR[status.tone] }]} />
+          <View style={styles.quakeArt} pointerEvents="none">
+            <GuideImage img="quake-card" style={{ width: '100%', height: '100%' }} />
+            {status.tone === 'ok' ? (
+              <View style={styles.shield}>
+                <Ionicons name="shield-checkmark" size={38} color="#19C37D" />
+              </View>
+            ) : null}
+          </View>
+          <View style={{ gap: 4, paddingRight: 40 }}>
+            <AppText variant="title" style={{ fontSize: 17, lineHeight: 22 }}>
+              Şu an deprem var mı?
+            </AppText>
+            <AppText variant="body" color={colors.textSecondary} style={{ fontSize: 13 }}>
+              Yakınınızdaki son depremler
+            </AppText>
+          </View>
+          <View style={styles.quakeStatus}>
+            <View style={[styles.dot, { backgroundColor: TONE_COLOR[status.tone], boxShadow: `0 0 8px ${TONE_COLOR[status.tone]}` }]} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <AppText variant="body" style={{ fontSize: 12.5, lineHeight: 17 }}>
+                {status.text}
+              </AppText>
+              {status.sub ? (
+                <AppText variant="caption" style={{ fontSize: 10.5 }}>
+                  {status.sub}
+                </AppText>
+              ) : null}
+            </View>
+          </View>
+          <View style={styles.cornerChev}>
+            <Ionicons name="chevron-forward" size={20} color={colors.text} />
+          </View>
+        </Pressable>
+
+        {/* E. Yakınımdaki risk durumu */}
+        <View style={[styles.card, { padding: 0, overflow: 'hidden' }]}>
+          <View style={styles.mapHead}>
+            <View style={{ flex: 1, gap: 4 }}>
+              <AppText variant="title" style={{ fontSize: narrow ? 14.5 : 15.5, lineHeight: 20 }}>
+                Yakınımdaki risk durumu
+              </AppText>
+              <AppText variant="caption" style={{ fontSize: 11.5 }}>
+                Harita üzerinden güncel durumu takip edin.
+              </AppText>
+            </View>
+            <Pressable
+              onPress={() => router.push('/harita')}
+              accessibilityRole="button"
+              accessibilityLabel="Haritayı Aç"
+              style={({ pressed }) => [styles.mapBtn, pressed && { opacity: 0.85 }]}
+            >
+              <Ionicons name="map" size={16} color={colors.text} />
+              <AppText variant="label" color={colors.text} style={{ fontWeight: '700', fontSize: 12.5 }}>
+                Haritayı Aç
+              </AppText>
+              <Ionicons name="chevron-forward" size={16} color={colors.text} />
+            </Pressable>
+          </View>
+          <View style={styles.mapBox}>
+            <QuakeMap
+              mapStyle={settings.mapStyle}
+              events={mapEvents}
+              focus={alert.kind === 'recent-significant' ? alert.event : null}
+              reports={feed.reports}
+              assemblyPoints={[]}
+              user={userCoords}
+              userIsPrecise={location.status === 'granted'}
+              layers={DEFAULT_LAYERS}
+              onSelect={() => {}}
+              interactive={false}
+            />
+            <Pressable
+              onPress={() => router.push('/harita')}
+              accessibilityRole="button"
+              accessibilityLabel="Haritayı aç"
+              style={StyleSheet.absoluteFill}
+            />
+            {!userCoords ? (
+              <Pressable onPress={() => router.push('/konum')} accessibilityRole="button" style={styles.locChip}>
+                <Ionicons name="location-outline" size={15} color={colors.warning} />
+                <AppText variant="label" color={colors.text} style={{ fontSize: 12 }}>
+                  {location.status === 'denied' ? 'Konum izni yok · Konum seç' : 'Konum belirlenmedi · Konum seç'}
+                </AppText>
+              </Pressable>
+            ) : null}
+            <View style={styles.legend} pointerEvents="none">
+              <MapLegend />
+            </View>
           </View>
         </View>
 
-        <QuickTiles
-          tiles={[
-            {
-              key: '112',
-              icon: 'call',
-              color: accent.red,
-              title: '112',
-              subtitle: 'Acil Çağrı',
-              big: true,
-              onPress: () => Linking.openURL('tel:112'),
-              onLongPress: () => router.push('/arama'),
-            },
-            {
-              key: 'aile',
-              icon: 'people',
-              color: accent.blue,
-              title: 'Ailem',
-              subtitle: familyCount.total > 0 ? `${familyCount.safe}/${familyCount.total} güvende` : 'Kişi ekle',
-              onPress: () => router.push('/ailem'),
-            },
-            { key: 'toplanma', icon: 'map', color: accent.green, title: 'Toplanma Alanları', onPress: () => router.push('/toplanma') },
-            {
-              key: 'canta',
-              icon: 'mci:bag-personal',
-              color: accent.orange,
-              title: 'Acil Durum Çantası',
-              onPress: () => router.push('/canta'),
-            },
-            { key: 'rehber', icon: 'document-text', color: accent.purple, title: 'Deprem Rehberi', onPress: () => router.push('/rehber') },
-          ]}
-        />
+        {/* F. Ailem + Acil durum çantam */}
+        <View style={{ flexDirection: narrow ? 'column' : 'row', gap }}>
+          <Pressable
+            onPress={() => router.push('/ailem')}
+            accessibilityRole="button"
+            accessibilityLabel="Ailem. Sevdiklerinizin durumunu takip edin."
+            style={({ pressed }) => [styles.card, styles.pair, pressed && { opacity: 0.88 }]}
+          >
+            <LinearGradient colors={['#7A5CF0', '#5134C4']} style={styles.pairIcon}>
+              <Ionicons name="people" size={24} color="#fff" />
+            </LinearGradient>
+            <View style={{ flex: 1, gap: 4 }}>
+              <AppText variant="heading" style={{ fontSize: 13.5 }}>
+                Ailem
+              </AppText>
+              <AppText variant="caption" style={{ fontSize: 10.5, lineHeight: 14 }}>
+                Sevdiklerinizin durumunu takip edin.
+              </AppText>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/canta')}
+            accessibilityRole="button"
+            accessibilityLabel={`Acil durum çantam. ${kitDone}/${KIT_ITEMS.length} tamamlandı`}
+            style={({ pressed }) => [styles.card, styles.pair, pressed && { opacity: 0.88 }]}
+          >
+            <LinearGradient colors={['#2F8BFF', '#1557D6']} style={styles.pairIcon}>
+              <Icon name="mci:bag-personal" size={24} color="#fff" />
+            </LinearGradient>
+            <View style={{ flex: 1, gap: 6 }}>
+              <AppText variant="heading" style={{ fontSize: 12.5, lineHeight: 16 }}>
+                Acil durum çantam
+              </AppText>
+              <View style={styles.track}>
+                <View style={[styles.fill, { width: `${Math.round(kitPct * 100)}%` }]} />
+              </View>
+              <AppText variant="caption" style={{ fontSize: 10.5 }}>
+                {kitDone}/{KIT_ITEMS.length} tamamlandı
+              </AppText>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+          </Pressable>
+        </View>
 
-        <FamilySafetyCard groups={groups} myUserId={myUserId} />
-
-        <View style={styles.block}>
-          <SectionTitle title="Olay Bildirimleri" action="Tümünü Gör" onAction={() => router.push('/akis')} />
-          {recentReports.length ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: spacing.sm, paddingHorizontal: spacing.md }}
-            >
-              {recentReports.map((r) => (
-                <ReportCard
-                  key={r.id}
-                  report={r}
-                  onPress={() => router.push({ pathname: '/rapor/[id]', params: { id: r.id } })}
-                />
+        {/* G. Son gelişmeler */}
+        <View style={[styles.card, { paddingHorizontal: 0, gap: spacing.sm }]}>
+          <View style={styles.newsHead}>
+            <AppText variant="title" style={{ flex: 1, fontSize: 18 }}>
+              Son gelişmeler
+            </AppText>
+            <Pressable onPress={() => router.push('/depremler')} accessibilityRole="link" hitSlop={8}>
+              <AppText variant="label" color={colors.primary} style={{ fontSize: 13.5 }}>
+                Tümünü gör
+              </AppText>
+            </Pressable>
+          </View>
+          {news.length ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap, paddingHorizontal: spacing.md }}>
+              {news.map((e) => (
+                <NewsCard key={e.id} e={e} width={Math.max(124, (pageW - spacing.md * 2) / 2.85)} />
               ))}
             </ScrollView>
           ) : (
-            <View style={styles.emptyFeed}>
-              <IconTile
-                icon={feed.status === 'error' ? 'cloud-offline-outline' : 'chatbubbles-outline'}
-                color={feed.status === 'error' ? accent.orange : accent.blue}
-                size={40}
-              />
-              <View style={{ flex: 1, gap: 2 }}>
-                <AppText variant="heading" style={{ fontSize: 14 }}>
-                  {feed.status === 'error' ? 'Bildirimler alınamadı' : 'Yakınınızda yeni bildirim yok'}
-                </AppText>
-                <AppText variant="caption">
-                  {feed.status === 'not-configured'
-                    ? 'Topluluk bildirimleri sunucu bağlantısı gerektirir. Sahte kayıt gösterilmez.'
-                    : feed.status === 'error'
-                      ? 'İnternet bağlantınızı kontrol edin.'
-                      : 'Son 48 saatte paylaşılan bildirim yok. Gördüğünüz bir durumu ilk siz bildirin.'}
-                </AppText>
-              </View>
-              {feed.status === 'error' ? (
-                <Button label="Tekrar" size="sm" variant="secondary" onPress={() => feed.refresh()} />
-              ) : feed.status !== 'not-configured' && canReport ? (
-                <Button label="Bildir" icon="add" size="sm" onPress={() => router.push('/rapor/yeni')} />
-              ) : null}
+            <View style={styles.empty}>
+              <Ionicons name={quakes.error ? 'cloud-offline-outline' : 'time-outline'} size={22} color={colors.textSecondary} />
+              <AppText variant="caption" style={{ flex: 1, fontSize: 13 }}>
+                {quakes.loading
+                  ? 'Kayıtlar yükleniyor…'
+                  : quakes.error
+                    ? 'Kayıtlar alınamadı. Lütfen internet bağlantınızı kontrol edin.'
+                    : 'Seçili büyüklük eşiğinin üzerinde son 7 günde kayıt yok.'}
+              </AppText>
             </View>
           )}
-          {recentReports.length ? (
-            <AppText variant="caption" style={{ paddingHorizontal: spacing.lg }}>
-              Kullanıcı bildirimleri doğrulanmamış olabilir; resmî kayıt değildir.
-            </AppText>
-          ) : null}
-        </View>
-
-        <View style={styles.block}>
-          <SectionTitle title="Son Depremler" action="Tümünü Gör" onAction={() => router.push('/depremler')} />
-          {events.length ? (
-            events
-              .slice(0, 5)
-              .map((e) => (
-                <QuakeListItem
-                  key={e.id}
-                  event={e}
-                  user={userCoords}
-                  onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })}
-                />
-              ))
-          ) : quakes.loading ? (
-            <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }} accessibilityLabel="Depremler yükleniyor">
-              {[0, 1, 2].map((i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                  <Skeleton width={44} height={44} radius={22} />
-                  <View style={{ flex: 1, gap: 6 }}>
-                    <Skeleton width="60%" height={13} />
-                    <Skeleton width="40%" height={10} />
-                  </View>
-                  <Skeleton width={48} height={10} />
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
-              <AppText variant="label">{quakes.error ?? 'Seçili eşiğin üzerinde kayıt yok.'}</AppText>
-              {!quakes.loading ? <Button label="Tekrar dene" variant="secondary" icon="refresh" onPress={refreshQuakes} /> : null}
-            </View>
-          )}
-          <SyncStatusLine snapshot={quakes.snapshot} live={liveStatus} style={{ paddingHorizontal: spacing.lg }} />
         </View>
       </ScrollView>
     </View>
@@ -317,59 +467,134 @@ export function HomeScreen() {
 }
 
 const styles = themedStyles(() => ({
-  emptyFeed: {
+  screen: { flex: 1, backgroundColor: colors.bg },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 52 },
+  brand: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minWidth: 0 },
+  offline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    minHeight: 32,
+    paddingHorizontal: 9,
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    borderColor: alpha(colors.safe, 0.75),
+    backgroundColor: alpha(colors.safe, 0.08),
+    flexShrink: 1,
+  },
+  sos: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    minHeight: 76,
+    paddingHorizontal: spacing.md,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#FF5B66',
+    boxShadow: '0 8px 26px rgba(232,50,63,0.35)',
+  },
+  sosIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: 15,
+    backgroundColor: '#FF4F5B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+  },
+  quick: {
+    minHeight: 80,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  quickRed: { backgroundColor: '#E5303D', borderColor: '#FF5B66', boxShadow: '0 6px 18px rgba(229,48,61,0.35)' },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+  },
+  quake: { minHeight: 118, overflow: 'hidden', justifyContent: 'space-between', gap: spacing.md, paddingLeft: spacing.lg },
+  quakeBar: { position: 'absolute', left: 0, top: 16, width: 3, height: 28, borderRadius: 2 },
+  quakeArt: { position: 'absolute', right: 0, bottom: 0, width: '48%', height: '86%', opacity: 0.95 },
+  shield: { position: 'absolute', right: '22%', bottom: 6 },
+  quakeStatus: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, maxWidth: '62%' },
+  dot: { width: 14, height: 14, borderRadius: 7, marginTop: 3 },
+  cornerChev: {
+    position: 'absolute',
+    right: spacing.md,
+    top: spacing.md,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: alpha(colors.textSecondary, 0.16),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2 },
+  mapBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 38,
+    paddingHorizontal: spacing.sm + 4,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+  },
+  mapBox: { height: 128, backgroundColor: colors.mapPlaceholder },
+  legend: { position: 'absolute', left: spacing.sm, bottom: spacing.sm },
+  locChip: {
+    position: 'absolute',
+    left: spacing.sm,
+    top: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    minHeight: 34,
+    paddingHorizontal: 10,
+    borderRadius: radius.pill,
+    backgroundColor: alpha(colors.bg, 0.85),
+  },
+  pair: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 70,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  pairIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  track: { height: 6, borderRadius: 3, backgroundColor: alpha(colors.textSecondary, 0.2), overflow: 'hidden' },
+  fill: { height: '100%', borderRadius: 3, backgroundColor: colors.primary },
+  newsHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md },
+  news: {
+    minHeight: 96,
+    gap: 6,
+    padding: spacing.sm + 2,
+    borderRadius: 16,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  newsTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  newsIcon: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  empty: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     marginHorizontal: spacing.md,
     padding: spacing.md,
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceRaised,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
-  },
-  screen: { flex: 1, backgroundColor: colors.bg },
-  infoCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.sm,
-    boxShadow: colors.shadowSoft,
-  },
-  mapCard: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: colors.mapPlaceholder,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
-  },
-  mapBottom: {
-    position: 'absolute',
-    left: spacing.sm,
-    right: spacing.sm,
-    bottom: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  block: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
-    paddingVertical: spacing.md,
-    gap: spacing.sm,
-    overflow: 'hidden',
-  },
-  sectionTitle: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.lg },
-  addBtn: {
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    minHeight: 34,
-    justifyContent: 'center',
   },
 }));
