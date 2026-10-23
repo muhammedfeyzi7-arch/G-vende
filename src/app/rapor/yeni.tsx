@@ -163,7 +163,7 @@ export default function NewReport() {
     : null;
   // Konum biliniyor ve yakında resmî deprem kaydı yok: herkese açık form yerine açıklama gösterilir.
   // Deprem verisi hiç alınamadıysa "deprem yok" denmez: bölge kontrol edilemedi (sunucu yine de denetler).
-  const unknown = isBackendConfigured() && !inst && !gate.known;
+  const unknown = isBackendConfigured() && !inst && !gate.known && !gate.quake;
   const closed = isBackendConfigured() && !inst && gate.located && gate.known && !gate.quake;
   const signedIn = !!session;
   const gates = evaluateGates({

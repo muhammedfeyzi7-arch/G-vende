@@ -151,7 +151,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setQuakes({
         snapshot: { ...snapshot, via: 'direct' },
         loading: false,
-        error: snapshot.stale ? 'Deprem kaynaklarına şu anda ulaşılamıyor.' : null,
+        error: snapshot.stale ? 'Deprem kaynaklarına ulaşılamadı. Lütfen internet bağlantınızı kontrol edin.' : null,
       });
     } catch (e) {
       setQuakes((q) => ({ ...q, loading: false, error: userMessage(e, 'Deprem verisi alınamadı. Lütfen biraz sonra tekrar deneyin.') }));

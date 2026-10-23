@@ -13,8 +13,10 @@ export function useReportGate(point?: LatLng | null): { located: boolean; known:
   const { quakes, userCoords } = useApp();
   const at = point ?? userCoords ?? null;
   const events = quakes.snapshot?.events;
-  // known=false: deprem verisi hiç alınamadı; "deprem yok" denemez, yalnızca "kontrol edilemedi".
-  return useMemo(() => ({ located: !!at, known: !!events, quake: findGateQuake(at, events ?? []) }), [at, events]);
+  // known=false: güncel deprem verisi yok (kaynaklara ulaşılamadı veya senkron gecikti); bu durumda
+  // "deprem yok" denemez, yalnızca "kontrol edilemedi". Önbellekte uygun deprem varsa kapı yine açılır.
+  const fresh = !!quakes.snapshot && !quakes.snapshot.stale;
+  return useMemo(() => ({ located: !!at, known: fresh, quake: findGateQuake(at, events ?? []) }), [at, events, fresh]);
 }
 
 /**
