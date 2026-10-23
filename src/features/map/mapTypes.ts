@@ -57,5 +57,7 @@ export type QuakeMapProps = {
   scaleBar?: boolean;
   /** Kaydırma/yakınlaştırma bitince görünen alan [batı, güney, doğu, kuzey] ve yakınlaştırma */
   onViewportChange?: (v: { bounds: [number, number, number, number]; zoom: number }) => void;
+  /** Çevrimiçi ayrıntı (sokak/uydu karoları) yüklenemedi; yalnızca gömülü Türkiye altlığı görünüyor. */
+  onDetailUnavailable?: () => void;
 };
 

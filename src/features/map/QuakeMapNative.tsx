@@ -73,6 +73,7 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
     family = [],
     scaleBar = false,
     onViewportChange,
+    onDetailUnavailable,
   },
   ref,
 ) {
@@ -157,7 +158,11 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
       key={`${attempt}-${mapStyle}-${styleIndex}`}
       style={StyleSheet.absoluteFill}
       mapStyle={STYLES[styleIndex]!}
-      onDidFailLoadingMap={() => setStyleIndex((i) => i + 1)}
+      onDidFailLoadingMap={() => {
+        // Çevrimiçi stil yüklenemedi: zincirdeki bir sonraki (en sonda gömülü çevrimdışı) stile geç ve ekrana bildir.
+        onDetailUnavailable?.();
+        setStyleIndex((i) => i + 1);
+      }}
       logo={false}
       attribution
       attributionPosition={{ bottom: bottomInset + 4, left: 8 }}

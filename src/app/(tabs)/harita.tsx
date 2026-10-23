@@ -85,10 +85,10 @@ function PointRow({
         style={styles.rowMain}
       >
         <View style={[styles.rowIcon, { backgroundColor: alpha(tint, 0.16), borderColor: alpha(tint, 0.5) }]}>
-          <Ionicons name="people" size={18} color={tint} />
+          <Ionicons name="people" size={16} color={tint} />
         </View>
         <View style={{ flex: 1, gap: 3 }}>
-          <AppText variant="heading" numberOfLines={2} style={{ fontSize: 13, lineHeight: 17 }}>
+          <AppText variant="heading" numberOfLines={2} style={{ fontSize: 12.5, lineHeight: 16 }}>
             {p.name}
           </AppText>
           {place ? (
@@ -169,7 +169,8 @@ export default function MapScreen() {
   const { height } = useWindowDimensions();
   const toast = useToast();
   const { focus: focusParam } = useLocalSearchParams<{ focus?: string }>();
-  const { quakes, userCoords, location, settings } = useApp();
+  const { quakes, userCoords, location, settings, online } = useApp();
+  const [detailFailed, setDetailFailed] = useState(false);
   const events = useVisibleQuakes();
   const feed = useReports();
   const nearby = useNearbyAssembly(userCoords, 10);
@@ -478,11 +479,6 @@ export default function MapScreen() {
             <AppText variant="label" color={colors.text} style={{ fontSize: 11.5, fontWeight: '600' }}>
               {c.label}
             </AppText>
-            {c.off ? (
-              <AppText variant="caption" style={{ fontSize: 10 }}>
-                veri yok
-              </AppText>
-            ) : null}
           </Pressable>
         ))}
       </ScrollView>
@@ -502,6 +498,7 @@ export default function MapScreen() {
             view.current = { center: { latitude: (s + n) / 2, longitude: (w + e) / 2 }, zoom: v.zoom };
             setZoom(v.zoom);
           }}
+          onDetailUnavailable={() => setDetailFailed(true)}
           family={familyPins}
           user={userCoords}
           userIsPrecise={location.status === 'granted'}
@@ -525,6 +522,14 @@ export default function MapScreen() {
             </AppText>
             <Ionicons name="chevron-forward" size={16} color="#fff" />
           </Pressable>
+        ) : null}
+        {!online || detailFailed ? (
+          <View style={styles.notice} accessibilityRole="alert">
+            <Ionicons name="cloud-offline-outline" size={14} color={colors.warning} />
+            <AppText variant="caption" color={colors.text} style={{ flex: 1, fontSize: 11 }}>
+              Ayrıntılı harita yüklenemedi; yalnızca temel Türkiye haritası görünüyor. Lütfen internet bağlantınızı kontrol edin.
+            </AppText>
+          </View>
         ) : null}
         <View style={styles.tools}>
           <MapTool icon="locate" label="Konumum" onPress={locate} />
@@ -609,7 +614,7 @@ export default function MapScreen() {
           <FlatList
             data={rows}
             keyExtractor={(p) => p.id}
-            contentContainerStyle={{ padding: spacing.sm, gap: spacing.sm, paddingBottom: spacing.lg }}
+            contentContainerStyle={{ padding: spacing.sm, gap: spacing.xs + 2, paddingBottom: 36 }}
             initialNumToRender={8}
             windowSize={7}
             renderItem={({ item }) => (
@@ -766,6 +771,20 @@ const styles = themedStyles(() => ({
   },
   zoomBtn: { height: 40, alignItems: 'center', justifyContent: 'center' },
   panelWrap: { position: 'absolute', right: 72, top: spacing.sm },
+  notice: {
+    position: 'absolute',
+    left: spacing.sm,
+    right: 72,
+    bottom: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: alpha(colors.bg, 0.9),
+    borderWidth: 1,
+    borderColor: alpha(colors.warning, 0.5),
+  },
   selection: { position: 'absolute', left: spacing.sm, right: 64, bottom: spacing.sm },
   sheet: {
     backgroundColor: colors.bg,
@@ -790,12 +809,19 @@ const styles = themedStyles(() => ({
     backgroundColor: colors.surface,
     overflow: 'hidden',
   },
-  rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.sm + 2 },
-  rowIcon: { width: 38, height: 38, borderRadius: 19, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  rowMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm - 1,
+  },
+  rowIcon: { width: 34, height: 34, borderRadius: 17, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, maxWidth: 170 },
   fav: { justifyContent: 'center', paddingHorizontal: 4 },
   route: {
-    width: 56,
+    width: 52,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
