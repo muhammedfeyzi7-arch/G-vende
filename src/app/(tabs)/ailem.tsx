@@ -1,13 +1,14 @@
+import { useToast } from '@/components/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Share, StyleSheet, View, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui';
 import { Avatar, Icon, IconTile, ScreenHeader, accent } from '@/components/ds';
 import { createInvite, inviteLink } from '@/features/family/api';
-import { formatPhone } from '@/features/family/local';
+import { ASK_STATUS_MESSAGE, callPhone, formatPhone, sendSms } from '@/features/family/local';
 import { OnlineGroupSection } from '@/features/family/OnlineGroupSection';
 import { buildPeople, safeCount, STATUS_LABEL, type PersonSummary } from '@/features/family/people';
 import { useFamily } from '@/features/family/useFamily';
@@ -54,8 +55,10 @@ export default function FamilyScreen() {
   const { userCoords, location, settings, session } = useApp();
   const family = useFamily();
   const fam = useFamilyActions();
+  const toast = useToast();
   const { profile } = useProfile();
   const [view, setView] = useState<'map' | 'list'>('map');
+  const [refreshing, setRefreshing] = useState(false);
   const mapRef = useRef<QuakeMapHandle>(null);
 
   const groups =
@@ -150,6 +153,29 @@ export default function FamilyScreen() {
       ]);
   };
 
+  // Uzun basma: kişi sayfasına girmeden en sık işlemler
+  const quickActions = (p: PersonSummary) => {
+    const c = p.contactId ? fam.contacts.find((x) => x.id === p.contactId) : null;
+    if (!c) return onPerson(p);
+    const mark = (kind: 'safe' | 'home' | 'help', label: string) => {
+      fam.setContactStatus([c.id], kind);
+      toast.show({ text: `${c.relation || c.name}: ${label} olarak işaretlendi` });
+    };
+    Alert.alert(c.relation || c.name, formatPhone(c.phone), [
+      { text: 'Ara', onPress: () => callPhone(c.phone) },
+      {
+        text: 'Durum sor (SMS)',
+        onPress: async () => {
+          const r = await sendSms([c.phone], ASK_STATUS_MESSAGE);
+          if (r.ok && r.status !== 'cancelled') fam.setContactStatus([c.id], 'waiting');
+        },
+      },
+      { text: 'Güvende işaretle', onPress: () => mark('safe', 'Güvende') },
+      { text: 'Evde işaretle', onPress: () => mark('home', 'Evde') },
+      { text: 'Vazgeç', style: 'cancel' },
+    ]);
+  };
+
   const invite = async () => {
     if (!isBackendConfigured()) {
       return Alert.alert(
@@ -192,6 +218,8 @@ export default function FamilyScreen() {
       <Pressable
         key={p.key}
         onPress={() => onPerson(p)}
+        onLongPress={() => quickActions(p)}
+        accessibilityHint={contact ? 'Uzun basınca arama ve durum seçenekleri' : undefined}
         accessibilityRole="button"
         accessibilityLabel={`${name}: ${shown.label}${p.at ? `, ${relativeTimeTr(p.at)}` : ''}`}
         style={[styles.member, i > 0 && styles.divider]}
@@ -222,6 +250,17 @@ export default function FamilyScreen() {
 
   return (
     <ScrollView
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          tintColor={colors.textSecondary}
+          onRefresh={async () => {
+            setRefreshing(true);
+            await family.reload();
+            setRefreshing(false);
+          }}
+        />
+      }
       contentContainerStyle={{
         paddingTop: insets.top + spacing.md,
         paddingHorizontal: spacing.md,

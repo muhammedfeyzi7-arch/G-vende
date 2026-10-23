@@ -173,6 +173,22 @@ describe('alt sekmeler', () => {
     expect(router.push).toHaveBeenCalledWith('/acil-mod');
   });
 
+  it('Ailem: uzun basınca hızlı işlemler; Güvende işaretlenir', async () => {
+    await require('@react-native-async-storage/async-storage').setItem(
+      'guvende:v1:local-contacts',
+      JSON.stringify([{ id: '1', name: 'Ayşe', phone: '+905321234567', relation: 'Annem', status: null }]),
+    );
+    const alert = jest
+      .spyOn(Alert, 'alert')
+      .mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'Güvende işaretle')?.onPress?.());
+    const Ailem = require('@/app/(tabs)/ailem').default;
+    await open(<Ailem />);
+    await fireEvent(screen.getByLabelText(/^Annem:/), 'longPress');
+    await flush();
+    expect(alert.mock.calls[0]?.[2]?.map((b) => b.text)).toEqual(['Ara', 'Durum sor (SMS)', 'Güvende işaretle', 'Evde işaretle', 'Vazgeç']);
+    expect(screen.getByText('Ailende 1 kişiden 1’i güvende')).toBeTruthy();
+  });
+
   it('Ailem: üye eklenir, listede durumuyla görünür ve Güvendeyim SMS’i (konumsuz) hazırlanır', async () => {
     const SMS = require('expo-sms');
     await require('@react-native-async-storage/async-storage').setItem(

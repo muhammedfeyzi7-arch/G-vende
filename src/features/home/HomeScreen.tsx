@@ -1,3 +1,4 @@
+import { useToast } from '@/components/Toast';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
@@ -92,10 +93,14 @@ export function HomeScreen() {
     [fam.myStatus, fam.contacts, groups, myUserId],
   );
 
+  const toast = useToast();
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([refreshQuakes(), feed.refresh(), nearby.reload(), family.reload()]);
     setRefreshing(false);
+    toast.show(
+      online ? { text: 'Güncellendi', tone: 'success' } : { text: 'Çevrimdışı: son kayıtlı veriler gösteriliyor', tone: 'warning' },
+    );
   };
 
   const onLocate = () => {
@@ -217,11 +222,7 @@ export function HomeScreen() {
         <FamilySafetyCard groups={groups} myUserId={myUserId} />
 
         <View style={styles.block}>
-          <SectionTitle
-            title="Son Bildirimler"
-            action="Tümünü Gör"
-            onAction={() => router.push('/akis')}
-          />
+          <SectionTitle title="Son Bildirimler" action="Tümünü Gör" onAction={() => router.push('/akis')} />
           {recentReports.length ? (
             <ScrollView
               horizontal

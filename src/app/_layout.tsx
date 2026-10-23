@@ -10,6 +10,7 @@ import { ReportsProvider } from '@/providers/ReportsProvider';
 import { TrustProvider } from '@/features/trust/TrustProvider';
 import { ThemeGate } from '@/theme/ThemeGate';
 import { ToastProvider } from '@/components/Toast';
+import { ConnectivityToasts } from '@/components/ConnectivityToasts';
 import { colors } from '@/theme';
 
 Notifications.setNotificationHandler({
@@ -122,6 +123,7 @@ export default function RootLayout() {
               <NotificationRouting />
               <ThemeGate>
                 <ToastProvider>
+                  <ConnectivityToasts />
                   <BiometricGate>
                     <RootStack />
                   </BiometricGate>
