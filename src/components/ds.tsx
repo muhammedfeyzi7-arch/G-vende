@@ -20,7 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { AppText } from '@/components/ui';
-import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles, iconColors } from '@/theme';
 
 /** "mci:whistle" → MaterialCommunityIcons, aksi halde Ionicons. */
 export function Icon({ name, size = 22, color = colors.text, style }: { name: string; size?: number; color?: string; style?: object }) {
@@ -28,16 +28,8 @@ export function Icon({ name, size = 22, color = colors.text, style }: { name: st
   return <Ionicons name={name as never} size={size} color={color} style={style} />;
 }
 
-export const accent = {
-  blue: colors.primary,
-  green: colors.safe,
-  red: colors.danger,
-  orange: colors.warning,
-  yellow: colors.caution,
-  purple: '#8B5CF6',
-  teal: '#22C3D6',
-  gray: colors.info,
-} as const;
+/** Simge/vurgu renkleri: temadan bağımsız sabit tonlar (açık ve koyu temada aynı görünür). */
+export const accent = iconColors;
 
 export function ScreenHeader({ title, subtitle, right }: { title: string; subtitle?: string; right?: ReactNode }) {
   return (
@@ -482,7 +474,7 @@ const styles = themedStyles(() => ({
     height: 20,
     borderRadius: 10,
     paddingHorizontal: 4,
-    backgroundColor: colors.danger,
+    backgroundColor: iconColors.red,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,

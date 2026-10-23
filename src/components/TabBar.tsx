@@ -3,7 +3,7 @@ import { haptic } from '@/services/haptics';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing, themedStyles } from '@/theme';
+import { colors, spacing, themedStyles, iconColors } from '@/theme';
 
 const ITEMS: Record<string, { label: string; icon: string; iconActive: string; center?: boolean }> = {
   index: { label: 'Ana Sayfa', icon: 'home-outline', iconActive: 'home' },
@@ -85,7 +85,7 @@ const styles = themedStyles(() => ({
     height: 54,
     borderRadius: 27,
     marginTop: -26,
-    backgroundColor: colors.danger,
+    backgroundColor: iconColors.red,
     borderWidth: 3,
     borderColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',

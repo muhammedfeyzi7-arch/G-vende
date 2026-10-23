@@ -39,9 +39,9 @@ export const darkPalette = {
   shadow: '0 6px 24px rgba(0,0,0,0.35)',
   shadowSoft: '0 2px 10px rgba(0,0,0,0.25)',
   /** Kırmızı uyarı kartı degrade tonları */
-  alertFrom: '#5A0F1C',
-  alertTo: '#2A0911',
-  alertBorder: '#8A1F2E',
+  alertFrom: '#D92539',
+  alertTo: '#9E1226',
+  alertBorder: '#F26B7B',
   /** Renkli zeminler üstündeki yazı */
   onAccent: '#FFFFFF',
 };
@@ -79,8 +79,8 @@ export const lightPalette: Palette = {
   mapPlaceholder: '#DCE6EF',
   shadow: '0 8px 24px rgba(16,38,66,0.10)',
   shadowSoft: '0 2px 8px rgba(16,38,66,0.08)',
-  alertFrom: '#E8273D',
-  alertTo: '#B5142A',
+  alertFrom: '#D92539',
+  alertTo: '#9E1226',
   alertBorder: '#F26B7B',
   onAccent: '#FFFFFF',
 };
@@ -171,3 +171,18 @@ export const surface = {
 
 /** Yazı ölçeği: bölüm başlığı · kart başlığı · satır başlığı · küçük karo başlığı. */
 export const type = { section: 17.5, card: 15, row: 14, tile: 13 } as const;
+
+/**
+ * Simge renkleri: iki temada da AYNI ton (simgeler temaya göre değişmez). Metin renkleri ise
+ * okunabilirlik için temadan gelir (colors.safe vb.).
+ */
+export const iconColors = {
+  blue: '#1677FF',
+  green: '#12B886',
+  red: '#EF3347',
+  orange: '#F57C1F',
+  yellow: '#F2B10D',
+  purple: '#8B5CF6',
+  teal: '#14B8C8',
+  gray: '#7C8A9C',
+} as const;

@@ -10,7 +10,7 @@ import { Avatar, GroupTitle, IconTile, Page, accent } from '@/components/ds';
 import { ASK_STATUS_MESSAGE, callPhone, formatPhone, sendSms } from '@/features/family/local';
 import { useLocalFamily } from '@/features/family/useLocalFamily';
 import { useApp } from '@/providers/AppProvider';
-import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles, iconColors } from '@/theme';
 
 /**
  * Türkiye geneli kısa numaralar. 112 tüm acil durumlar (sağlık, itfaiye, polis, jandarma, AFAD) için
@@ -171,7 +171,7 @@ export default function CallScreen() {
               accessibilityRole="button"
               accessibilityLabel={`${c.name} ara`}
               hitSlop={hitSlop}
-              style={[styles.round, { backgroundColor: colors.safe }]}
+              style={[styles.round, { backgroundColor: iconColors.green }]}
             >
               <Ionicons name="call" size={18} color="#fff" />
             </Pressable>
@@ -204,7 +204,7 @@ const styles = themedStyles(() => ({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: colors.danger,
+    backgroundColor: iconColors.red,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,

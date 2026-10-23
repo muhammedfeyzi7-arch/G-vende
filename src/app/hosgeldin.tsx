@@ -8,7 +8,7 @@ import { AppText, Button } from '@/components/ui';
 import { IconTile, accent } from '@/components/ds';
 import { useNotificationPermission } from '@/hooks/useNotificationPermission';
 import { useApp } from '@/providers/AppProvider';
-import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles, iconColors } from '@/theme';
 
 const FEATURES = [
   {
@@ -235,7 +235,7 @@ const styles = themedStyles(() => ({
     borderColor: colors.border,
     padding: spacing.md,
   },
-  done: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.safe, alignItems: 'center', justifyContent: 'center' },
+  done: { width: 32, height: 32, borderRadius: 16, backgroundColor: iconColors.green, alignItems: 'center', justifyContent: 'center' },
   note: {
     flexDirection: 'row',
     gap: spacing.sm,

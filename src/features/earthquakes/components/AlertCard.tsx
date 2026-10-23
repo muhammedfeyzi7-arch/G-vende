@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
-import { currentScheme, colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { formatDistance } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
 import type { AlertState } from '../alertState';
@@ -47,9 +47,8 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
       (state.kind !== 'none' && state.distanceKm != null ? ` Size uzaklığı ${formatDistance(state.distanceKm)}.` : '')
     : title;
 
-  const light = currentScheme() === 'light';
   // Kırmızı zemin üstünde yazılar her iki temada da beyazdır.
-  const accent = alert ? (light ? colors.onAccent : colors.danger) : colors.primary;
+  const accent = alert ? colors.onAccent : colors.primary;
   const soft = alert ? '#FBD5DA' : colors.textSecondary;
   const strong = alert ? colors.onAccent : colors.text;
 
@@ -78,9 +77,7 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
         </AppText>
       </View>
       {event ? (
-        <View
-          style={[styles.magBox, { borderColor: alert ? (light ? 'rgba(255,255,255,0.6)' : colors.danger + 'B3') : colors.borderStrong }]}
-        >
+        <View style={[styles.magBox, { borderColor: alert ? 'rgba(255,255,255,0.6)' : colors.borderStrong }]}>
           <AppText variant="caption" color={soft} style={{ fontSize: 9.5 }}>
             Büyüklük {event.primary.magnitudeType ? `(${event.primary.magnitudeType})` : ''}
           </AppText>

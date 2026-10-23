@@ -36,38 +36,24 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
         >
           <LinearGradient
             colors={
-              t.big && light
-                ? [colors.alertFrom, colors.alertTo]
-                : light
-                  ? [t.color + '24', t.color + '0A']
-                  : [t.color + '40', t.color + '14']
+              t.big ? [colors.alertFrom, colors.alertTo] : light ? [t.color + '24', t.color + '0A'] : [t.color + '40', t.color + '14']
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
-          <Icon name={t.icon} size={24} color={t.big && light ? colors.onAccent : t.color} />
+          <Icon name={t.icon} size={24} color={t.big ? colors.onAccent : t.color} />
           {t.big ? (
             <AppText variant="title" color="#fff" style={{ fontSize: 19.5, lineHeight: 23 }}>
               {t.title}
             </AppText>
           ) : (
-            <AppText
-              variant="label"
-              color={t.key === 'toplanma' ? t.color : colors.text}
-              numberOfLines={3}
-              style={styles.title}
-            >
+            <AppText variant="label" color={t.key === 'toplanma' ? t.color : colors.text} numberOfLines={3} style={styles.title}>
               {t.title}
             </AppText>
           )}
           {t.subtitle ? (
-            <AppText
-              variant="caption"
-              color={t.big ? (light ? '#FDE3E6' : '#F6C9CE') : colors.textSecondary}
-              numberOfLines={2}
-              style={styles.sub}
-            >
+            <AppText variant="caption" color={t.big ? '#FDE3E6' : colors.textSecondary} numberOfLines={2} style={styles.sub}>
               {t.subtitle}
             </AppText>
           ) : null}

@@ -16,7 +16,7 @@ import { KIT_ITEMS, KIT_SHORT } from '@/features/emergency/content';
 import { useFamilyActions } from '@/features/family/useFamilyActions';
 import { DEFAULT_LAYERS, QuakeMap } from '@/features/map/QuakeMap';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { colors, radius, spacing, themedStyles, iconColors } from '@/theme';
 import { formatDistance } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
 
@@ -506,7 +506,7 @@ const styles = themedStyles(() => ({
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: colors.danger,
+    backgroundColor: iconColors.red,
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: '0 0 18px rgba(255,53,72,0.6)',
@@ -548,7 +548,7 @@ const styles = themedStyles(() => ({
     overflow: 'hidden',
     height: 80,
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: '#FFFFFF',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     alignItems: 'center',
@@ -561,7 +561,7 @@ const styles = themedStyles(() => ({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: colors.danger,
+    backgroundColor: iconColors.red,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
