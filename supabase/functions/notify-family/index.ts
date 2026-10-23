@@ -15,14 +15,14 @@ Deno.serve(async (req) => {
   const { data: members } = await sb.from('family_members').select('user_id, display_name').eq('group_id', record.group_id);
   const sender = members?.find((m) => m.user_id === record.user_id);
   const others = (members ?? []).map((m) => m.user_id as string).filter((u) => u !== record.user_id);
-  if (!sender || !others.length) return Response.json({ pushed: 0 });
+  if (!sender || !others.length) return Response.json({ accepted: 0 });
 
   const { data: prefs } = await sb.from('notification_preferences').select('user_id, family_enabled').in('user_id', others);
   const optedOut = new Set((prefs ?? []).filter((p) => !p.family_enabled).map((p) => p.user_id));
   const recipients = others.filter((u) => !optedOut.has(u));
   const { data: tokens } = await sb.from('push_tokens').select('token').in('user_id', recipients);
 
-  const pushed = await sendExpoPush(
+  const result = await sendExpoPush(
     (tokens ?? []).map((t) => ({
       to: t.token,
       title: record.status === 'safe' ? `${sender.display_name} güvende` : `${sender.display_name} yardıma ihtiyaç duyuyor`,
@@ -33,5 +33,7 @@ Deno.serve(async (req) => {
     })),
     Deno.env.get('EXPO_ACCESS_TOKEN') ?? undefined,
   );
-  return Response.json({ pushed });
+  if (result.invalidTokens.length) await sb.from('push_tokens').delete().in('token', result.invalidTokens);
+  // accepted = Expo'nun kabul ettiği mesaj sayısı; teslim/okunma anlamına gelmez.
+  return Response.json({ accepted: result.accepted, invalidTokensRemoved: result.invalidTokens.length });
 });

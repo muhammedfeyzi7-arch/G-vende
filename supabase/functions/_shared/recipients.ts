@@ -47,21 +47,58 @@ export function selectRecipients(
 
 export type ExpoMessage = { to: string; title: string; body: string; data?: Record<string, unknown>; channelId?: string; sound?: 'default' };
 
-export async function sendExpoPush(messages: ExpoMessage[], accessToken?: string): Promise<number> {
-  let sent = 0;
+export type PushResult = {
+  /** Expo'nun kabul ettiği mesaj sayısı. Teslim edildi veya okundu anlamına GELMEZ. */
+  accepted: number;
+  /** Expo'nun "DeviceNotRegistered" dediği belirteçler: uygulama silinmiş / izin kaldırılmış; silinmeli. */
+  invalidTokens: string[];
+  errors: number;
+};
+
+/** Expo push yanıtındaki "ticket" listesini mesajlarla eşleyip yorumlar. */
+export function readTickets(messages: ExpoMessage[], body: unknown): PushResult {
+  const data = (body as { data?: unknown })?.data;
+  const tickets = Array.isArray(data) ? data : [];
+  const out: PushResult = { accepted: 0, invalidTokens: [], errors: 0 };
+  messages.forEach((m, i) => {
+    const t = tickets[i] as { status?: string; details?: { error?: string } } | undefined;
+    if (t?.status === 'ok') out.accepted++;
+    else {
+      out.errors++;
+      if (t?.details?.error === 'DeviceNotRegistered') out.invalidTokens.push(m.to);
+    }
+  });
+  return out;
+}
+
+export async function sendExpoPush(messages: ExpoMessage[], accessToken?: string, fetchImpl: typeof fetch = fetch): Promise<PushResult> {
+  const total: PushResult = { accepted: 0, invalidTokens: [], errors: 0 };
   for (let i = 0; i < messages.length; i += 100) {
     const chunk = messages.slice(i, i + 100);
-    const res = await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      },
-      body: JSON.stringify(chunk),
-    });
-    if (res.ok) sent += chunk.length;
-    else console.error('Expo push hatası', res.status, await res.text());
+    try {
+      const res = await fetchImpl('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify(chunk),
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) {
+        console.error('Expo push hatası', res.status, await res.text());
+        total.errors += chunk.length;
+        continue;
+      }
+      const r = readTickets(chunk, await res.json());
+      total.accepted += r.accepted;
+      total.errors += r.errors;
+      total.invalidTokens.push(...r.invalidTokens);
+    } catch (e) {
+      console.error('Expo push isteği başarısız', e instanceof Error ? e.message : e);
+      total.errors += chunk.length;
+    }
   }
-  return sent;
+  return total;
 }

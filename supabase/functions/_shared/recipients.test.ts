@@ -1,5 +1,5 @@
 import { assertEquals } from 'jsr:@std/assert@1';
-import { selectRecipients, type Pref } from './recipients.ts';
+import { readTickets, selectRecipients, sendExpoPush, type ExpoMessage, type Pref } from './recipients.ts';
 
 const now = new Date('2026-10-22T19:00:00Z');
 const base: Pref = { user_id: 'u', quakes_enabled: true, official_enabled: true, min_magnitude: 4, region_lat: 40.69, region_lon: 30.4, region_radius_km: 150, min_interval_minutes: 10 };
@@ -33,4 +33,40 @@ Deno.test('M5+ uzak deprem yalnızca resmî duyurular açıkken', () => {
 Deno.test('kapalı tercih veya bilinmeyen büyüklük', () => {
   assertEquals(selectRecipients(duzce, [{ ...base, quakes_enabled: false }], new Map(), now), []);
   assertEquals(selectRecipients({ ...duzce, magnitude: null }, [base], new Map(), now), []);
+});
+
+const msgs: ExpoMessage[] = [
+  { to: 'ExponentPushToken[a]', title: 't', body: 'b' },
+  { to: 'ExponentPushToken[b]', title: 't', body: 'b' },
+  { to: 'ExponentPushToken[c]', title: 't', body: 'b' },
+];
+Deno.test('Expo yanıtı: kabul, geçersiz belirteç ve hata ayrılır', () => {
+  const r = readTickets(msgs, {
+    data: [
+      { status: 'ok', id: '1' },
+      { status: 'error', message: 'not registered', details: { error: 'DeviceNotRegistered' } },
+      { status: 'error', message: 'rate', details: { error: 'MessageRateExceeded' } },
+    ],
+  });
+  assertEquals(r, { accepted: 1, invalidTokens: ['ExponentPushToken[b]'], errors: 2 });
+});
+Deno.test('Expo yanıtı bozuksa hiçbir mesaj kabul edilmiş sayılmaz', () => {
+  assertEquals(readTickets(msgs, { nope: true }), { accepted: 0, invalidTokens: [], errors: 3 });
+});
+Deno.test('Expo erişilemezse hata sayılır, istisna fırlatılmaz', async () => {
+  const failing = (() => Promise.reject(new TypeError('network'))) as unknown as typeof fetch;
+  const r = await sendExpoPush(msgs, undefined, failing);
+  assertEquals(r, { accepted: 0, invalidTokens: [], errors: 3 });
+});
+Deno.test('Expo 100 mesajlık parçalar halinde gönderilir', async () => {
+  const many = Array.from({ length: 150 }, (_, i) => ({ to: `T${i}`, title: 't', body: 'b' }));
+  let calls = 0;
+  const ok = ((_: string, init: RequestInit) => {
+    calls++;
+    const n = JSON.parse(String(init.body)).length;
+    return Promise.resolve(new Response(JSON.stringify({ data: Array.from({ length: n }, () => ({ status: 'ok' })) })));
+  }) as unknown as typeof fetch;
+  const r = await sendExpoPush(many, undefined, ok);
+  assertEquals(calls, 2);
+  assertEquals(r.accepted, 150);
 });
