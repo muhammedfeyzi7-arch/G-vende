@@ -189,19 +189,25 @@ const toLabel = (f: GeoJSON.Feature, sea = false): CityLabel => {
 export const CITY_LABELS: CityLabel[] = [...data.seas.features.map((f) => toLabel(f, true)), ...data.places.features.map((f) => toLabel(f))];
 
 /** Yakınlaştırmaya göre gösterilecek etiketler (kalabalığı önlemek için). */
-export function visibleLabels(zoom: number): CityLabel[] {
+export function visibleLabels(zoom: number, avoid: { latitude: number; longitude: number }[] = []): CityLabel[] {
   const candidates = CITY_LABELS.filter((l) =>
     l.sea ? zoom < 8.5 : l.rank === 1 ? zoom < 11 : l.rank === 2 ? zoom >= 4.8 && zoom < 11 : zoom >= 5.7 && zoom < 11,
   );
-  return withoutCollisions(candidates, zoom);
+  return withoutCollisions(candidates, zoom, avoid);
 }
 
 /** Etiketin ekrandaki yaklaşık kutusu (px): yazı boyutu sıraya göre (16/13/11 px), harf başına ~0,6 em. */
-function labelBox(l: CityLabel, zoom: number) {
+function project(p: { latitude: number; longitude: number }, zoom: number) {
   const scale = 512 * 2 ** zoom; // MapLibre karo boyutu 512
-  const x = ((l.longitude + 180) / 360) * scale;
-  const r = (l.latitude * Math.PI) / 180;
-  const y = ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * scale;
+  const r = (p.latitude * Math.PI) / 180;
+  return {
+    x: ((p.longitude + 180) / 360) * scale,
+    y: ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * scale,
+  };
+}
+
+function labelBox(l: CityLabel, zoom: number) {
+  const { x, y } = project(l, zoom);
   const size = l.sea ? 11 : l.rank === 1 ? 16 : l.rank === 2 ? 13 : 11;
   const w = l.name.length * size * 0.6 + 8;
   const h = size + 10; // noktası ve boşluğuyla
@@ -212,9 +218,17 @@ function labelBox(l: CityLabel, zoom: number) {
  * Üst üste binen etiketleri ayıklar ("Kocaeli" ile "Sakarya" gibi). Büyük şehir önce yerleşir,
  * deniz adları en son; çakışan küçük etiket o yakınlaştırmada gösterilmez.
  */
-export function withoutCollisions(labels: CityLabel[], zoom: number): CityLabel[] {
+export function withoutCollisions(
+  labels: CityLabel[],
+  zoom: number,
+  avoid: { latitude: number; longitude: number }[] = [],
+): CityLabel[] {
   const order = [...labels].sort((a, b) => (a.sea ? 9 : a.rank) - (b.sea ? 9 : b.rank));
-  const placed: ReturnType<typeof labelBox>[] = [];
+  // Konum noktası gibi işaretçilerin kapladığı alan (~44 px) önceden dolu sayılır; etiket altında kalmaz.
+  const placed: ReturnType<typeof labelBox>[] = avoid.map((p) => {
+    const { x, y } = project(p, zoom);
+    return { x0: x - 22, x1: x + 22, y0: y - 22, y1: y + 22 };
+  });
   const keep = new Set<CityLabel>();
   for (const l of order) {
     const b = labelBox(l, zoom);

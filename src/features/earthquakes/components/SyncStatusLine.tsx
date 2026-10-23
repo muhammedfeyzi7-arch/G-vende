@@ -11,6 +11,8 @@ export function syncStatusText(snapshot: QuakeSnapshot | null, live: LiveStatus)
   if (!snapshot) return { text: 'Deprem verisi yükleniyor…', warn: false };
   const sources = snapshot.health.filter((h) => h.ok).map((h) => SOURCES[h.source].label);
   const when = snapshot.lastSuccessAt ? relativeTimeTr(snapshot.lastSuccessAt) : 'hiç';
+  if (snapshot.via === 'cache' && !snapshot.stale)
+    return { text: `Son kaydedilen veriler (${when}) · güncelleniyor…`, warn: false };
   if (snapshot.stale)
     return {
       text: `Veriler güncel değil · son başarılı senkron ${when}. Gösterilen depremler eski olabilir.`,

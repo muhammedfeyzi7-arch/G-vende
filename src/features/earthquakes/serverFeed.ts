@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { QuakeSourceId, SourceHealth, SourceReading } from '../../types/earthquake';
 import { mergeReadings } from './merge';
-import type { QuakeSnapshot } from './repository';
+import type { CachedSnapshot, QuakeSnapshot } from './repository';
 import { READING_COLUMNS, rowToReading, type ReadingRow } from './rows';
 
 /**
@@ -106,4 +106,21 @@ export function upsertReading(list: SourceReading[], r: SourceReading): SourceRe
 
 export function upsertSync(rows: SyncRow[], row: SyncRow): SyncRow[] {
   return [...rows.filter((r) => r.source !== row.source), row];
+}
+
+/**
+ * Açılışta yeni veri gelene kadar cihazdaki son listeyi göstermek için. Yaşı korunur: son başarılı
+ * senkron 10 dakikadan eskiyse "güncel değil" olarak işaretlenir (eski veri yeni gibi sunulmaz).
+ */
+export function snapshotFromCache(cache: CachedSnapshot, sources: QuakeSourceId[], now = Date.now()): QuakeSnapshot | null {
+  const readings = cache.readings.filter((r) => sources.includes(r.source));
+  if (!readings.length) return null;
+  const lastSuccessAt =
+    cache.health
+      .map((h) => h.lastSuccessAt)
+      .filter((t): t is string => !!t)
+      .sort()
+      .at(-1) ?? null;
+  const stale = !lastSuccessAt || now - Date.parse(lastSuccessAt) > STALE_AFTER_MS;
+  return { events: mergeReadings(readings), health: cache.health, lastSuccessAt, stale, via: 'cache' };
 }

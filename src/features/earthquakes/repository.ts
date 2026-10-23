@@ -20,8 +20,9 @@ export interface QuakeSnapshot {
   lastSuccessAt: string | null;
   /** Veriler önbellekten mi geliyor (hiçbir kaynak bu denemede yanıt vermedi)? */
   stale: boolean;
-  /** Verinin geldiği yol: GÜVENDE sunucusu (Supabase) veya kaynaklardan doğrudan (sunucuya ulaşılamadığında). */
-  via?: 'server' | 'direct';
+  /** Verinin geldiği yol: GÜVENDE sunucusu (Supabase), kaynaklardan doğrudan (sunucuya ulaşılamadığında)
+   *  veya açılışta yeni veri gelene kadar cihazda saklanan son liste. */
+  via?: 'server' | 'direct' | 'cache';
 }
 
 export interface CachedSnapshot {

@@ -82,7 +82,7 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
   const failed = styleIndex >= STYLES.length;
   // Şehir adları işaretçi olarak çizilir (yazı tipi indirmeden, çevrimdışı da görünür).
   const [zoom, setZoom] = useState(initialZoom ?? (focus ? 5.9 : 4.8));
-  const labels = useMemo(() => visibleLabels(zoom), [zoom]);
+  const labels = useMemo(() => visibleLabels(zoom, user ? [user] : []), [zoom, user]);
   const lightLabels = isLightMap(mapStyle, scheme);
 
   useImperativeHandle(ref, () => ({

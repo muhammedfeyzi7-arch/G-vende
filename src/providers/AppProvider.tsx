@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { AppState } from 'react-native';
 import { loadEarthquakes, type CachedSnapshot, type QuakeSnapshot } from '@/features/earthquakes/repository';
 import { rowToReading, type ReadingRow } from '@/features/earthquakes/rows';
-import { buildServerSnapshot, fetchServerReadings, upsertReading, upsertSync, type SyncRow } from '@/features/earthquakes/serverFeed';
+import { buildServerSnapshot, fetchServerReadings, snapshotFromCache, upsertReading, upsertSync, type SyncRow } from '@/features/earthquakes/serverFeed';
 import { DEFAULT_SETTINGS, type Settings } from '@/features/settings/settings';
 import { PROVINCES } from '@/features/settings/provinces';
 import { env } from '@/services/env';
@@ -131,6 +131,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setQuakes((q) => ({ ...q, loading: true }));
     try {
       if (!cacheRef.current) cacheRef.current = await readJson<CachedSnapshot>('quake-cache');
+      // Açılışta ağı beklemeden son kaydedilen liste gösterilir (yaşıyla birlikte); yeni veri gelince değişir.
+      const cached = cacheRef.current ? snapshotFromCache(cacheRef.current, sources) : null;
+      if (cached) setQuakes((q) => (q.snapshot ? q : { snapshot: cached, loading: true, error: null }));
       const sb = getSupabase();
       if (sb) {
         try {

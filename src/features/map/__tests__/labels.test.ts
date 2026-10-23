@@ -15,3 +15,11 @@ describe('harita şehir etiketleri', () => {
     expect(visibleLabels(8).length).toBeGreaterThan(visibleLabels(5).length);
   });
 });
+
+describe('konum noktası', () => {
+  it('kullanıcının noktasının altındaki şehir adı çizilmez', () => {
+    const duzce = { latitude: 40.8438, longitude: 31.1565 };
+    expect(visibleLabels(6.5).map((l) => l.name)).toContain('Düzce');
+    expect(visibleLabels(6.5, [duzce]).map((l) => l.name)).not.toContain('Düzce');
+  });
+});

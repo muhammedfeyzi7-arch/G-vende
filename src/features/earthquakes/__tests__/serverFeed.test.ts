@@ -1,4 +1,4 @@
-import { STALE_AFTER_MS, buildServerSnapshot, healthFromSync, upsertReading, upsertSync, type SyncRow } from '../serverFeed';
+import { STALE_AFTER_MS, buildServerSnapshot, healthFromSync, snapshotFromCache, upsertReading, upsertSync, type SyncRow } from '../serverFeed';
 import type { SourceReading } from '../../../types/earthquake';
 
 const now = Date.parse('2026-10-23T12:00:00Z');
@@ -87,5 +87,20 @@ describe('sunucu zaman aşımı', () => {
     };
     const sb = { from: () => q() };
     await expect(fetchServerReadings(sb, ['afad'], 1.5, 20)).rejects.toThrow('aborted');
+  });
+});
+
+describe('açılışta cihazdaki son liste', () => {
+  const health = (at: string | null) => [{ source: 'afad' as const, ok: true, lastAttemptAt: at, lastSuccessAt: at, error: null, count: 1 }];
+  it('yeni kayıt güncel gösterilir, yaşı korunur', () => {
+    const s = snapshotFromCache({ readings: [reading('afad', 'a')], health: health(ago(2 * 60_000)) }, ['afad'], now)!;
+    expect(s.via).toBe('cache');
+    expect(s.stale).toBe(false);
+    expect(s.events).toHaveLength(1);
+  });
+  it('eski kayıt "güncel değil" işaretlenir; kapalı kaynak veya boş önbellek gösterilmez', () => {
+    expect(snapshotFromCache({ readings: [reading('afad', 'a')], health: health(ago(STALE_AFTER_MS + 1)) }, ['afad'], now)!.stale).toBe(true);
+    expect(snapshotFromCache({ readings: [reading('afad', 'a')], health: health(null) }, ['kandilli'], now)).toBeNull();
+    expect(snapshotFromCache({ readings: [], health: [] }, ['afad'], now)).toBeNull();
   });
 });
