@@ -45,16 +45,21 @@ function Chip({ label, active, onPress, a11y }: { label: string; active: boolean
 export default function FullscreenMap() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = insets.bottom;
-  const { focus: focusParam } = useLocalSearchParams<{ focus?: string }>();
+  const { focus: focusParam, toplanma, lat, lon } = useLocalSearchParams<{ focus?: string; toplanma?: string; lat?: string; lon?: string }>();
   const { userCoords, location, settings } = useApp();
+  // Toplanma alanı listesinden "Haritada göster": harita o noktada açılır ve kartı seçili gelir.
+  const target = useMemo(
+    () => (toplanma && Number.isFinite(Number(lat)) && Number.isFinite(Number(lon)) ? { latitude: Number(lat), longitude: Number(lon) } : null),
+    [toplanma, lat, lon],
+  );
   const events = useVisibleQuakes();
   const { reports } = useReports();
-  const nearby = useNearbyAssembly(userCoords, 10);
+  const nearby = useNearbyAssembly(target ?? userCoords, 10);
   const family = useFamily();
   const mapRef = useRef<QuakeMapHandle>(null);
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
   const [layersOpen, setLayersOpen] = useState(false);
-  const [selection, setSelection] = useState<MapSelection | null>(null);
+  const [selection, setSelection] = useState<MapSelection | null>(target ? { kind: 'assembly', id: toplanma! } : null);
   const [hours, setHours] = useState<number>(24);
   const [minMag, setMinMag] = useState<number>(0);
   const [filter, setFilter] = useState<ReportFilter>('all');
@@ -64,7 +69,10 @@ export default function FullscreenMap() {
     () => events.filter((e) => Date.now() - Date.parse(e.primary.occurredAt) <= hours * 3600_000 && (e.primary.magnitude ?? 0) >= minMag),
     [events, hours, minMag],
   );
-  const focus = useMemo(() => events.find((e) => e.id === focusParam) ?? shown[0] ?? null, [events, shown, focusParam]);
+  const focus = useMemo(
+    () => (target ? null : (events.find((e) => e.id === focusParam) ?? shown[0] ?? null)),
+    [target, events, shown, focusParam],
+  );
   const shownReports = useMemo(() => (filter === 'all' ? reports : reports.filter((r) => r.category === filter)), [reports, filter]);
 
   // Aile üyelerinin izinli son konumları (yalnızca çevrimiçi grup; 30 dk'dan eskisi "eski" işaretlenir).
@@ -178,6 +186,8 @@ export default function FullscreenMap() {
         ref={mapRef}
         events={shown}
         focus={focus}
+        initialCenter={target ?? undefined}
+        initialZoom={target ? 16 : undefined}
         reports={shownReports}
         assemblyPoints={nearby.points}
         family={familyPins}

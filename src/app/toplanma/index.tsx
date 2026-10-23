@@ -2,10 +2,10 @@ import { ListSkeleton } from '@/components/Skeleton';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Banner, Button, Card, StateMessage } from '@/components/ui';
-import { EDEVLET_ASSEMBLY_URL, getSaved, openDirections, toggleSaved } from '@/features/assembly-points/api';
+import { EDEVLET_ASSEMBLY_URL, getSaved, openDirections, openInMaps, toggleSaved } from '@/features/assembly-points/api';
 import { saveMyPoint } from '@/features/assembly-points/mine';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { CompassToTarget } from '@/features/sensors/Compass';
@@ -61,7 +61,25 @@ export default function AssemblyScreen() {
       </AppText>
       <View style={{ flexDirection: 'row', gap: spacing.sm }}>
         <Button style={{ flex: 1 }} label="Yol tarifi" icon="walk-outline" onPress={() => openDirections(p)} />
-        <Button style={{ flex: 1 }} label="Kaynak" icon="open-outline" variant="secondary" onPress={() => Linking.openURL(p.sourceUrl)} />
+        <Button
+          style={{ flex: 1 }}
+          label="Haritada göster"
+          icon="map-outline"
+          variant="secondary"
+          onPress={() => router.push({ pathname: '/harita-tam', params: { toplanma: p.id, lat: String(p.latitude), lon: String(p.longitude) } })}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', gap: spacing.md, justifyContent: 'flex-end' }}>
+        <Pressable onPress={() => openInMaps(p)} accessibilityRole="link" hitSlop={8}>
+          <AppText variant="label" color={colors.primary}>
+            {Platform.OS === 'ios' ? 'Apple Haritalar’da aç' : 'Haritalar’da aç'}
+          </AppText>
+        </Pressable>
+        <Pressable onPress={() => Linking.openURL(p.sourceUrl)} accessibilityRole="link" hitSlop={8}>
+          <AppText variant="label" color={colors.primary}>
+            Resmî kaynak
+          </AppText>
+        </Pressable>
       </View>
     </Card>
   );

@@ -3,6 +3,7 @@ import { readJson, writeJson } from '@/services/storage';
 import { requireSupabase } from '@/services/supabase';
 import type { AssemblyPoint } from '@/types/assembly';
 import { distanceKm, type LatLng } from '@/utils/geo';
+import { displayPoint } from './format';
 
 type Row = {
   id: string;
@@ -23,21 +24,22 @@ type Row = {
 const COLUMNS =
   'id, name, address, province, district, neighborhood, latitude, longitude, capacity, source_name, source_url, source_published_at, imported_at';
 
-const mapRow = (r: Row): AssemblyPoint => ({
-  id: r.id,
-  name: r.name,
-  address: r.address,
-  province: r.province,
-  district: r.district,
-  neighborhood: r.neighborhood,
-  latitude: r.latitude,
-  longitude: r.longitude,
-  capacity: r.capacity,
-  sourceName: r.source_name,
-  sourceUrl: r.source_url,
-  sourcePublishedAt: r.source_published_at,
-  importedAt: r.imported_at,
-});
+const mapRow = (r: Row): AssemblyPoint =>
+  displayPoint({
+    id: r.id,
+    name: r.name,
+    address: r.address,
+    province: r.province,
+    district: r.district,
+    neighborhood: r.neighborhood,
+    latitude: r.latitude,
+    longitude: r.longitude,
+    capacity: r.capacity,
+    sourceName: r.source_name,
+    sourceUrl: r.source_url,
+    sourcePublishedAt: r.source_published_at,
+    importedAt: r.imported_at,
+  });
 
 export type NearbyResult = { points: (AssemblyPoint & { distanceKm: number })[]; fetchedAt: string; fromCache: boolean };
 
@@ -73,7 +75,7 @@ export async function fetchNearby(center: LatLng, radiusKm = 5): Promise<NearbyR
       'assembly-nearby',
     );
     if (cached && distanceKm(cached.center, center) < radiusKm) {
-      return { points: sortByDistance(cached.points, center, radiusKm), fetchedAt: cached.fetchedAt, fromCache: true };
+      return { points: sortByDistance(cached.points.map(displayPoint), center, radiusKm), fetchedAt: cached.fetchedAt, fromCache: true };
     }
     throw e;
   }
@@ -81,7 +83,7 @@ export async function fetchNearby(center: LatLng, radiusKm = 5): Promise<NearbyR
 
 /** Kaydedilen (favori) alanlar — çevrimdışı erişilebilir. */
 export async function getSaved(): Promise<AssemblyPoint[]> {
-  return (await readJson<AssemblyPoint[]>('assembly-saved')) ?? [];
+  return ((await readJson<AssemblyPoint[]>('assembly-saved')) ?? []).map(displayPoint);
 }
 export async function toggleSaved(p: AssemblyPoint): Promise<AssemblyPoint[]> {
   const saved = await getSaved();
@@ -104,3 +106,15 @@ export async function openDirections(p: { latitude: number; longitude: number; n
 
 /** Resmî sorgu: e-Devlet AFAD Acil Toplanma Alanı Sorgulama (giriş gerektirir). */
 export const EDEVLET_ASSEMBLY_URL = 'https://www.turkiye.gov.tr/afet-ve-acil-durum-yonetimi-acil-toplanma-alani-sorgulama';
+
+/** Noktayı cihazın harita uygulamasında (Apple Haritalar / Google Haritalar) işaretli olarak açar. */
+export async function openInMaps(p: { latitude: number; longitude: number; name: string }) {
+  const ll = `${p.latitude},${p.longitude}`;
+  const url =
+    Platform.OS === 'ios'
+      ? `http://maps.apple.com/?ll=${ll}&q=${encodeURIComponent(p.name)}`
+      : Platform.OS === 'android'
+        ? `geo:${ll}?q=${ll}(${encodeURIComponent(p.name)})`
+        : `https://www.google.com/maps/search/?api=1&query=${ll}`;
+  await Linking.openURL(url);
+}

@@ -8,7 +8,7 @@ import type { EarthquakeEvent } from '@/types/earthquake';
 import type { UserReport } from '@/types/report';
 import { distanceKm, formatDistance, type LatLng } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
-import { openDirections } from '../assembly-points/api';
+import { openDirections, openInMaps } from '../assembly-points/api';
 import { formatDepth, formatMagnitude, placeTitle, sourceLabel } from '../earthquakes/format';
 import { CATEGORY_META, reportHeadline } from '../reports/categories';
 import type { MapSelection } from './QuakeMap';
@@ -84,7 +84,10 @@ export function SelectionCard({
           </AppText>
         ) : null}
         <AppText variant="caption">Kaynak: {p.sourceName}</AppText>
-        <Button label="Yol tarifi aç" icon="walk-outline" onPress={() => openDirections(p)} />
+        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+          <Button style={{ flex: 1 }} label="Yol tarifi" icon="walk-outline" onPress={() => openDirections(p)} />
+          <Button style={{ flex: 1 }} label="Haritalar’da aç" icon="open-outline" variant="secondary" onPress={() => openInMaps(p)} />
+        </View>
         <AppText variant="caption">Afet sonrası yollar kapanmış olabilir; rota güvenliği garanti edilmez.</AppText>
       </>
     );
