@@ -47,7 +47,7 @@ export default function FullscreenMap() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = insets.bottom;
   const { focus: focusParam, toplanma, lat, lon } = useLocalSearchParams<{ focus?: string; toplanma?: string; lat?: string; lon?: string }>();
-  const { userCoords, location, settings } = useApp();
+  const { userCoords, location, settings, quakes } = useApp();
   // Toplanma alanı listesinden "Haritada göster": harita o noktada açılır ve kartı seçili gelir.
   const target = useMemo(
     () => (toplanma && Number.isFinite(Number(lat)) && Number.isFinite(Number(lon)) ? { latitude: Number(lat), longitude: Number(lon) } : null),
@@ -227,6 +227,11 @@ export default function FullscreenMap() {
         ) : (
           <MapLegend />
         )}
+        {quakes.error ? (
+          <AppText variant="caption" color={colors.warning} style={styles.count}>
+            {quakes.error}
+          </AppText>
+        ) : null}
         <AppText variant="caption" style={styles.count}>
           {shown.length} deprem · {shownReports.length} bildirim · {mapAssembly.length} toplanma alanı
           {inView.status === 'zoom-in' ? ' (tümü için yakınlaştırın)' : ''}
