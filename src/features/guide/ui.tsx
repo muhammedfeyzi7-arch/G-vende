@@ -1,18 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { Linking, Pressable, View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 import { formatDateTr } from '@/utils/time';
-import { CHECKED_AT, CONTENT_VERSION, isStale, type Source, type QUICK_LINKS } from './content';
-
-type QuickTarget = (typeof QUICK_LINKS)[number]['target'];
-
-export function openGuideTarget(t: QuickTarget) {
-  if (t.kind === 'topic') router.push({ pathname: '/rehber/[id]', params: { id: t.id } });
-  else if (t.kind === 'cat') router.push({ pathname: '/rehber/kategori/[id]', params: { id: t.id } });
-  else router.push(t.href);
-}
+import { CHECKED_AT, CONTENT_VERSION, isStale, type Source } from './content';
 
 /** "İnternetsiz çalışır · Son doğrulama …" satırı; doğrulama eskiyse açıkça uyarır. */
 export function OfflineNote() {

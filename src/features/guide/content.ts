@@ -141,7 +141,10 @@ export const TOPICS: Topic[] = [
       },
     ],
     why: [
-      { t: 'Depremde yaralanmaların önemli bir kısmı devrilen eşyalar, kırılan camlar ve sarsıntıda düşmekten kaynaklanır; Çök-Kapan-Tutun baş ve boynu korur, düşmeyi önler.', src: [A, B] },
+      {
+        t: 'Depremde yaralanmaların önemli bir kısmı devrilen eşyalar, kırılan camlar ve sarsıntıda düşmekten kaynaklanır; Çök-Kapan-Tutun baş ve boynu korur, düşmeyi önler.',
+        src: [A, B],
+      },
     ],
     dontList: [
       { t: 'Merdivenlere veya çıkışlara koşmayın; sarsıntı sırasında binayı terk etmeye çalışmayın.', src: [A, B] },
@@ -168,7 +171,12 @@ export const TOPICS: Topic[] = [
       { t: 'Taş veya kaya düşebilecek yamaçların altındaysanız hızla güvenli bir yere geçin.', src: [A] },
       { t: 'Deniz kıyısındaysanız sahilden uzaklaşın ve mümkün olduğunca yüksek yerlere çıkın.', src: [A, B] },
     ],
-    why: [{ t: 'Dışarıda en büyük tehlike yukarıdan düşen baca, cam, sıva ve devrilen direklerdir; kıyıda ise tsunami riski vardır.', src: [A, B] }],
+    why: [
+      {
+        t: 'Dışarıda en büyük tehlike yukarıdan düşen baca, cam, sıva ve devrilen direklerdir; kıyıda ise tsunami riski vardır.',
+        src: [A, B],
+      },
+    ],
     dontList: [
       { t: 'Bina cephelerinin, duvarların ve enerji hatlarının yakınında beklemeyin.', src: [A] },
       { t: 'Yer altındaki doğal gaz, elektrik ve kanalizasyon hatlarından gelebilecek tehlikeleri göz ardı etmeyin.', src: [A] },
@@ -184,7 +192,10 @@ export const TOPICS: Topic[] = [
       { t: 'Bulunduğunuz yer güvenliyse yolu kapatmadan sağa yanaşıp durun.', src: [A, B] },
       { t: 'Kontak anahtarını yerinde bırakın, pencereler kapalı olarak araçta bekleyin.', src: [A] },
       { t: 'Sarsıntı bitince açık alanlara gidin.', src: [A] },
-      { t: 'Ağaç, direk, köprü üstü gibi güvensiz bir yerdeyseniz aracı durdurun, anahtarı üzerinde bırakıp trafikten uzak açık bir alana geçin.', src: [A] },
+      {
+        t: 'Ağaç, direk, köprü üstü gibi güvensiz bir yerdeyseniz aracı durdurun, anahtarı üzerinde bırakıp trafikten uzak açık bir alana geçin.',
+        src: [A],
+      },
       {
         t: 'Tünel veya kapalı otoparkta araçtan inip aracın yanına yan yatarak başınızı koruyun.',
         src: [A],
@@ -236,15 +247,16 @@ export const TOPICS: Topic[] = [
     doList: [
       { t: 'Önce kendi güvenliğinizden emin olun, sonra çevrenizde yardıma ihtiyacı olan var mı bakın.', src: [A, B] },
       { t: 'Elektrik, gaz ve su vanalarını kapatın; soba ve ısıtıcıları söndürün.', src: [A, B] },
-      { t: 'Etrafınızı kontrol edip güvenli olduğundan emin olduktan sonra binayı daha önce belirlediğiniz yoldan terk edin.', src: [A, B] },
+      {
+        t: 'Etrafınızı kontrol edip güvenli olduğundan emin olduktan sonra binayı daha önce belirlediğiniz yoldan terk edin.',
+        src: [A, B],
+      },
       { t: 'Afet ve acil durum çantanızı alıp toplanma alanına gidin.', src: [A, B] },
       { t: 'Yaşlı, bebek, hamile ve engelli bireylere yardımcı olun.', src: [A, B] },
       { t: 'Yetkililerin uyarılarını radyo ve televizyondan takip edin.', src: [A] },
       { t: 'Deniz kenarındaysanız tsunami riskine karşı yüksek yerlere çıkın.', src: [B] },
     ],
-    why: [
-      { t: 'Büyük depremlerden sonra artçı sarsıntılar mutlaka olur ve hasarlı binalarda yeni yıkımlara yol açabilir.', src: [A] },
-    ],
+    why: [{ t: 'Büyük depremlerden sonra artçı sarsıntılar mutlaka olur ve hasarlı binalarda yeni yıkımlara yol açabilir.', src: [A] }],
     dontList: [
       { t: 'Sarsıntılar tamamen bitene kadar hasarlı binalara girmeyin; eşya almak için geri dönmeyin.', src: [A] },
       { t: 'Cadde ve sokakları kapatmayın; acil yardım araçları için yolu boş bırakın.', src: [A] },
@@ -263,7 +275,12 @@ export const TOPICS: Topic[] = [
       { t: 'Kapı ve pencereleri açın, binayı hemen terk edin.', src: [A, B] },
       { t: 'Yangın veya gaz kaçağını güvenli bir yerden 112’ye bildirin.', src: [A, 'acm112'] },
     ],
-    why: [{ t: 'Depremlerden sonra çıkan yangınlar sık görülen ikincil afetlerdir; tek bir kıvılcım gaz birikmiş ortamda patlamaya yol açabilir.', src: [A] }],
+    why: [
+      {
+        t: 'Depremlerden sonra çıkan yangınlar sık görülen ikincil afetlerdir; tek bir kıvılcım gaz birikmiş ortamda patlamaya yol açabilir.',
+        src: [A],
+      },
+    ],
     dontList: [
       { t: 'Kibrit, çakmak yakmayın.', src: [A] },
       { t: 'Elektrik düğmelerine dokunmayın.', src: [A] },
@@ -280,9 +297,18 @@ export const TOPICS: Topic[] = [
     doList: [
       { t: 'Paniklemeden durumunuzu ve vücudunuzu kontrol edin.', src: [A] },
       { t: 'Enerjinizi korumak için hareketlerinizi kontrol altında tutun.', src: [A] },
-      { t: 'Ellerinizi veya ayaklarınızı kullanabiliyorsanız su, kalorifer veya gaz borularına ya da zemine vurarak varlığınızı duyurun.', src: [A] },
-      { t: 'Kurtarma ekiplerinin seslerini dinlemeye çalışın; duyduğunuzda seslenin, ama sesinizi ve enerjinizi kontrollü kullanın.', src: [A] },
-      { t: 'Telefonunuz çalışıyorsa 112’yi arayın; uygulamadaki Enkaz Altı Modu internetsiz siren ve flaşla yerinizi duyurmanıza yardım eder.', src: ['acm112', 'guvende'] },
+      {
+        t: 'Ellerinizi veya ayaklarınızı kullanabiliyorsanız su, kalorifer veya gaz borularına ya da zemine vurarak varlığınızı duyurun.',
+        src: [A],
+      },
+      {
+        t: 'Kurtarma ekiplerinin seslerini dinlemeye çalışın; duyduğunuzda seslenin, ama sesinizi ve enerjinizi kontrollü kullanın.',
+        src: [A],
+      },
+      {
+        t: 'Telefonunuz çalışıyorsa 112’yi arayın; uygulamadaki Enkaz Altı Modu internetsiz siren ve flaşla yerinizi duyurmanıza yardım eder.',
+        src: ['acm112', 'guvende'],
+      },
       {
         t: 'Toz soluk almanızı zorlaştırıyorsa ağzınızı ve burnunuzu bir kumaşla örtün.',
         src: [],
@@ -290,7 +316,12 @@ export const TOPICS: Topic[] = [
         note: 'Okunan AFAD kaynaklarında yok; Sağlık Bakanlığı/Kızılay kaynağıyla doğrulanmalı.',
       },
     ],
-    why: [{ t: 'Kurtarma ekipleri size ulaşmak için çalışır; enerjinizi ve sesinizi korumak, sizi duyabilecekleri ana kadar dayanmanızı kolaylaştırır.', src: [A] }],
+    why: [
+      {
+        t: 'Kurtarma ekipleri size ulaşmak için çalışır; enerjinizi ve sesinizi korumak, sizi duyabilecekleri ana kadar dayanmanızı kolaylaştırır.',
+        src: [A],
+      },
+    ],
     dontList: [
       { t: 'Hareket kabiliyetiniz kısıtlıysa çıkmak için hayatınızı riske atacak hareketlere kalkışmayın.', src: [A] },
       { t: 'Kibrit veya çakmak yakmayın (gaz kaçağı olabilir).', src: [A] },
@@ -307,14 +338,28 @@ export const TOPICS: Topic[] = [
     short: 'Plan, buluşma yeri, durum paylaşımı',
     art: 'family',
     doList: [
-      { t: 'Eve ulaşamayacağınız durumlar için ailenizle iletişim yolunu, alternatif buluşma yerlerini ve bölge dışında bir bağlantı kişisini önceden belirleyin.', src: [A] },
+      {
+        t: 'Eve ulaşamayacağınız durumlar için ailenizle iletişim yolunu, alternatif buluşma yerlerini ve bölge dışında bir bağlantı kişisini önceden belirleyin.',
+        src: [A],
+      },
       { t: 'Afete hazırlık planını evdeki herkesle birlikte yapın, altı ayda bir gözden geçirin ve tatbikat yapın.', src: [A] },
       { t: 'Telefonu yalnızca acil durum ve yangın bildirmek için kullanın; hatları meşgul etmeyin.', src: [A] },
-      { t: 'GÜVENDE’de “Güvendeyim” SMS’i telefonunuzun kendi SMS uygulamasıyla gider; internet gerekmez, gönder’e siz basarsınız.', src: ['guvende'] },
+      {
+        t: 'GÜVENDE’de “Güvendeyim” SMS’i telefonunuzun kendi SMS uygulamasıyla gider; internet gerekmez, gönder’e siz basarsınız.',
+        src: ['guvende'],
+      },
     ],
-    why: [{ t: 'Şebekeler yoğunken herkesin herkesi araması iletişimi daha da zorlaştırır; önceden yapılan plan aileyi tek bir buluşma noktasında toplar.', src: [A] }],
+    why: [
+      {
+        t: 'Şebekeler yoğunken herkesin herkesi araması iletişimi daha da zorlaştırır; önceden yapılan plan aileyi tek bir buluşma noktasında toplar.',
+        src: [A],
+      },
+    ],
     dontList: [
-      { t: 'Bir aile üyesinin yanıt vermemesini tek başına “tehlikede” işareti olarak yorumlamayın: şarjı bitmiş, şebeke yoğun veya telefonu yanında olmayabilir. Buluşma planına uyun ve gerekirse 112’ye bildirin.', src: ['guvende'] },
+      {
+        t: 'Bir aile üyesinin yanıt vermemesini tek başına “tehlikede” işareti olarak yorumlamayın: şarjı bitmiş, şebeke yoğun veya telefonu yanında olmayabilir. Buluşma planına uyun ve gerekirse 112’ye bildirin.',
+        src: ['guvende'],
+      },
     ],
     link: { label: 'Ailem', href: '/ailem' },
   },
@@ -331,14 +376,23 @@ export const TOPICS: Topic[] = [
       { t: 'Kombi, şofben, buzdolabı, fırın ve soba gibi cihazları duvara veya yere sabitleyin.', src: [A, B], g: 'furniture' },
       { t: 'Avize ve klima gibi asılı cihazları ağırlığını taşıyacak şekilde, pencerelerden uzağa asın.', src: [A], g: 'furniture' },
       { t: 'Ağır eşya bulunan dolap kapaklarına kilit takın; raflara bant veya tel ekleyin.', src: [A], g: 'furniture' },
-      { t: 'Yatağı pencere ve devrilebilecek ağır dolapların yanına koymayın; üstünde ağır eşyalı raf bulundurmayın.', src: [A], g: 'furniture' },
+      {
+        t: 'Yatağı pencere ve devrilebilecek ağır dolapların yanına koymayın; üstünde ağır eşyalı raf bulundurmayın.',
+        src: [A],
+        g: 'furniture',
+      },
       { t: 'Çıkış yollarını eşyalardan temizleyin, işaretleyin ve aydınlatın.', src: [A] },
       { t: 'Yanıcı ve zehirli maddeleri kilitli, alt raflarda ve kırılmayacak biçimde saklayın.', src: [A, B] },
       { t: 'Uygun bir yangın söndürme cihazı bulundurun; yerini herkes bilsin, bakımı yapılsın.', src: [A] },
       { t: 'Konutunuza deprem sigortası yaptırın.', src: [A] },
       { t: 'Evdekilerle Çök-Kapan-Tutun tatbikatı yapın.', src: [B] },
     ],
-    why: [{ t: 'Binanın yanı sıra eşyalar da yaralanmaya yol açar; sabitlenmiş eşya ve açık çıkış yolu sarsıntıda ve sonrasında hayat kurtarır.', src: [A] }],
+    why: [
+      {
+        t: 'Binanın yanı sıra eşyalar da yaralanmaya yol açar; sabitlenmiş eşya ve açık çıkış yolu sarsıntıda ve sonrasında hayat kurtarır.',
+        src: [A],
+      },
+    ],
     dontList: [
       { t: 'Taşıyıcı kolon ve duvarlara dokunan tadilat yapmayın.', src: [B] },
       { t: 'Elektrik ve gaz tesisatında kendi başınıza işlem yapmayın; hasarlı kablo ve bağlantıları uzmanına onartın.', src: [B] },
@@ -352,11 +406,19 @@ export const TOPICS: Topic[] = [
     short: 'Kopyalar, buluşma yeri, bağlantı kişisi',
     art: 'prep-plan',
     doList: [
-      { t: 'Kimlik, tapu, sigorta ve sağlık belgelerinin kopyalarını su geçirmez biçimde saklayın; bir kopyasını bölge dışındaki bağlantı kişinize verin.', src: [A] },
+      {
+        t: 'Kimlik, tapu, sigorta ve sağlık belgelerinin kopyalarını su geçirmez biçimde saklayın; bir kopyasını bölge dışındaki bağlantı kişinize verin.',
+        src: [A],
+      },
       { t: 'Alternatif buluşma yerlerini ve bölge dışı bağlantı kişisini ailece belirleyin.', src: [A] },
       { t: 'Planı altı ayda bir gözden geçirip tatbikat yapın.', src: [A] },
     ],
-    why: [{ t: 'Afet anında eve ulaşılamayabilir ve şebekeler kesilebilir; önceden yapılan plan ailenin birbirini bulmasını sağlar.', src: [A] }],
+    why: [
+      {
+        t: 'Afet anında eve ulaşılamayabilir ve şebekeler kesilebilir; önceden yapılan plan ailenin birbirini bulmasını sağlar.',
+        src: [A],
+      },
+    ],
     dontList: [{ t: 'Önemli belgelerin tek kopyasını evde bırakmayın.', src: [A] }],
     link: { label: 'Ailem', href: '/ailem' },
   },
@@ -368,9 +430,15 @@ export const TOPICS: Topic[] = [
     art: 'prep-special',
     doList: [
       // AFAD: planı evdeki herkesle yapın + deprem sonrasında bu bireylere yardım edin (iki maddenin birleşimi).
-      { t: 'Hazırlık planında, deprem sonrasında yaşlı, bebek, hamile ve engelli aile bireylerine kimin yardım edeceğini belirleyin.', src: [A, B] },
+      {
+        t: 'Hazırlık planında, deprem sonrasında yaşlı, bebek, hamile ve engelli aile bireylerine kimin yardım edeceğini belirleyin.',
+        src: [A, B],
+      },
       // AFAD: tekerlekli sandalyede tekerlekleri kilitle, baş ve boynu koru + planı tatbik edin.
-      { t: 'Evde tekerlekli sandalye kullanan biri varsa, sarsıntıda tekerlekleri kilitleyip başını ve boynunu korumayı birlikte tatbik edin.', src: [A] },
+      {
+        t: 'Evde tekerlekli sandalye kullanan biri varsa, sarsıntıda tekerlekleri kilitleyip başını ve boynunu korumayı birlikte tatbik edin.',
+        src: [A],
+      },
     ],
     why: [{ t: 'Deprem sonrasında yaşlı, bebek, hamile ve engelli bireyler başkalarının yardımına ihtiyaç duyabilir.', src: [A, B] }],
     dontList: [],
@@ -383,12 +451,17 @@ export const TOPICS: Topic[] = [
     short: 'İlk 72 saat için',
     art: 'kit',
     doList: [
-      { t: 'Yardım ekipleri ulaşana kadar ilk 72 saat için acil ihtiyaçlarınızı ve değerli belgelerinizi içeren bir afet ve acil durum çantası hazırlayın.', src: [B] },
+      {
+        t: 'Yardım ekipleri ulaşana kadar ilk 72 saat için acil ihtiyaçlarınızı ve değerli belgelerinizi içeren bir afet ve acil durum çantası hazırlayın.',
+        src: [B],
+      },
       { t: 'Belge kopyalarını su geçirmez bir kılıfta çantaya koyun.', src: [A] },
       { t: 'Sarsıntı bittikten sonra çantanızı alıp toplanma alanına gidin.', src: [A, B] },
     ],
     why: [{ t: 'Afetin ilk günlerinde suya, ilaca ve belgelere erişim zorlaşabilir.', src: [B] }],
-    dontList: [{ t: 'Çantayı ulaşılması zor bir yerde saklamayın.', src: [], status: 'review', note: 'Genel öneri; kaynakta açık ifade yok.' }],
+    dontList: [
+      { t: 'Çantayı ulaşılması zor bir yerde saklamayın.', src: [], status: 'review', note: 'Genel öneri; kaynakta açık ifade yok.' },
+    ],
     link: { label: 'Çanta kontrol listesi', href: '/canta' },
   },
 ];
@@ -416,14 +489,3 @@ export const REVIEW_ITEMS = TOPICS.flatMap((t) =>
 export function isStale(now = Date.now()): boolean {
   return now - Date.parse(CHECKED_AT) > STALE_AFTER_DAYS * 24 * 3600_000;
 }
-
-/** Ana sayfa "ACİL DURUM" kartındaki kısayollar */
-export const QUICK_LINKS: { label: string; target: { kind: 'topic'; id: string } | { kind: 'cat'; id: Category } | { kind: 'route'; href: '/canta' | '/ailem' } ; art: ArtId; tone: string }[] = [
-  { label: 'Deprem anında ne yapmalıyım?', target: { kind: 'topic', id: 'during-indoor' }, art: 'indoor', tone: '#E5484D' },
-  { label: 'Deprem sonrasında ne yapmalıyım?', target: { kind: 'topic', id: 'after-first' }, art: 'after', tone: '#F08C2E' },
-  { label: 'Enkaz altında kaldım', target: { kind: 'topic', id: 'trapped' }, art: 'trapped', tone: '#C2410C' },
-  { label: 'Dışarıdaysam', target: { kind: 'topic', id: 'during-outdoor' }, art: 'outdoor', tone: '#12A37F' },
-  { label: 'Araçtaysam', target: { kind: 'topic', id: 'during-vehicle' }, art: 'vehicle', tone: '#2F7CF6' },
-  { label: 'Aileme nasıl ulaşırım?', target: { kind: 'topic', id: 'family' }, art: 'family', tone: '#7C5CF6' },
-  { label: 'Acil durum çantam hazır mı?', target: { kind: 'route', href: '/canta' }, art: 'kit', tone: '#B7791F' },
-];

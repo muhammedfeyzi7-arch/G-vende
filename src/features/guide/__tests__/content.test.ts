@@ -4,7 +4,6 @@ import {
   CHECKED_AT,
   EMERGENCY_NUMBER,
   PUBLISHED_TOPICS,
-  QUICK_LINKS,
   REVIEW_ITEMS,
   SOURCES,
   TOPICS,
@@ -41,17 +40,7 @@ describe('acil durum rehberi içeriği', () => {
     const all = PUBLISHED_TOPICS.flatMap((t) => [...shown(t.doList), ...shown(t.dontList)].map((i) => i.t)).join(' ');
     expect(all).not.toMatch(/hayat üçgeni/i);
   });
-  it('ana sayfa kısayolları ve kategoriler var olan konulara gider; istenen 7 başlık mevcut', () => {
-    expect(QUICK_LINKS.map((q) => q.label)).toEqual([
-      'Deprem anında ne yapmalıyım?',
-      'Deprem sonrasında ne yapmalıyım?',
-      'Enkaz altında kaldım',
-      'Dışarıdaysam',
-      'Araçtaysam',
-      'Aileme nasıl ulaşırım?',
-      'Acil durum çantam hazır mı?',
-    ]);
-    for (const q of QUICK_LINKS) if (q.target.kind === 'topic') expect(topicById(q.target.id)).not.toBeNull();
+  it('kategoriler var olan konulara gider; konu kimlikleri benzersiz', () => {
     for (const c of CATEGORIES) expect(PUBLISHED_TOPICS.some((t) => t.cat === c.id)).toBe(true);
     expect(new Set(TOPICS.map((t) => t.id)).size).toBe(TOPICS.length);
   });
