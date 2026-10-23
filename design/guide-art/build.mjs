@@ -6,7 +6,7 @@
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { SCENES } from './scenes.mjs';
+import { SCENES, wideCrop } from './scenes.mjs';
 
 const require = createRequire(import.meta.url);
 let playwright;
@@ -17,6 +17,10 @@ try {
 }
 
 const out = process.argv[2] ?? 'assets/guide/art';
+// Liste satırları için yatay kesitler ("-wide"), 720×360 JPEG.
+for (const [name, sc] of Object.entries({ ...SCENES })) {
+  if (sc.wide) SCENES[`${name}-wide`] = { svg: wideCrop(sc.svg, sc.wide), size: [sc.wide[2], sc.wide[3]], scale: 720 / sc.wide[2] };
+}
 mkdirSync(out, { recursive: true });
 const browser = await playwright.chromium.launch();
 const page = await browser.newPage();

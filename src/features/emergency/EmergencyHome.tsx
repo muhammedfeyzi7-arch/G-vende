@@ -31,11 +31,11 @@ const TOOLS = [
 ] as const;
 
 const GUIDE: { id: string; title: string; sub: string; img: GuideImgKey }[] = [
-  { id: 'during-indoor', title: 'Deprem anında ne yapmalıyım?', sub: 'Çök · Kapan · Tutun', img: 'drop-cover-hold' },
-  { id: 'after-first', title: 'Deprem sonrasında ne yapmalıyım?', sub: 'Güvenli şekilde hareket edin', img: 'after-quake' },
-  { id: 'trapped', title: 'Enkaz altında kaldım', sub: 'Sakin kalın, yardım sinyali verin', img: 'trapped' },
-  { id: 'during-outdoor', title: 'Dışarıdaysam', sub: 'Açık alanda güvenli şekilde bekleyin', img: 'outdoor' },
-  { id: 'during-vehicle', title: 'Araçtaysam', sub: 'Yolu kapatmadan sağa yanaşıp durun', img: 'vehicle' },
+  { id: 'during-indoor', title: 'Deprem anında ne yapmalıyım?', sub: 'Çök · Kapan · Tutun', img: 'drop-cover-hold-wide' },
+  { id: 'after-first', title: 'Deprem sonrasında ne yapmalıyım?', sub: 'Güvenli şekilde hareket edin', img: 'after-quake-wide' },
+  { id: 'trapped', title: 'Enkaz altında kaldım', sub: 'Sakin kalın, yardım sinyali verin', img: 'trapped-wide' },
+  { id: 'during-outdoor', title: 'Dışarıdaysam', sub: 'Açık alanda güvenli şekilde bekleyin', img: 'outdoor-wide' },
+  { id: 'during-vehicle', title: 'Araçtaysam', sub: 'Yolu kapatmadan sağa yanaşıp durun', img: 'vehicle-wide' },
 ];
 
 function SectionHead({ title, sub, onAll }: { title: string; sub?: string; onAll: () => void }) {
@@ -160,11 +160,11 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
           <AppText variant="heading" color="#fff" style={{ fontSize: narrow ? 14 : 16 }}>
             Hemen arayın
           </AppText>
-          <AppText variant="caption" color="#FFD9DC" numberOfLines={1} style={{ fontSize: narrow ? 10 : 11.5 }}>
+          <AppText variant="caption" color="#FFD9DC" numberOfLines={1} style={{ fontSize: narrow ? 9 : 10.5 }}>
             Polis · İtfaiye · Sağlık · AFAD
           </AppText>
         </View>
-        <AppText variant="display" color="#fff" style={{ fontSize: narrow ? 38 : 50, lineHeight: narrow ? 44 : 56, fontWeight: '800' }}>
+        <AppText variant="display" color="#fff" style={{ fontSize: narrow ? 34 : 46, lineHeight: narrow ? 40 : 52, fontWeight: '800' }}>
           112
         </AppText>
         <View style={styles.sosChev}>
@@ -280,8 +280,8 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
             accessibilityLabel={`${g.title}. ${g.sub}`}
             style={({ pressed }) => [styles.guide, pressed && { opacity: 0.88 }]}
           >
-            <View style={{ width: pageW * 0.34, alignSelf: 'stretch' }}>
-              <GuideImage img={g.img} style={{ width: '100%', height: '100%' }} />
+            <View style={{ width: pageW * 0.36, alignSelf: 'stretch' }}>
+              <GuideImage img={g.img} style={{ width: '100%', height: '100%' }} cover />
               <EdgeFade color={colors.surface} size={28} />
             </View>
             <View style={{ flex: 1, gap: 3, paddingVertical: spacing.sm }}>

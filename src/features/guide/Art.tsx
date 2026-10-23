@@ -27,6 +27,11 @@ export const GUIDE_IMG = {
   checklist: require('../../../assets/guide/art/checklist.jpg'),
   logo: require('../../../assets/guide/art/logo.png'),
   'quake-card': require('../../../assets/guide/art/quake-card.png'),
+  'drop-cover-hold-wide': require('../../../assets/guide/art/drop-cover-hold-wide.jpg'),
+  'after-quake-wide': require('../../../assets/guide/art/after-quake-wide.jpg'),
+  'trapped-wide': require('../../../assets/guide/art/trapped-wide.jpg'),
+  'outdoor-wide': require('../../../assets/guide/art/outdoor-wide.jpg'),
+  'vehicle-wide': require('../../../assets/guide/art/vehicle-wide.jpg'),
 } as const;
 export type GuideImgKey = keyof typeof GUIDE_IMG;
 
@@ -35,7 +40,10 @@ const TRANSPARENT: GuideImgKey[] = ['drop-cover-hold-hero', 'logo', 'quake-card'
 
 /** Konu görseli → dosya ve ekran okuyucu açıklaması. */
 const SCENES: Record<ArtId, { img: GuideImgKey; label: string }> = {
-  indoor: { img: 'drop-cover-hold', label: 'Masanın altında dizlerinin üzerine çökmüş, bir koluyla başını ve ensesini koruyan, diğer eliyle masa ayağına tutunan kişi' },
+  indoor: {
+    img: 'drop-cover-hold',
+    label: 'Masanın altında dizlerinin üzerine çökmüş, bir koluyla başını ve ensesini koruyan, diğer eliyle masa ayağına tutunan kişi',
+  },
   outdoor: { img: 'outdoor', label: 'Binalardan, ağaçtan ve direkten uzak açık alanda çömelip başını koruyan kişi' },
   vehicle: { img: 'vehicle', label: 'Yolun sağ kenarına yanaşıp dörtlü flaşörle durmuş araç' },
   transit: { img: 'transit', label: 'Metro vagonunda dikey direğe sıkıca tutunan kişi' },
@@ -46,15 +54,29 @@ const SCENES: Record<ArtId, { img: GuideImgKey; label: string }> = {
   family: { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
   'prep-home': { img: 'home-safety', label: 'Ev, yangın söndürücü ve güvenlik kalkanı' },
   'prep-plan': { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
-  'prep-special': { img: 'special-needs', label: 'Frenleri kilitli tekerlekli sandalyedeki kişi, ilaç çantası ve evcil hayvan taşıma çantası' },
+  'prep-special': {
+    img: 'special-needs',
+    label: 'Frenleri kilitli tekerlekli sandalyedeki kişi, ilaç çantası ve evcil hayvan taşıma çantası',
+  },
   kit: { img: 'kit', label: 'Su, fener, düdük, belge kılıfı ve ilk yardım çantası' },
 };
 
-export function GuideImage({ img, label, style }: { img: GuideImgKey; label?: string; style?: StyleProp<ImageStyle> }) {
+/** cover: yalnızca konusu güvenli alanda olan yatay kesitler ("-wide") için; kare sahneler kırpılmadan (contain) gösterilir. */
+export function GuideImage({
+  img,
+  label,
+  style,
+  cover,
+}: {
+  img: GuideImgKey;
+  label?: string;
+  style?: StyleProp<ImageStyle>;
+  cover?: boolean;
+}) {
   return (
     <Image
       source={GUIDE_IMG[img]}
-      resizeMode="contain"
+      resizeMode={cover ? 'cover' : 'contain'}
       accessible={!!label}
       accessibilityRole={label ? 'image' : undefined}
       accessibilityLabel={label}

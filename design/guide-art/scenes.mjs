@@ -9,6 +9,15 @@
 
 export const ART_BG = '#0E1A2E';
 
+/** Kare sahneden, konuyu kesmeden yatay (2:1) kesit: liste satırları için. Kenarlar düz zemin rengine yumuşar. */
+export function wideCrop(svg, [x, y, w, h]) {
+  const fade = 0.09 * w;
+  const edges = `<rect x="${x}" y="${y}" width="${fade}" height="${h}" fill="url(#eL)"/><rect x="${x + w - fade}" y="${y}" width="${fade}" height="${h}" fill="url(#eR)"/><rect x="${x}" y="${y}" width="${w}" height="${fade / 2}" fill="url(#eT)"/><rect x="${x}" y="${y + h - fade / 2}" width="${w}" height="${fade / 2}" fill="url(#eB)"/>`;
+  return svg
+    .replace('viewBox="0 0 400 400" width="400" height="400"', `viewBox="${x} ${y} ${w} ${h}" width="${w}" height="${h}"`)
+    .replace(/<\/svg>$/, `${edges}</svg>`);
+}
+
 // Palet
 const P = {
   bg: ART_BG,
@@ -549,16 +558,16 @@ function logo() {
 
 /** name → { svg, transparent } */
 export const SCENES = {
-  'drop-cover-hold': { svg: dropCoverHold(), what: 'Çök-Kapan-Tutun (masa altında, bir el masa ayağında, kol başı/enseyi korur)' },
+  'drop-cover-hold': { svg: dropCoverHold(), wide: [40, 150, 320, 160], what: 'Çök-Kapan-Tutun (masa altında, bir el masa ayağında, kol başı/enseyi korur)' },
   'drop-cover-hold-hero': { svg: dropCoverHold({ transparent: true }), transparent: true, what: 'Çök-Kapan-Tutun, saydam (kırmızı kart için)' },
   'home-safety': { svg: homeSafety(), what: 'Deprem öncesi ev güvenliği' },
   kit: { svg: kit(), what: 'Acil durum çantası' },
   'family-plan': { svg: familyPlan(), what: 'Aile iletişim ve buluşma planı' },
   furniture: { svg: furniture(), what: 'Dolap ve ağır eşya sabitleme' },
-  'after-quake': { svg: afterQuake(), what: 'Deprem sonrası güvenli hareket' },
-  trapped: { svg: trapped(), what: 'Enkaz altında mahsur kalma' },
-  outdoor: { svg: outdoor(), what: 'Açık alanda deprem güvenliği' },
-  vehicle: { svg: vehicle(), what: 'Araçta doğru davranış' },
+  'after-quake': { svg: afterQuake(), wide: [0, 118, 400, 200], what: 'Deprem sonrası güvenli hareket' },
+  trapped: { svg: trapped(), wide: [20, 150, 360, 180], what: 'Enkaz altında mahsur kalma' },
+  outdoor: { svg: outdoor(), wide: [10, 130, 380, 190], what: 'Açık alanda deprem güvenliği' },
+  vehicle: { svg: vehicle(), wide: [10, 170, 380, 190], what: 'Araçta doğru davranış' },
   transit: { svg: transit(), what: 'Metro/trende direğe tutunma' },
   'special-needs': { svg: special(), what: 'Özel ihtiyaçlı bireyler ve evcil hayvanlar' },
   checklist: { svg: checklist(), what: 'Hazırlık kontrol listesi' },
