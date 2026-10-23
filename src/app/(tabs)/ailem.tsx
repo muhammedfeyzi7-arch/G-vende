@@ -244,10 +244,10 @@ export default function FamilyScreen() {
       {/* Başlık */}
       <View style={styles.head}>
         <View style={{ flex: 1 }}>
-          <AppText variant="display" accessibilityRole="header" style={{ fontSize: 30, lineHeight: 36 }}>
+          <AppText variant="display" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 34 }}>
             Ailem
           </AppText>
-          <AppText variant="body" color={colors.textSecondary} style={{ fontSize: 13.5 }}>
+          <AppText variant="body" color={colors.textSecondary} style={{ fontSize: 12.5 }}>
             Sevdiklerinizin güvenliği her zaman sizinle.
           </AppText>
         </View>
@@ -432,7 +432,7 @@ export default function FamilyScreen() {
             <View style={[styles.actionIcon, { backgroundColor: a.color }]}>
               <Ionicons name={a.icon as never} size={20} color="#fff" />
             </View>
-            <AppText variant="heading" numberOfLines={1} style={{ fontSize: cellW < 80 ? 11.5 : 13 }}>
+            <AppText variant="heading" numberOfLines={1} style={{ fontSize: cellW < 80 ? 10.5 : 11.5 }}>
               {a.title}
             </AppText>
             <AppText variant="caption" style={{ fontSize: cellW < 80 ? 9.5 : 10.5, lineHeight: cellW < 80 ? 12 : 13.5 }}>

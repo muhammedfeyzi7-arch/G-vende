@@ -40,26 +40,26 @@ function Row({ icon, color, solid, title, subtitle, value, valueColor, inline, d
       style={({ pressed }) => [styles.row, !first && styles.divider, pressed && { opacity: 0.8 }]}
     >
       <View style={[styles.icon, { backgroundColor: solid ? color : alpha(colors.textSecondary, 0.14) }]}>
-        <Icon name={icon} size={20} color={solid ? '#fff' : colors.text} />
+        <Icon name={icon} size={18} color={solid ? '#fff' : colors.text} />
       </View>
       {inline ? (
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          <AppText variant="heading" style={{ fontSize: 14.5 }}>
+          <AppText variant="heading" style={{ fontSize: 13.5 }}>
             {title}
           </AppText>
           {subtitle ? (
-            <AppText variant="caption" numberOfLines={1} style={{ flex: 1, fontSize: 12 }}>
+            <AppText variant="caption" numberOfLines={1} style={{ flex: 1, fontSize: 11 }}>
               {subtitle}
             </AppText>
           ) : null}
         </View>
       ) : (
         <View style={{ flex: 1, gap: 1 }}>
-          <AppText variant="heading" color={danger ? colors.danger : colors.text} style={{ fontSize: 14.5 }}>
+          <AppText variant="heading" color={danger ? colors.danger : colors.text} style={{ fontSize: 13.5 }}>
             {title}
           </AppText>
           {subtitle ? (
-            <AppText variant="caption" style={{ fontSize: 12 }}>
+            <AppText variant="caption" style={{ fontSize: 11 }}>
               {subtitle}
             </AppText>
           ) : null}
@@ -80,7 +80,7 @@ function Section({ title, bar, onPress, children }: { title: string; bar: string
     <View style={{ gap: spacing.sm }}>
       <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'header'} style={styles.sectionHead}>
         <View style={[styles.bar, { backgroundColor: bar }]} />
-        <AppText variant="heading" style={{ flex: 1, fontSize: 18 }}>
+        <AppText variant="heading" style={{ flex: 1, fontSize: 16.5 }}>
           {title}
         </AppText>
         {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} /> : null}
@@ -168,7 +168,7 @@ export default function SettingsScreen() {
     >
       <View style={styles.head}>
         <View style={{ flex: 1 }}>
-          <AppText variant="display" accessibilityRole="header" style={{ fontSize: 30, lineHeight: 36 }}>
+          <AppText variant="display" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 34 }}>
             Ayarlar
           </AppText>
           <AppText variant="body" color={colors.textSecondary} style={{ fontSize: 13.5 }}>
@@ -419,7 +419,7 @@ const styles = themedStyles(() => ({
   sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 28 },
   bar: { width: 5, height: 24, borderRadius: 3 },
   group: { borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: spacing.sm },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 2, minHeight: 58, paddingVertical: spacing.sm },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 2, minHeight: 50, paddingVertical: 6 },
   divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  icon: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  icon: { width: 34, height: 34, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
 }));
