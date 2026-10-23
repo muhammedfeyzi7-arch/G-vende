@@ -1,4 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
+import { FloorField } from '@/features/rubble/FloorField';
+import { floorLabel, loadFloor } from '@/features/rubble/floor';
 import * as Clipboard from 'expo-clipboard';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
@@ -56,7 +58,11 @@ export default function CallScreen() {
   }, [coords?.latitude, coords?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const shown = address ?? lastKnown;
-  const readText = [shown?.full, note.trim()].filter(Boolean).join(' — ');
+  const [floor, setFloorText] = useState<string | null>(null);
+  useEffect(() => {
+    loadFloor().then((f) => setFloorText(floorLabel(f?.floor)));
+  }, []);
+  const readText = [shown?.full, note.trim(), floor].filter(Boolean).join(' — ');
 
   return (
     <Page>
@@ -137,6 +143,7 @@ export default function CallScreen() {
           accessibilityLabel="Bina, kat ve daire tarifi"
           maxLength={120}
         />
+        <FloorField />
 
         {readText ? (
           <Button

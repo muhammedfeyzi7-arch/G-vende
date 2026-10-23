@@ -78,22 +78,38 @@ export function formatPhone(p: string): string {
   return m ? `0${m[1]} ${m[2]} ${m[3]} ${m[4]}` : p;
 }
 
-export type StatusKind = 'safe' | 'need_help';
+export type StatusKind = 'safe' | 'need_help' | 'trapped';
+
+const OPENING: Record<StatusKind, string> = {
+  safe: 'Ben güvendeyim.',
+  need_help: 'Yardıma ihtiyacım var!',
+  trapped: 'ENKAZ ALTINDAYIM! Lütfen 112’ye ve kurtarma ekiplerine bu mesajı iletin.',
+};
 
 export function buildStatusMessage(
   kind: StatusKind,
-  opts: { location: LatLng | null; meetingPoint: LocalMeetingPoint | null; note?: string; now?: Date; address?: string | null },
+  opts: {
+    location: LatLng | null;
+    meetingPoint: LocalMeetingPoint | null;
+    note?: string;
+    now?: Date;
+    address?: string | null;
+    /** "4. kat" gibi; yalnızca yardım ve enkaz mesajlarına eklenir */
+    floor?: string | null;
+  },
 ): string {
   const now = opts.now ?? new Date();
-  const parts = [kind === 'safe' ? 'Ben güvendeyim.' : 'Yardıma ihtiyacım var!'];
+  const parts = [OPENING[kind]];
   if (opts.note?.trim()) parts.push(opts.note.trim());
   if (opts.location && opts.address) parts.push(`Adresim: ${opts.address}.`);
+  if (kind !== 'safe' && opts.floor) parts.push(`Bulunduğum kat: ${opts.floor}.`);
   if (opts.location) {
     const { latitude: la, longitude: lo } = opts.location;
     parts.push(`Konumum: https://maps.google.com/?q=${la.toFixed(5)},${lo.toFixed(5)}`);
   }
-  if (opts.meetingPoint) parts.push(`Buluşma noktası: ${opts.meetingPoint.name}`);
+  if (kind !== 'trapped' && opts.meetingPoint) parts.push(`Buluşma noktası: ${opts.meetingPoint.name}`);
   if (kind === 'need_help') parts.push('Hayati tehlike varsa 112 aranmalı.');
+  if (kind === 'trapped') parts.push('Telefonum aralıklı siren çalıyor ve flaşla SOS veriyor.');
   parts.push(`(GÜVENDE, ${formatTimeTr(now)})`);
   return parts.join(' ');
 }

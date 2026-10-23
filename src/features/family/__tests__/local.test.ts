@@ -48,3 +48,26 @@ describe('durum mesajı', () => {
     expect(buildStatusMessage('safe', { location: null, meetingPoint: null, now, address: 'X' })).not.toMatch(/Adresim/);
   });
 });
+
+describe('enkaz altındayım mesajı', () => {
+  const now = new Date('2026-10-23T12:00:00Z');
+  it('kat, bina tarifi, adres ve konum içerir; buluşma noktası eklenmez', () => {
+    const m = buildStatusMessage('trapped', {
+      location: { latitude: 40.84, longitude: 31.16 },
+      address: 'Cumhuriyet Mah., Merkez / Düzce',
+      floor: '4. kat',
+      note: 'Gül Apt. daire 7',
+      meetingPoint: { name: 'Park', latitude: 1, longitude: 1 } as never,
+      now,
+    });
+    expect(m).toMatch(/^ENKAZ ALTINDAYIM!/);
+    expect(m).toContain('Bulunduğum kat: 4. kat.');
+    expect(m).toContain('Gül Apt. daire 7');
+    expect(m).toContain('maps.google.com/?q=40.84000,31.16000');
+    expect(m).not.toContain('Buluşma noktası');
+    expect(m).toContain('siren');
+  });
+  it('"güvendeyim" mesajına kat eklenmez', () => {
+    expect(buildStatusMessage('safe', { location: null, meetingPoint: null, floor: '4. kat', now })).not.toContain('kat');
+  });
+});

@@ -408,8 +408,8 @@ export function ProgressRing({
           fill="none"
           strokeLinecap="round"
           strokeDasharray={`${c * pct} ${c}`}
-          rotation={-90}
-          origin={`${size / 2}, ${size / 2}`}
+          // Halka saat 12 yönünden başlar (rotation+origin web'de geçersiz DOM özniteliği üretiyor).
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
       {children}

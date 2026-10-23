@@ -144,6 +144,13 @@ export default function EmergencyMode() {
               onPress={toggleWhistle}
             />
             <Big
+              icon={<Ionicons name="megaphone" size={40} color={darkPalette.danger} />}
+              label="Enkaz altındayım"
+              sub="Siren + flaş SOS"
+              color={darkPalette.danger}
+              onPress={() => router.push('/enkaz')}
+            />
+            <Big
               icon={<Ionicons name="flashlight" size={40} color="#fff" />}
               label="SOS ışığı"
               sub="Ekranı fener yap"

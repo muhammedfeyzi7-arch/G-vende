@@ -180,6 +180,25 @@ export default function EmergencyScreen() {
         <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
       </Pressable>
 
+      {/* Enkaz Altı Modu: internetsiz siren + flaş SOS */}
+      <Pressable
+        onPress={() => router.push('/enkaz')}
+        accessibilityRole="button"
+        accessibilityLabel="Enkaz altındayım: siren ve flaşla yerimi bildir"
+        style={({ pressed }) => [styles.rubble, pressed && { opacity: 0.85 }]}
+      >
+        <Ionicons name="megaphone" size={22} color="#fff" />
+        <View style={{ flex: 1 }}>
+          <AppText variant="heading" color="#fff">
+            Enkaz Altındayım
+          </AppText>
+          <AppText variant="caption" color="#FFE3E3">
+            Siren (~3 kHz) ve flaşla SOS · internetsiz · pil korumalı
+          </AppText>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color="#fff" />
+      </Pressable>
+
       {/* Hızlı eylemler */}
       <View style={styles.actions}>
         <ActionTile
@@ -490,6 +509,15 @@ const styles = themedStyles(() => ({
     paddingHorizontal: spacing.md,
     minHeight: 42,
     marginTop: 4,
+  },
+  rubble: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 64,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: '#B3122B',
   },
   callCard: {
     flexDirection: 'row',

@@ -53,7 +53,7 @@ const config: ExpoConfig = {
       'expo-image-picker',
       {
         photosPermission: 'Bildiriminize fotoğraf eklemek için galeri erişimi gerekir.',
-        cameraPermission: 'Bildiriminize fotoğraf çekmek için kamera erişimi gerekir.',
+        cameraPermission: 'Bildiriminize fotoğraf çekmek ve Enkaz Altı Modu’nda flaşı yakmak için kamera erişimi gerekir.',
         microphonePermission: false,
       },
     ],
@@ -62,6 +62,15 @@ const config: ExpoConfig = {
     ['expo-contacts', { contactsPermission: 'Acil durum kişilerinizi rehberden seçebilmeniz için. Kişiler yalnızca bu cihazda saklanır.' }],
     // Düdük, ekran kilitliyken de çalabilsin; mikrofon kullanılmaz.
     ['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: true }],
+    // Yalnızca flaş (fener) için; görüntü kaydedilmez, mikrofon istenmez.
+    [
+      'expo-camera',
+      {
+        cameraPermission: 'Bildiriminize fotoğraf çekmek ve Enkaz Altı Modu’nda flaşı yakmak için kamera erişimi gerekir.',
+        microphonePermission: false,
+        recordAudioAndroid: false,
+      },
+    ],
     'expo-apple-authentication',
     './plugins/withKandilliCleartext',
   ],

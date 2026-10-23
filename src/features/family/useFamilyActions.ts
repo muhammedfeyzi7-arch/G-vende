@@ -5,6 +5,8 @@ import { Alert, Share } from 'react-native';
 import { useApp } from '@/providers/AppProvider';
 import { coarsen, type LatLng } from '@/utils/geo';
 import { addressFor } from '@/features/location/currentAddress';
+import { floorLabel, loadFloor } from '@/features/rubble/floor';
+import { readJson } from '@/services/storage';
 import { ASK_STATUS_MESSAGE, buildStatusMessage, sendSms, type StatusKind } from './local';
 import { useLocalFamily } from './useLocalFamily';
 
@@ -46,12 +48,16 @@ export function useFamilyActions() {
       const groups = loc && withoutLoc.length ? [[withLoc, loc] as const, [withoutLoc, null] as const] : [[fam.contacts, loc] as const];
       // Açık adres yalnızca konum paylaşılan kişilere eklenir (4 sn'de bulunamazsa yalnızca harita bağlantısı).
       const address = loc ? await addressFor(gps!, 4000, online) : null;
+      // Kat bilgisi yalnızca yardım/enkaz mesajlarında; konum gizlenen kişilere de gider (kurtarma için gerekli).
+      const floor = kind === 'safe' ? null : floorLabel((await loadFloor())?.floor);
+      // Bina/daire tarifi (Acil arama ekranındaki not) yardım ve enkaz mesajlarına eklenir.
+      const building = kind === 'safe' ? null : await readJson<string>('address-note');
       let anySent = false;
       for (const [list, l] of groups) {
         if (!list.length) continue;
         const r = await sendSms(
           list.map((c) => c.phone),
-          buildStatusMessage(kind, { location: l, meetingPoint: fam.meetingPoint, address: l ? address : null }),
+          buildStatusMessage(kind, { location: l, meetingPoint: fam.meetingPoint, address: l ? address : null, floor, note: l ? (building ?? undefined) : undefined }),
         );
         if (!r.ok) return Alert.alert('Gönderilemedi', r.reason);
         if (r.status !== 'cancelled') anySent = true;
