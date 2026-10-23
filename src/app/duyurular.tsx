@@ -60,7 +60,7 @@ export default function OfficialInfo() {
         />
       }
       renderItem={({ item: e }) => {
-        const src = e.readings.filter((r) => r.source !== 'usgs');
+        const src = e.readings.filter((r) => r.source === 'afad' || r.source === 'kandilli');
         const fresh = Date.now() - Date.parse(e.primary.occurredAt) < 60 * 60_000;
         return (
           <Pressable

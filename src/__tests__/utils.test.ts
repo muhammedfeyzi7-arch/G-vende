@@ -60,3 +60,15 @@ describe('toplanma alanı sıralama', () => {
     expect(out.map((x) => x.id)).toEqual(['near', 'mid']);
   });
 });
+
+describe('bearingDeg / compassDirTr', () => {
+  const { bearingDeg, compassDirTr } = require('../utils/geo');
+  it('ana yönleri hesaplar', () => {
+    const o = { latitude: 40, longitude: 30 };
+    expect(bearingDeg(o, { latitude: 41, longitude: 30 })).toBeCloseTo(0, 0);
+    expect(bearingDeg(o, { latitude: 40, longitude: 31 })).toBeCloseTo(89.7, 0);
+    expect(bearingDeg(o, { latitude: 39, longitude: 30 })).toBeCloseTo(180, 0);
+    expect(compassDirTr(bearingDeg(o, { latitude: 39.5, longitude: 29.4 }))).toBe('Güneybatı');
+    expect(compassDirTr(359)).toBe('Kuzey');
+  });
+});

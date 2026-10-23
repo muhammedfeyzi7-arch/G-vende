@@ -52,3 +52,18 @@ export function formatDistance(km: number | null | undefined): string {
   if (km < 10) return `${km.toFixed(1).replace('.', ',')} km`;
   return `${Math.round(km)} km`;
 }
+
+/** a noktasından b'ye başlangıç yönü (derece, 0 = kuzey, saat yönünde). */
+export function bearingDeg(a: LatLng, b: LatLng): number {
+  const φ1 = toRad(a.latitude);
+  const φ2 = toRad(b.latitude);
+  const Δλ = toRad(b.longitude - a.longitude);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+const DIRS = ['Kuzey', 'Kuzeydoğu', 'Doğu', 'Güneydoğu', 'Güney', 'Güneybatı', 'Batı', 'Kuzeybatı'];
+export function compassDirTr(deg: number): string {
+  return DIRS[Math.round((((deg % 360) + 360) % 360) / 45) % 8]!;
+}

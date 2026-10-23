@@ -1,4 +1,4 @@
-export type QuakeSourceId = 'afad' | 'kandilli' | 'usgs';
+export type QuakeSourceId = 'afad' | 'kandilli' | 'usgs' | 'emsc';
 
 /**
  * Kaynağın olay için verdiği çözümün durumu.

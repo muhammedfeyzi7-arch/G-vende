@@ -1,6 +1,6 @@
 import type { QuakeSourceId } from '@/types/earthquake';
 
-const ALL_SOURCES: QuakeSourceId[] = ['afad', 'kandilli', 'usgs'];
+const ALL_SOURCES: QuakeSourceId[] = ['afad', 'kandilli', 'emsc', 'usgs'];
 
 function parseSources(raw: string | undefined): QuakeSourceId[] {
   if (!raw) return ALL_SOURCES;

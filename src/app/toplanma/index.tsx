@@ -8,6 +8,7 @@ import { AppText, Banner, Button, Card, StateMessage } from '@/components/ui';
 import { EDEVLET_ASSEMBLY_URL, getSaved, openDirections, toggleSaved } from '@/features/assembly-points/api';
 import { saveMyPoint } from '@/features/assembly-points/mine';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
+import { CompassToTarget } from '@/features/sensors/Compass';
 import { useApp } from '@/providers/AppProvider';
 import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
@@ -96,6 +97,9 @@ export default function AssemblyScreen() {
             </Pressable>
           ) : null}
         </View>
+        {myPoint && userCoords && location.status === 'granted' ? (
+          <CompassToTarget from={userCoords} target={myPoint} label={myPoint.name} />
+        ) : null}
         {myPoint ? (
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <Button style={{ flex: 1 }} label="Yol tarifi" icon="walk-outline" onPress={() => openDirections(myPoint)} />

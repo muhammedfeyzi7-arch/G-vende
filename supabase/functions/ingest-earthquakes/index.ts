@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
   const now = new Date();
   const q = defaultQuery(now);
   q.since = new Date(now.getTime() - 6 * 3600_000);
-  const { snapshot } = await loadEarthquakes(['afad', 'kandilli', 'usgs'], fetcher, null, q);
+  const { snapshot } = await loadEarthquakes(['afad', 'kandilli', 'emsc', 'usgs'], fetcher, null, q);
 
   const rows = snapshot.events.flatMap((e) =>
     e.readings.map((r) => ({

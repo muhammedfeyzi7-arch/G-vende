@@ -3,7 +3,7 @@ import type { EarthquakeEvent, QuakeSourceId, SourceReading } from '../../types/
 import { distanceKm } from '../../utils/geo.ts';
 
 /** Ekranda birincil gösterilecek kaynak sırası (resmî ulusal kurum önce). */
-export const SOURCE_PRIORITY: QuakeSourceId[] = ['afad', 'kandilli', 'usgs'];
+export const SOURCE_PRIORITY: QuakeSourceId[] = ['afad', 'kandilli', 'emsc', 'usgs'];
 
 export const MATCH_WINDOW_SECONDS = 60;
 export const MATCH_DISTANCE_KM = 60;

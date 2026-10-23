@@ -59,7 +59,7 @@ export const DEFAULT_SETTINGS: Settings = {
   minNotifyMagnitude: 4.0,
   notifyIntervalMinutes: 10,
   minListMagnitude: 2.0,
-  enabledSources: ['afad', 'kandilli', 'usgs'],
+  enabledSources: ['afad', 'kandilli', 'emsc', 'usgs'],
   attachLocationByDefault: true,
   emergencyInfo: { bloodType: '', conditions: '', medications: '', contacts: '' },
   kitChecked: [],

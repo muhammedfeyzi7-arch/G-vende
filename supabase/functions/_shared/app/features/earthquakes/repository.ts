@@ -2,6 +2,7 @@
 import type { EarthquakeEvent, QuakeSourceId, SourceHealth, SourceReading } from '../../types/earthquake.ts';
 import { mergeReadings } from './merge.ts';
 import { afadSource } from './sources/afad.ts';
+import { emscSource } from './sources/emsc.ts';
 import { kandilliSource } from './sources/kandilli.ts';
 import { usgsSource } from './sources/usgs.ts';
 import { TURKEY_BBOX, type Fetcher, type QuakeQuery, type QuakeSource } from './sources/types.ts';
@@ -10,6 +11,7 @@ export const SOURCES: Record<QuakeSourceId, QuakeSource> = {
   afad: afadSource,
   kandilli: kandilliSource,
   usgs: usgsSource,
+  emsc: emscSource,
 };
 
 export interface QuakeSnapshot {

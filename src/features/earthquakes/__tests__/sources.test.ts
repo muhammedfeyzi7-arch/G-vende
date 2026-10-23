@@ -3,6 +3,7 @@ import { join } from 'path';
 import { afadDate, parseAfad } from '../sources/afad';
 import { decodeWindows1254, parseKandilli } from '../sources/kandilli';
 import { parseUsgs } from '../sources/usgs';
+import { emscSource, parseEmsc } from '../sources/emsc';
 import { SourceError } from '../sources/types';
 
 const fx = (name: string) => readFileSync(join(__dirname, 'fixtures', name), 'utf8');
@@ -95,5 +96,44 @@ describe('USGS ayrıştırıcı', () => {
   it('eksik derinlik ve büyüklüğü null bırakır', () => {
     expect(rows[1]!.magnitude).toBeNull();
     expect(rows[1]!.depthKm).toBeNull();
+  });
+});
+
+describe('EMSC ayrıştırıcı', () => {
+  const rows = parseEmsc(fx('emsc.json'), FETCHED);
+  it('FDSN GeoJSON özelliklerini eşler ve bölge adını Türkçeleştirir', () => {
+    expect(rows[0]).toMatchObject({
+      source: 'emsc',
+      sourceEventId: '20261023_0000102',
+      magnitude: 2.2,
+      magnitudeType: 'ML',
+      latitude: 39.2118,
+      longitude: 28.2952,
+      depthKm: 11.1,
+      occurredAt: '2026-10-23T06:50:11.270Z',
+      place: 'Batı Türkiye',
+      url: 'https://www.seismicportal.eu/eventdetails.html?unid=20261023_0000102',
+    });
+  });
+  it('eksik değerleri null bırakır, bilinmeyen bölgeyi düzeltir', () => {
+    expect(rows[1]).toMatchObject({ magnitude: null, depthKm: null, place: 'Eastern Anatolia X' });
+  });
+  it('deprem dışı olayları ve geçersiz kayıtları atlar', () => {
+    expect(rows).toHaveLength(2);
+  });
+  it('bozuk yanıtta kaynak hatası verir; 204 (veri yok) boş listedir', async () => {
+    expect(() => parseEmsc('<html>', FETCHED)).toThrow(SourceError);
+    const q = {
+      since: new Date(0),
+      until: new Date(1000),
+      minMagnitude: 1,
+      bbox: { minLat: 0, maxLat: 1, minLon: 0, maxLon: 1 },
+      limit: 10,
+    };
+    const fetcher = jest
+      .fn()
+      .mockResolvedValue({ ok: false, status: 204, text: async () => '', arrayBuffer: async () => new ArrayBuffer(0) });
+    await expect(emscSource.fetch(q, fetcher)).resolves.toEqual([]);
+    expect(fetcher.mock.calls[0][0]).toContain('seismicportal.eu/fdsnws/event/1/query?format=json');
   });
 });

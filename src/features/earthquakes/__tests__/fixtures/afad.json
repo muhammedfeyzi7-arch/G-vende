@@ -1,6 +1,36 @@
 [
-  {"rms":"0.41","eventID":"700001","location":"Gölyaka (Düzce)","latitude":"40.7712","longitude":"30.9921","depth":"10.0","type":"ML","magnitude":"4.8","country":"Türkiye","province":"Düzce","district":"Gölyaka","neighborhood":"","date":"2026-10-22T18:52:10","isEventUpdate":true,"lastUpdateDate":"2026-10-22T18:58:00"},
-  {"rms":"0.30","eventID":"700002","location":"Sındırgı (Balıkesir)","latitude":"39.2","longitude":"28.1","depth":"7.2","type":"ML","magnitude":"2.1","province":"Balıkesir","district":"Sındırgı","date":"2026-10-22T17:00:00","isEventUpdate":false,"lastUpdateDate":null},
-  {"eventID":"bad","latitude":"x","longitude":"30","date":"2026-10-22T17:00:00"},
-  {"eventID":"700003","latitude":"38.0","longitude":"27.0","depth":"","type":"","magnitude":"","date":"2026-10-22T16:00:00"}
+  {
+    "rms": "0.41",
+    "eventID": "700001",
+    "location": "Gölyaka (Düzce)",
+    "latitude": "40.7712",
+    "longitude": "30.9921",
+    "depth": "10.0",
+    "type": "ML",
+    "magnitude": "4.8",
+    "country": "Türkiye",
+    "province": "Düzce",
+    "district": "Gölyaka",
+    "neighborhood": "",
+    "date": "2026-10-22T18:52:10",
+    "isEventUpdate": true,
+    "lastUpdateDate": "2026-10-22T18:58:00"
+  },
+  {
+    "rms": "0.30",
+    "eventID": "700002",
+    "location": "Sındırgı (Balıkesir)",
+    "latitude": "39.2",
+    "longitude": "28.1",
+    "depth": "7.2",
+    "type": "ML",
+    "magnitude": "2.1",
+    "province": "Balıkesir",
+    "district": "Sındırgı",
+    "date": "2026-10-22T17:00:00",
+    "isEventUpdate": false,
+    "lastUpdateDate": null
+  },
+  { "eventID": "bad", "latitude": "x", "longitude": "30", "date": "2026-10-22T17:00:00" },
+  { "eventID": "700003", "latitude": "38.0", "longitude": "27.0", "depth": "", "type": "", "magnitude": "", "date": "2026-10-22T16:00:00" }
 ]

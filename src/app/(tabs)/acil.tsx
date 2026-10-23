@@ -86,7 +86,7 @@ export default function EmergencyScreen() {
   const official = useMemo(
     () =>
       (quakes.snapshot?.events ?? [])
-        .filter((e) => (e.primary.magnitude ?? 0) >= 4 && e.readings.some((r) => r.source !== 'usgs'))
+        .filter((e) => (e.primary.magnitude ?? 0) >= 4 && e.readings.some((r) => r.source === 'afad' || r.source === 'kandilli'))
         .slice(0, 2),
     [quakes.snapshot],
   );
@@ -198,6 +198,32 @@ export default function EmergencyScreen() {
           subtitle="Resmî kayıtları takip et"
           onPress={() => router.push('/duyurular')}
         />
+      </View>
+
+      {/* Cihaz araçları */}
+      <View style={styles.tools}>
+        {[
+          { icon: 'pulse', color: accent.purple, title: 'Sarsıntı Ölçer', sub: 'Sensörle titreşimi ölç', to: '/sarsinti' as const },
+          { icon: 'flashlight', color: accent.yellow, title: 'Fener & Düdük', sub: 'Işık, SOS, ses', to: '/isik' as const },
+        ].map((t) => (
+          <Pressable
+            key={t.title}
+            onPress={() => router.push(t.to)}
+            accessibilityRole="button"
+            accessibilityLabel={`${t.title}: ${t.sub}`}
+            style={({ pressed }) => [styles.tool, pressed && { opacity: 0.85 }]}
+          >
+            <IconTile icon={t.icon} color={t.color} size={38} solid />
+            <View style={{ flex: 1 }}>
+              <AppText variant="heading" style={{ fontSize: 13.5 }} numberOfLines={1}>
+                {t.title}
+              </AppText>
+              <AppText variant="caption" numberOfLines={1}>
+                {t.sub}
+              </AppText>
+            </View>
+          </Pressable>
+        ))}
       </View>
 
       {/* Çök – Kapan – Tutun */}
@@ -396,7 +422,7 @@ export default function EmergencyScreen() {
         <View style={{ paddingHorizontal: spacing.md, gap: spacing.sm }}>
           {official.length ? (
             official.map((e) => {
-              const src = e.readings.find((r) => r.source !== 'usgs')!;
+              const src = e.readings.find((r) => r.source === 'afad' || r.source === 'kandilli')!;
               const fresh = Date.now() - Date.parse(e.primary.occurredAt) < 60 * 60_000;
               return (
                 <Pressable
@@ -441,6 +467,19 @@ export default function EmergencyScreen() {
 }
 
 const styles = themedStyles(() => ({
+  tools: { flexDirection: 'row', gap: spacing.sm },
+  tool: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.sm + 2,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    boxShadow: colors.shadowSoft,
+  },
   modeBtn: {
     flexDirection: 'row',
     alignItems: 'center',

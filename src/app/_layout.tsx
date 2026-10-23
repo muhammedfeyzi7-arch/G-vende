@@ -122,6 +122,7 @@ function RootStack() {
       <Stack.Screen name="acil-mod" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <Stack.Screen name="acil-sms" options={{ title: 'Hazır Mesajlar' }} />
       <Stack.Screen name="arama" options={{ title: 'Acil Arama' }} />
+      <Stack.Screen name="sarsinti" options={{ title: 'Sarsıntı Ölçer' }} />
       <Stack.Screen name="hosgeldin" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="rapor/benim" options={{ title: 'Bildirimlerim' }} />
       <Stack.Screen name="duyurular" options={{ title: 'Resmî Bilgiler' }} />

@@ -1,4 +1,25 @@
-{"type":"FeatureCollection","features":[
- {"type":"Feature","id":"us7000abcd","properties":{"mag":4.9,"magType":"mb","place":"6 km NE of Gölyaka, Türkiye","time":1792695132000,"updated":1792695800000,"url":"https://earthquake.usgs.gov/earthquakes/eventpage/us7000abcd","status":"reviewed"},"geometry":{"type":"Point","coordinates":[31.01,40.79,10]}},
- {"type":"Feature","id":"us7000zzzz","properties":{"mag":null,"magType":null,"place":null,"time":1792600000000,"status":"automatic"},"geometry":{"type":"Point","coordinates":[35.0,38.0]}}
-]}
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "us7000abcd",
+      "properties": {
+        "mag": 4.9,
+        "magType": "mb",
+        "place": "6 km NE of Gölyaka, Türkiye",
+        "time": 1792695132000,
+        "updated": 1792695800000,
+        "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000abcd",
+        "status": "reviewed"
+      },
+      "geometry": { "type": "Point", "coordinates": [31.01, 40.79, 10] }
+    },
+    {
+      "type": "Feature",
+      "id": "us7000zzzz",
+      "properties": { "mag": null, "magType": null, "place": null, "time": 1792600000000, "status": "automatic" },
+      "geometry": { "type": "Point", "coordinates": [35.0, 38.0] }
+    }
+  ]
+}

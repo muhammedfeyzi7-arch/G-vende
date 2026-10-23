@@ -4,7 +4,7 @@ import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -41,7 +41,10 @@ export default function NewReport() {
   const { submit, mine } = useReports();
   const toast = useToast();
   const family = useLocalFamily();
-  const [category, setCategory] = useState<ReportCategory | null>(null);
+  const { kategori } = useLocalSearchParams<{ kategori?: string }>();
+  const [category, setCategory] = useState<ReportCategory | null>(
+    kategori && ['shake', 'damage', 'road', 'safe', 'help', 'other'].includes(kategori) ? (kategori as ReportCategory) : null,
+  );
   const [felt, setFelt] = useState<FeltIntensity | null>(null);
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<ReportPhoto[]>([]);
