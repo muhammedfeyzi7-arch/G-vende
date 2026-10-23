@@ -17,7 +17,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useApp } from '@/providers/AppProvider';
 import { useInbox } from '@/providers/InboxProvider';
 import { syncPreferences } from '@/services/notifications';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { Alert } from 'react-native';
 
 export default function SettingsScreen() {
@@ -230,7 +230,13 @@ export default function SettingsScreen() {
       >
         <View style={wide ? styles.twoCol : styles.oneCol}>
           <RowGroup style={wide ? { flex: 1 } : undefined}>
-            <ListRow first icon="moon-outline" title="Tema" value="Koyu" onPress={() => router.push('/tercihler')} />
+            <ListRow
+              first
+              icon="moon-outline"
+              title="Tema"
+              value={settings.theme === 'system' ? 'Cihazla aynı' : settings.theme === 'light' ? 'Açık' : 'Koyu'}
+              onPress={() => router.push('/tercihler')}
+            />
             <ListRow icon="map-outline" title="Harita" value={mapLabel} onPress={() => router.push('/tercihler')} />
           </RowGroup>
           <RowGroup style={wide ? { flex: 1 } : undefined}>
@@ -256,7 +262,7 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -293,4 +299,4 @@ const styles = StyleSheet.create({
   quickRow: { flexDirection: 'row', gap: spacing.sm },
   twoCol: { flexDirection: 'row', gap: spacing.sm },
   oneCol: { gap: spacing.sm },
-});
+}));

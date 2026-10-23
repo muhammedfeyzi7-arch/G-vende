@@ -10,7 +10,7 @@ import { isValidBirthYear, isValidTckn } from '@/features/trust/tckn';
 import { useTrust } from '@/features/trust/TrustProvider';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { formatDateTimeTr } from '@/utils/time';
 
 /**
@@ -171,7 +171,7 @@ export default function IdentityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     minHeight: 48,
     borderRadius: radius.md,
@@ -185,4 +185,4 @@ const styles = StyleSheet.create({
   invalid: { borderColor: colors.danger },
   consent: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start', paddingVertical: spacing.xs },
   done: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg },
-});
+}));

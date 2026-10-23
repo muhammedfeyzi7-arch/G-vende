@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, Button } from '@/components/ui';
-import { colors, hitSlop, radius, spacing } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import type { UserReport } from '@/types/report';
@@ -99,13 +99,13 @@ export function SelectionCard({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
-    backgroundColor: 'rgba(7,21,34,0.98)',
+    backgroundColor: colors.mapPanel,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.borderStrong,
     padding: spacing.md,
   },
   close: { position: 'absolute', right: spacing.sm, top: spacing.sm, zIndex: 1, padding: 4 },
-});
+}));

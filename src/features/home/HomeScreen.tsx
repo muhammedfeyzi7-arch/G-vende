@@ -20,7 +20,7 @@ import { SelectionCard } from '@/features/map/SelectionCard';
 import { ReportCard } from '@/features/reports/components/ReportCard';
 import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { relativeTimeTr } from '@/utils/time';
 import { HomeHeader } from './HomeHeader';
 import { QuickTiles } from './QuickTiles';
@@ -293,7 +293,7 @@ export function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   infoCard: {
     backgroundColor: colors.surface,
@@ -301,11 +301,12 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     paddingHorizontal: spacing.sm,
+    boxShadow: colors.shadowSoft,
   },
   mapCard: {
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: '#0A1824',
+    backgroundColor: colors.mapPlaceholder,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
   },
@@ -337,4 +338,4 @@ const styles = StyleSheet.create({
     minHeight: 34,
     justifyContent: 'center',
   },
-});
+}));

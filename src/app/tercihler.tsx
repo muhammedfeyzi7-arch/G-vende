@@ -4,10 +4,11 @@ import { AppText } from '@/components/ui';
 import { GroupTitle, Page, RowGroup, Stepper, ToggleRow } from '@/components/ds';
 import { SOURCES } from '@/features/earthquakes/repository';
 import { SourceHealthCard } from '@/features/home/tabs';
+import type { ThemePref } from '@/features/settings/settings';
 import { MAP_STYLE_OPTIONS } from '@/features/map/mapStyle';
 import { useApp } from '@/providers/AppProvider';
 import { env } from '@/services/env';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { QuakeSourceId } from '@/types/earthquake';
 
 function Choice({
@@ -46,6 +47,12 @@ function Choice({
 }
 
 /** Tema, dil, harita görünümü ve deprem verisi tercihleri. */
+const THEMES: { id: ThemePref; label: string; description: string }[] = [
+  { id: 'system', label: 'Cihazla aynı', description: 'Telefonun açık/koyu ayarını izler' },
+  { id: 'dark', label: 'Koyu', description: 'Gece ve elektrik kesintisinde göz yormaz, pil tasarrufu sağlar' },
+  { id: 'light', label: 'Açık', description: 'Gün ışığında daha okunaklı' },
+];
+
 export default function Preferences() {
   const { settings, updateSettings, quakes } = useApp();
   const toggleSource = (id: QuakeSourceId) => {
@@ -72,9 +79,16 @@ export default function Preferences() {
 
       <GroupTitle>Tema</GroupTitle>
       <View style={{ gap: spacing.sm }}>
-        <Choice label="Koyu" description="Gece ve elektrik kesintisinde göz yormaz, pil tasarrufu sağlar" selected onPress={() => {}} />
+        {THEMES.map((t) => (
+          <Choice
+            key={t.id}
+            label={t.label}
+            description={t.description}
+            selected={settings.theme === t.id}
+            onPress={() => updateSettings({ theme: t.id })}
+          />
+        ))}
       </View>
-      <AppText variant="caption">Uygulama şu an yalnızca koyu temayla çalışır.</AppText>
 
       <GroupTitle>Dil</GroupTitle>
       <View style={{ gap: spacing.sm }}>
@@ -109,7 +123,7 @@ export default function Preferences() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   choice: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,4 +136,4 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   choiceOn: { borderColor: colors.primary, backgroundColor: colors.primaryMuted },
-});
+}));

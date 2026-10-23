@@ -4,7 +4,7 @@ import { AppText, Button } from '@/components/ui';
 import { GroupTitle, Page, ProgressRing } from '@/components/ds';
 import { KIT_GROUPS, KIT_ITEMS } from '@/features/emergency/content';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /** Afet ve acil durum çantası kontrol listesi (cihazda saklanır, internetsiz çalışır). */
 export default function KitScreen() {
@@ -73,7 +73,7 @@ export default function KitScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   top: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -85,4 +85,4 @@ const styles = StyleSheet.create({
   group: { backgroundColor: colors.surface, borderRadius: radius.lg, overflow: 'hidden' },
   item: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 52, paddingHorizontal: spacing.md },
   divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-});
+}));

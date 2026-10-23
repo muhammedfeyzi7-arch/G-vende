@@ -5,7 +5,7 @@ import { AppText, StateMessage } from '@/components/ui';
 import { IconTile, accent } from '@/components/ds';
 import type { InboxKind } from '@/features/inbox/rules';
 import { useInbox } from '@/providers/InboxProvider';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 import { relativeTimeTr } from '@/utils/time';
 
 const KIND: Record<InboxKind, { icon: string; color: string; label: string }> = {
@@ -78,7 +78,7 @@ export default function NotificationCenter() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -88,4 +88,4 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
-});
+}));

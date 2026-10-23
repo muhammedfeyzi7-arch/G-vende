@@ -7,7 +7,7 @@ import { Page } from '@/components/ds';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError, getSupabase } from '@/services/supabase';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /** Geri bildirim: girişliyse sunucuya kaydedilir; değilse metin paylaşım menüsüyle iletilebilir. */
 export default function Feedback() {
@@ -68,7 +68,7 @@ export default function Feedback() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     minHeight: 180,
     borderRadius: radius.md,
@@ -80,4 +80,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlignVertical: 'top',
   },
-});
+}));

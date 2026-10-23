@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { currentScheme, colors, radius, spacing, themedStyles } from '@/theme';
 import { formatDistance } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
 import type { AlertState } from '../alertState';
@@ -47,8 +47,11 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
       (state.kind !== 'none' && state.distanceKm != null ? ` Size uzaklığı ${formatDistance(state.distanceKm)}.` : '')
     : title;
 
-  const accent = alert ? colors.danger : colors.primary;
-  const soft = alert ? '#F3C3C9' : colors.textSecondary;
+  const light = currentScheme() === 'light';
+  // Kırmızı zemin üstünde yazılar her iki temada da beyazdır.
+  const accent = alert ? (light ? colors.onAccent : colors.danger) : colors.primary;
+  const soft = alert ? '#FBD5DA' : colors.textSecondary;
+  const strong = alert ? colors.onAccent : colors.text;
 
   return (
     <Pressable
@@ -60,14 +63,14 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
       style={({ pressed }) => [styles.shell, alert ? styles.shellAlert : styles.shellCalm, pressed && { opacity: 0.92 }]}
     >
       <LinearGradient
-        colors={alert ? ['#55101C', '#3A0C15', '#2A0911'] : ['#0D1D2D', '#081522']}
+        colors={alert ? [colors.alertFrom, colors.alertTo] : [colors.surfaceRaised, colors.surface]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
       <Ionicons name="pulse" size={44} color={accent} style={[styles.wave, { textShadowColor: accent + 'CC' }]} />
       <View style={{ flex: 1, gap: 3 }}>
-        <AppText variant="title" numberOfLines={alert ? 1 : 2} style={{ fontSize: alert ? 19 : 17, letterSpacing: -0.2 }}>
+        <AppText variant="title" color={strong} numberOfLines={alert ? 1 : 2} style={{ fontSize: alert ? 19 : 17, letterSpacing: -0.2 }}>
           {title}
         </AppText>
         <AppText variant="label" numberOfLines={2} color={soft} style={{ fontSize: 11.5 }}>
@@ -75,17 +78,19 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
         </AppText>
       </View>
       {event ? (
-        <View style={[styles.magBox, { borderColor: alert ? colors.danger + 'B3' : colors.borderStrong }]}>
+        <View
+          style={[styles.magBox, { borderColor: alert ? (light ? 'rgba(255,255,255,0.6)' : colors.danger + 'B3') : colors.borderStrong }]}
+        >
           <AppText variant="caption" color={soft} style={{ fontSize: 9.5 }}>
             Büyüklük {event.primary.magnitudeType ? `(${event.primary.magnitudeType})` : ''}
           </AppText>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <AppText variant="display" style={{ fontSize: 24.5, lineHeight: 28 }}>
+            <AppText variant="display" color={strong} style={{ fontSize: 24.5, lineHeight: 28 }}>
               {formatMagnitude(event.primary.magnitude)}
             </AppText>
             <Ionicons name="pulse" size={16} color={accent} />
           </View>
-          <AppText variant="caption" color={alert ? '#F3C3C9' : colors.textMuted} style={{ fontSize: 9 }}>
+          <AppText variant="caption" color={alert ? soft : colors.textMuted} style={{ fontSize: 9 }}>
             {sourceLabel(event.primary)}
           </AppText>
         </View>
@@ -94,7 +99,7 @@ export function AlertCard({ state, loading, error, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   shell: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -106,7 +111,7 @@ const styles = StyleSheet.create({
     paddingRight: spacing.md,
     overflow: 'hidden',
   },
-  shellAlert: { borderColor: '#7A1C2A', boxShadow: '0 6px 22px rgba(255,53,72,0.22)' },
+  shellAlert: { borderColor: colors.alertBorder, boxShadow: '0 6px 22px rgba(255,53,72,0.22)' },
   shellCalm: { borderColor: colors.border },
   wave: { marginRight: -2, textShadowRadius: 14, textShadowOffset: { width: 0, height: 0 } },
   magBox: {
@@ -118,4 +123,4 @@ const styles = StyleSheet.create({
     minWidth: 92,
     backgroundColor: 'rgba(0,0,0,0.18)',
   },
-});
+}));

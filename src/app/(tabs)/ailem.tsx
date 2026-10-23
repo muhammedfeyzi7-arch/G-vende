@@ -17,7 +17,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError } from '@/services/supabase';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
 import { formatTimeTr, relativeTimeTr } from '@/utils/time';
 
@@ -421,7 +421,7 @@ export default function FamilyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: radius.xl,
     overflow: 'hidden',
-    backgroundColor: '#0A1824',
+    backgroundColor: colors.mapPlaceholder,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
   },
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     top: spacing.sm,
     left: spacing.sm,
     flexDirection: 'row',
-    backgroundColor: 'rgba(7,21,34,0.92)',
+    backgroundColor: colors.mapPanel,
     borderRadius: radius.pill,
     padding: 3,
     borderWidth: 1,
@@ -460,9 +460,9 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 14,
-    backgroundColor: 'rgba(8,20,33,0.88)',
+    backgroundColor: colors.mapPanel,
     borderWidth: 1,
-    borderColor: 'rgba(60,90,120,0.45)',
+    borderColor: colors.mapPanelBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -484,6 +484,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.sm,
     minHeight: 60,
+    boxShadow: colors.shadowSoft,
   },
   sectionHead: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
   list: {
@@ -492,6 +493,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
     paddingHorizontal: spacing.sm,
+    boxShadow: colors.shadowSoft,
   },
   member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 60, paddingVertical: 6 },
   divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
@@ -507,5 +509,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
     padding: spacing.md,
+    boxShadow: colors.shadowSoft,
   },
-});
+}));

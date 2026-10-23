@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 export function TopTabs<K extends string>({
   tabs,
@@ -40,9 +40,9 @@ export function TopTabs<K extends string>({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
   row: { paddingHorizontal: spacing.sm },
   tab: { paddingHorizontal: spacing.md, paddingTop: spacing.md, minHeight: 48, justifyContent: 'space-between' },
   underline: { height: 3, borderRadius: 2, marginTop: spacing.sm, backgroundColor: 'transparent' },
-});
+}));

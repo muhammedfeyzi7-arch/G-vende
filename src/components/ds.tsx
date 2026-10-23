@@ -19,7 +19,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { AppText } from '@/components/ui';
-import { colors, hitSlop, radius, spacing } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
 
 /** "mci:whistle" → MaterialCommunityIcons, aksi halde Ionicons. */
 export function Icon({ name, size = 22, color = colors.text, style }: { name: string; size?: number; color?: string; style?: object }) {
@@ -396,7 +396,7 @@ export function QuickCard({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   bell: {
     width: 50,
@@ -407,6 +407,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: colors.shadowSoft,
   },
   badge: {
     position: 'absolute',
@@ -430,6 +431,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     padding: spacing.sm,
     gap: spacing.sm,
+    boxShadow: colors.shadowSoft,
   },
   sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.xs },
   group: {
@@ -479,8 +481,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: 8,
     minHeight: 64,
+    boxShadow: colors.shadowSoft,
   },
-});
+}));
 
 /** Yığın (stack) ekranları için kaydırılabilir sayfa gövdesi. */
 export function Page({ children, keyboard }: { children: ReactNode; keyboard?: boolean }) {

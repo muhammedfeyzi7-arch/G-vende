@@ -10,7 +10,7 @@ import { SOURCES, type QuakeSnapshot } from '@/features/earthquakes/repository';
 import { CategoryChips, type ReportFilter } from '@/features/reports/components/CategoryChips';
 import { ReportRow } from '@/features/reports/components/ReportRow';
 import { env } from '@/services/env';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import type { PendingReport, UserReport } from '@/types/report';
@@ -438,7 +438,7 @@ export function DetailsTab({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   footnote: { paddingHorizontal: spacing.lg, paddingVertical: spacing.lg, textAlign: 'center' },
   healthRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   healthDot: { width: 10, height: 10, borderRadius: 5 },
@@ -468,4 +468,4 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
   },
-});
+}));

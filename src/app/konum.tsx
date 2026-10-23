@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Button, Card } from '@/components/ui';
 import { PROVINCES } from '@/features/settings/provinces';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 export default function LocationScreen() {
   const insets = useSafeAreaInsets();
@@ -91,7 +91,7 @@ export default function LocationScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   search: {
     minHeight: 44,
     borderRadius: radius.md,
@@ -102,4 +102,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   row: { minHeight: 48, flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, borderRadius: radius.sm },
-});
+}));

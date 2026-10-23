@@ -90,9 +90,26 @@ export const SATELLITE_STYLE = {
   },
   layers: [
     ...offlineFillLayers(NIGHT_SATELLITE),
-    { id: 'satellite', type: 'raster', source: 's2', paint: { 'raster-brightness-max': 0.55, 'raster-saturation': -0.25, 'raster-contrast': 0.15 } },
+    {
+      id: 'satellite',
+      type: 'raster',
+      source: 's2',
+      paint: { 'raster-brightness-max': 0.55, 'raster-saturation': -0.25, 'raster-contrast': 0.15 },
+    },
     ...offlineLineLayers(NIGHT_SATELLITE),
     ...detailLayers({ urban: '#2A2A33', road: '#E3AA3C', roadMinor: '#B98634', label: '#F2F6FA', halo: '#030B14' }),
+  ],
+} as unknown as StyleSpecification;
+
+/** Açık temada uydu: gündüz parlaklığında görüntü, koyu yazılar. */
+export const SATELLITE_DAY_STYLE = {
+  ...(SATELLITE_STYLE as unknown as Record<string, unknown>),
+  name: 'GÜVENDE Uydu (gündüz)',
+  layers: [
+    ...offlineFillLayers(DAYLIGHT),
+    { id: 'satellite', type: 'raster', source: 's2', paint: { 'raster-brightness-max': 0.95, 'raster-saturation': -0.05 } },
+    ...offlineLineLayers(DAYLIGHT),
+    ...detailLayers({ urban: '#E3E1DA', road: '#E39A2C', roadMinor: '#FFFFFF', label: '#1F2D3D', halo: '#FFFFFF' }),
   ],
 } as unknown as StyleSpecification;
 
@@ -125,9 +142,15 @@ export const offlineOnlyStyle = (p: BasePalette) =>
     layers: [...offlineFillLayers(p), ...offlineLineLayers(p)],
   }) as unknown as StyleSpecification;
 
-/** Bir stilin şehir etiketleri için açık mı koyu mu yazı kullanacağı. */
-export const isLightMap = (id: 'dark' | 'satellite' | 'light') => id === 'light';
-export const paletteFor = (id: 'dark' | 'satellite' | 'light') => (id === 'light' ? DAYLIGHT : id === 'dark' ? NAVY_DARK : NIGHT_SATELLITE);
+type Id = 'dark' | 'satellite' | 'light';
+/** Haritanın açık zeminli olup olmadığı (şehir adları koyu yazılır). Uydu, açık temada gündüz görünümündedir. */
+export const isLightMap = (id: Id, scheme: 'dark' | 'light') => id === 'light' || (id === 'satellite' && scheme === 'light');
+export const paletteFor = (id: Id, scheme: 'dark' | 'light') =>
+  isLightMap(id, scheme) ? DAYLIGHT : id === 'dark' ? NAVY_DARK : NIGHT_SATELLITE;
+export function styleFor(id: Id, scheme: 'dark' | 'light') {
+  if (id === 'satellite') return scheme === 'light' ? SATELLITE_DAY_STYLE : SATELLITE_STYLE;
+  return id === 'light' ? LIGHT_STYLE : GUVENDE_DARK_STYLE;
+}
 
 export const MAP_STYLE_OPTIONS: { id: 'dark' | 'satellite' | 'light'; label: string; description: string }[] = [
   { id: 'satellite', label: 'Uydu', description: 'Gece uydu görünümü + yollar ve şehirler (EOX Sentinel-2, CC BY 4.0)' },

@@ -7,7 +7,7 @@ import { sendSms } from '@/features/family/local';
 import { useFamilyActions } from '@/features/family/useFamilyActions';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { coarsen } from '@/utils/geo';
 
 type Template = {
@@ -140,7 +140,7 @@ export default function EmergencySms() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   tpl: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -151,4 +151,4 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     padding: spacing.md,
   },
-});
+}));

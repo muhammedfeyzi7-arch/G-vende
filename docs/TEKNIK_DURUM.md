@@ -120,3 +120,16 @@ Kurallar **sunucuda** (Postgres tetikleyicileri + RLS, `supabase/migrations/2026
 **Yeni/değişen dosyalar:** `supabase/migrations/20261023000005_trust.sql`, `supabase/functions/verify-identity/index.ts`, `supabase/functions/_shared/nvi.ts(+test)`, `src/features/trust/*` (rules, tckn, api, TrustProvider, TrustBadge), `src/app/kimlik.tsx`, `src/app/guven.tsx`, `src/app/rapor/yeni.tsx` (4 adımlı yayın kontrolü, yalnız kamera, canlı GPS), `src/app/rapor/[id].tsx` (Doğru/Yanlış ihbar oyu), `ReportRow`/`ReportCard` (güven rozeti), Ayarlar → Kimlik doğrulama.
 
 **Görsel uyum:** yazı ölçeği referans yoğunluğuna indirildi, düz alt menü (kırmızı siren), varsayılan uydu harita + sarı yollar, kenardan kenara Harita, 4'lü deprem özet satırı, aile üyesi fotoğrafı (yalnızca cihazda), Ailem haritasında “Sen” mavi nokta. Referanslardaki “Şu an deprem oluyor / Tahmini şiddet” ifadeleri bilinçli olarak “Deprem kaydedildi / Büyüklük” olarak bırakıldı (uygulama erken uyarı sistemi değildir).
+
+## 9. Güncelleme — açık/koyu tema ve çevrimdışı harita altlığı
+
+- **Tema:** Ayarlar → Uygulama Tercihleri → Tema: *Cihazla aynı* (varsayılan), *Koyu*, *Açık*. Tüm stiller `themedStyles` ile
+  temaya bağlandı (`src/theme/index.ts`); tema değişince ekran ağacı yeniden kurulur ve kullanıcı aynı sayfada kalır
+  (`src/theme/ThemeGate.tsx`). Açık temada beyaz kartlar + yumuşak gölge, kırmızı uyarı kartları her iki temada beyaz yazılı.
+  Acil Durum Modu bilinçli olarak her zaman koyu (yüksek kontrast) çizilir.
+- **Harita teması:** Uydu görünümü açık temada gündüz parlaklığında, koyu temada gece tonunda; şehir adları zemine göre koyu/açık.
+- **Çevrimdışı altlık:** `src/features/map/offline/turkey.json` (~780 KB, Natural Earth 1:10m, kamu malı): kara/deniz, 81 il
+  sınırı, ana yollar, göller, nehirler, 81 il merkezi adı, denizler. İnternet yokken harita boş kalmaz; şehir adları yazı tipi
+  indirmeden işaretçi olarak çizilir. Stil zincirinin son halkası ağ kaynağı kullanmaz. Sokak düzeyi ayrıntı (8+ yakınlaştırma) ve
+  uydu görüntüsü yalnızca çevrimiçiyken gelir.
+- **Doğrulanamayan:** Gerçek cihazda tema geçişi ve MapLibre native'in çevrimdışı davranışı denenmedi; önizleme web (maplibre-gl) ile yapıldı.

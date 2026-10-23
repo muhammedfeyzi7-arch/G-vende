@@ -7,7 +7,7 @@ import { openDirections } from '@/features/assembly-points/api';
 import { loadMyPoint } from '@/features/assembly-points/mine';
 import { useLocalFamily } from '@/features/family/useLocalFamily';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { relativeTimeTr } from '@/utils/time';
 
 /** Ailenin ortak buluşma noktası (cihazda; durum mesajlarına eklenir). */
@@ -121,7 +121,7 @@ export default function MeetingPoint() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     minHeight: 48,
     borderRadius: radius.md,
@@ -132,4 +132,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: 14,
   },
-});
+}));

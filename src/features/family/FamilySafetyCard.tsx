@@ -4,7 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button } from '@/components/ui';
 import { Avatar } from '@/components/ds';
 import { useProfile } from '@/hooks/useProfile';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { relativeTimeTr } from '@/utils/time';
 import type { FamilyGroup } from './api';
 import { buildPeople } from './people';
@@ -90,7 +90,7 @@ export function FamilySafetyCard({ groups, myUserId }: { groups: FamilyGroup[]; 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
@@ -98,8 +98,9 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     paddingVertical: spacing.md,
     gap: spacing.sm,
+    boxShadow: colors.shadowSoft,
   },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg },
   list: { paddingHorizontal: spacing.md, gap: spacing.sm },
   person: { width: 74, alignItems: 'center' },
-});
+}));

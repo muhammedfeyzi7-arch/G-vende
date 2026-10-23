@@ -5,7 +5,7 @@ import { AppText, Button, StateMessage } from '@/components/ui';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError, requireSupabase } from '@/services/supabase';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /** E-posta ile tek kullanımlık kod girişi (parola saklanmaz). */
 export default function SignIn() {
@@ -105,7 +105,7 @@ export default function SignIn() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     minHeight: 48,
     borderRadius: radius.md,
@@ -116,4 +116,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: 14,
   },
-});
+}));

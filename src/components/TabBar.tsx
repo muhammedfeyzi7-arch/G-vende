@@ -2,7 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 const ITEMS: Record<string, { label: string; icon: string; iconActive: string; center?: boolean }> = {
   index: { label: 'Ana Sayfa', icon: 'home-outline', iconActive: 'home' },
@@ -43,7 +43,11 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
                 <Ionicons name={item.iconActive as never} size={26} color={color} />
               )}
             </View>
-            <Text style={[styles.label, { color, fontWeight: focused || item.center ? '600' : '500' }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
+            <Text
+              style={[styles.label, { color, fontWeight: focused || item.center ? '600' : '500' }]}
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.3}
+            >
               {item.label}
             </Text>
           </Pressable>
@@ -53,10 +57,10 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   bar: {
     flexDirection: 'row',
-    backgroundColor: '#040D17',
+    backgroundColor: colors.tabBar,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.borderStrong,
     paddingTop: 6,
@@ -65,4 +69,4 @@ const styles = StyleSheet.create({
   iconWrap: { height: 32, justifyContent: 'center' },
   glow: { textShadowColor: 'rgba(255,53,72,0.8)', textShadowRadius: 12 },
   label: { fontSize: 12 },
-});
+}));

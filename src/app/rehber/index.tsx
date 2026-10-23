@@ -5,7 +5,7 @@ import { IconTile, Page } from '@/components/ds';
 import { CONTENT_SOURCE, GUIDES } from '@/features/emergency/content';
 import { AfterIcon, CoverIcon, DropIcon, HoldIcon } from '@/features/emergency/DropCoverHold';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /** Afet rehberleri (uygulamaya gömülü, internetsiz). */
 export default function Guides() {
@@ -40,7 +40,7 @@ export default function Guides() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   hero: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
   },
-});
+}));

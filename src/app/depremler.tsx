@@ -6,7 +6,7 @@ import { AppText, StateMessage } from '@/components/ui';
 import { QuakeListItem } from '@/features/earthquakes/components/QuakeListItem';
 import { SourceHealthCard } from '@/features/home/tabs';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { distanceKm } from '@/utils/geo';
 
 const PERIODS = [
@@ -139,7 +139,7 @@ export default function QuakeHistory() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   chip: {
     minHeight: 38,
     paddingHorizontal: spacing.md,
@@ -150,4 +150,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chipOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-});
+}));

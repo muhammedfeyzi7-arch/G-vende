@@ -19,7 +19,7 @@ import {
 import type { FamilyState } from '@/features/family/useFamily';
 import { useApp } from '@/providers/AppProvider';
 import { friendlyError } from '@/services/supabase';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { coarsen } from '@/utils/geo';
 import { formatDateTimeTr, relativeTimeTr } from '@/utils/time';
 
@@ -382,7 +382,7 @@ function CreateOrJoin({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   avatar: {
     width: 42,
@@ -405,4 +405,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: spacing.sm },
-});
+}));

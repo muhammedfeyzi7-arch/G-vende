@@ -9,7 +9,7 @@ import { EMPTY_PROFILE, loadProfile, persistPhoto, removePhoto, saveProfile, typ
 import { useAreaLabel } from '@/hooks/useAreaLabel';
 import { useApp } from '@/providers/AppProvider';
 import { getSupabase } from '@/services/supabase';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 export default function EditProfile() {
   const { session } = useApp();
@@ -129,7 +129,7 @@ export default function EditProfile() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     minHeight: 48,
     borderRadius: radius.md,
@@ -140,4 +140,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: 14,
   },
-});
+}));

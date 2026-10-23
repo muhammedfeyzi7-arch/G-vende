@@ -6,7 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText, StateMessage } from '@/components/ui';
 import { relativeTimeTr } from '@/utils/time';
 import { env } from '@/services/env';
-import { colors } from '@/theme';
+import { currentScheme, type Scheme, colors, themedStyles } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import type { UserReport } from '@/types/report';
@@ -14,7 +14,7 @@ import type { LatLng } from '@/utils/geo';
 import { assemblyToGeoJSON, quakesToGeoJSON, reportsToGeoJSON, ringsToGeoJSON } from './geojson';
 import { ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './layers';
 import type { MapStyleId } from '@/features/settings/settings';
-import { GUVENDE_DARK_STYLE, LIGHT_STYLE, offlineOnlyStyle, paletteFor, SATELLITE_STYLE } from './mapStyle';
+import { isLightMap, offlineOnlyStyle, paletteFor, styleFor } from './mapStyle';
 import { visibleLabels } from './offline/base';
 
 export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean; family: boolean };
@@ -75,9 +75,12 @@ const HITBOX = { top: 14, right: 14, bottom: 14, left: 14 };
 
 // Sırayla denenecek stiller: ortam değişkeni (varsa) → seçilen görünüm → tamamen çevrimdışı altlık.
 // Son halka ağ kaynağı kullanmadığı için harita internet yokken de boş kalmaz.
-function styleChain(id: MapStyleId) {
-  const preferred = id === 'satellite' ? SATELLITE_STYLE : id === 'light' ? LIGHT_STYLE : GUVENDE_DARK_STYLE;
-  return [...(process.env.EXPO_PUBLIC_MAP_STYLE_URL ? [env.mapStyleUrl] : []), preferred, offlineOnlyStyle(paletteFor(id))];
+function styleChain(id: MapStyleId, scheme: Scheme) {
+  return [
+    ...(process.env.EXPO_PUBLIC_MAP_STYLE_URL ? [env.mapStyleUrl] : []),
+    styleFor(id, scheme),
+    offlineOnlyStyle(paletteFor(id, scheme)),
+  ];
 }
 
 const renderLayers = (defs: { id: string }[]) => defs.map((d) => <Layer key={d.id} {...(d as LayerProps)} />);
@@ -105,7 +108,8 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
 ) {
   const camera = useRef<CameraRef>(null);
   const mapRef = useRef<MapRef>(null);
-  const STYLES = useMemo(() => styleChain(mapStyle), [mapStyle]);
+  const scheme = currentScheme();
+  const STYLES = useMemo(() => styleChain(mapStyle, scheme), [mapStyle, scheme]);
   // Görünüm değişince yedek zinciri baştan başlar.
   const [fallback, setFallback] = useState({ style: mapStyle, index: 0 });
   const styleIndex = fallback.style === mapStyle ? fallback.index : 0;
@@ -116,7 +120,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
   // Şehir adları işaretçi olarak çizilir (yazı tipi indirmeden, çevrimdışı da görünür).
   const [zoom, setZoom] = useState(initialZoom ?? (focus ? 6.3 : 5));
   const labels = useMemo(() => visibleLabels(zoom), [zoom]);
-  const lightLabels = mapStyle === 'light';
+  const lightLabels = isLightMap(mapStyle, scheme);
 
   useImperativeHandle(ref, () => ({
     flyTo: (p, zoom = 10) => camera.current?.flyTo({ center: [p.longitude, p.latitude], zoom, duration: 800 }),
@@ -310,7 +314,7 @@ export const QuakeMap = forwardRef<QuakeMapHandle, Props>(function QuakeMap(
   );
 });
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   error: { backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   assemblyMarker: {
     width: 40,
@@ -365,4 +369,4 @@ const styles = StyleSheet.create({
   },
   userDot: { width: 18, height: 18, borderRadius: 9, backgroundColor: colors.primary, borderWidth: 3, borderColor: '#fff' },
   userDotApprox: { backgroundColor: 'transparent', borderColor: colors.primary },
-});
+}));

@@ -14,7 +14,7 @@ import { VERIFY_THRESHOLD, VOTE_RADIUS_M } from '@/features/trust/rules';
 import { TrustBadge } from '@/features/trust/TrustBadge';
 import { useTrust } from '@/features/trust/TrustProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { distanceKm, formatDistance } from '@/utils/geo';
 import { formatDateTimeTr, relativeTimeTr } from '@/utils/time';
 
@@ -208,7 +208,7 @@ export default function ReportDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   icon: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
   photo: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.lg, backgroundColor: colors.surface },
-});
+}));

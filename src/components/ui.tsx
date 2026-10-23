@@ -1,7 +1,8 @@
+import { useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps, ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import { colors, font, hitSlop, minTouch, radius, spacing } from '@/theme';
+import { darkPalette, ForceDark, colors, font, hitSlop, minTouch, radius, spacing, themedStyles } from '@/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -25,6 +26,14 @@ export function AppText({
   adjustsFontSizeToFit?: boolean;
   minimumFontScale?: number;
 }) {
+  const forceDark = useContext(ForceDark);
+  const fallback = forceDark
+    ? variant === 'label'
+      ? darkPalette.textSecondary
+      : variant === 'caption'
+        ? darkPalette.textMuted
+        : darkPalette.text
+    : null;
   return (
     <Text
       numberOfLines={numberOfLines}
@@ -32,21 +41,21 @@ export function AppText({
       adjustsFontSizeToFit={adjustsFontSizeToFit}
       minimumFontScale={minimumFontScale}
       maxFontSizeMultiplier={1.6}
-      style={[textStyles[variant], color ? { color } : null, style]}
+      style={[textStyles[variant], color || fallback ? { color: color ?? fallback! } : null, style]}
     >
       {children}
     </Text>
   );
 }
 
-const textStyles = StyleSheet.create({
+const textStyles = themedStyles(() => ({
   display: { color: colors.text, fontSize: font.size.display, fontWeight: font.weight.bold, letterSpacing: -0.5 },
   title: { color: colors.text, fontSize: font.size.xl, fontWeight: font.weight.bold },
   heading: { color: colors.text, fontSize: font.size.lg, fontWeight: font.weight.semibold },
   body: { color: colors.text, fontSize: font.size.md, lineHeight: 18.5 },
   label: { color: colors.textSecondary, fontSize: font.size.sm, fontWeight: font.weight.medium },
   caption: { color: colors.textMuted, fontSize: font.size.xs },
-});
+}));
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[styles.card, style]}>{children}</View>;
@@ -223,13 +232,14 @@ export function SectionHeader({ title, action, onAction }: { title: string; acti
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     padding: spacing.lg,
+    boxShadow: colors.shadowSoft,
   },
   button: {
     minHeight: minTouch + 4,
@@ -244,9 +254,9 @@ const styles = StyleSheet.create({
   buttonText: { fontSize: font.size.md, fontWeight: font.weight.semibold },
   iconButton: {
     borderRadius: 14,
-    backgroundColor: 'rgba(8,20,33,0.88)',
+    backgroundColor: colors.mapPanel,
     borderWidth: 1,
-    borderColor: 'rgba(60,90,120,0.45)',
+    borderColor: colors.mapPanelBorder,
     boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -263,4 +273,4 @@ const styles = StyleSheet.create({
   },
   pill: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 2, alignSelf: 'flex-start' },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-});
+}));

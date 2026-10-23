@@ -15,7 +15,7 @@ import { SelectionCard } from '@/features/map/SelectionCard';
 import { CategoryChips, type ReportFilter } from '@/features/reports/components/CategoryChips';
 import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, radius, spacing } from '@/theme';
+import { alpha, colors, radius, spacing, themedStyles } from '@/theme';
 
 const PERIODS = [
   { key: 6, label: '6 sa' },
@@ -89,7 +89,7 @@ export default function FullscreenMap() {
 
   const header = (
     <LinearGradient
-      colors={[colors.bg, 'rgba(3,11,20,0.88)', 'rgba(3,11,20,0)']}
+      colors={[colors.bg, alpha(colors.bg, 0.88), alpha(colors.bg, 0)]}
       locations={[0, 0.75, 1]}
       style={[
         styles.top,
@@ -221,7 +221,7 @@ export default function FullscreenMap() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   close: {
     width: 44,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.borderStrong,
-    backgroundColor: 'rgba(7,21,34,0.92)',
+    backgroundColor: colors.mapPanel,
     paddingHorizontal: spacing.md,
   },
   segment: {
@@ -256,10 +256,10 @@ const styles = StyleSheet.create({
   bottom: { position: 'absolute', left: spacing.md, right: spacing.md, gap: spacing.xs },
   count: {
     overflow: 'hidden',
-    backgroundColor: 'rgba(3,11,20,0.8)',
+    backgroundColor: colors.mapPanel,
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
   },
-});
+}));

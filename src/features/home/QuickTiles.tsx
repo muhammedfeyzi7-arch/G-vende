@@ -2,12 +2,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { Icon } from '@/components/ds';
-import { radius, spacing } from '@/theme';
+import { colors, currentScheme, radius, spacing, themedStyles } from '@/theme';
 
 export type Tile = { key: string; icon: string; color: string; title: string; subtitle?: string; onPress: () => void; big?: boolean };
 
 /** Ana sayfadaki renkli hızlı erişim kutuları (yatay sığar; dar ekranda kaydırılır). */
 export function QuickTiles({ tiles }: { tiles: Tile[] }) {
+  const light = currentScheme() === 'light';
   return (
     <View style={styles.row}>
       {tiles.map((t) => (
@@ -23,23 +24,39 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
           ]}
         >
           <LinearGradient
-            colors={[t.color + '40', t.color + '14']}
+            colors={
+              t.big && light
+                ? [colors.alertFrom, colors.alertTo]
+                : light
+                  ? [t.color + '24', t.color + '0A']
+                  : [t.color + '40', t.color + '14']
+            }
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
-          <Icon name={t.icon} size={28} color={t.color} />
+          <Icon name={t.icon} size={28} color={t.big && light ? colors.onAccent : t.color} />
           {t.big ? (
             <AppText variant="title" color="#fff" style={{ fontSize: 19.5, lineHeight: 23 }}>
               {t.title}
             </AppText>
           ) : (
-            <AppText variant="label" color={t.color === '#8B5CF6' ? '#C4B5FD' : t.color} numberOfLines={3} style={styles.title}>
+            <AppText
+              variant="label"
+              color={t.color === '#8B5CF6' ? (light ? '#7C3AED' : '#C4B5FD') : t.color}
+              numberOfLines={3}
+              style={styles.title}
+            >
               {t.title}
             </AppText>
           )}
           {t.subtitle ? (
-            <AppText variant="caption" color={t.big ? '#F6C9CE' : '#C9D4E0'} numberOfLines={2} style={styles.sub}>
+            <AppText
+              variant="caption"
+              color={t.big ? (light ? '#FDE3E6' : '#F6C9CE') : colors.textSecondary}
+              numberOfLines={2}
+              style={styles.sub}
+            >
               {t.subtitle}
             </AppText>
           ) : null}
@@ -49,7 +66,7 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: { flexDirection: 'row', gap: spacing.xs },
   tile: {
     flex: 1,
@@ -57,6 +74,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     overflow: 'hidden',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 2,
@@ -65,4 +83,4 @@ const styles = StyleSheet.create({
   },
   title: { textAlign: 'center', fontSize: 12, fontWeight: '700', lineHeight: 14.5 },
   sub: { textAlign: 'center', fontSize: 11, lineHeight: 13.5 },
-});
+}));

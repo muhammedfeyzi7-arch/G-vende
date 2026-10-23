@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import { distanceKm, formatDistance, type LatLng } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
@@ -48,7 +48,7 @@ export function QuakeListItem({ event, user, onPress }: { event: EarthquakeEvent
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -59,4 +59,4 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   mag: { width: 52, height: 52, borderRadius: radius.md, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-});
+}));

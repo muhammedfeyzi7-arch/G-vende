@@ -7,7 +7,7 @@ import { GroupTitle, ListRow, RowGroup } from '@/components/ds';
 import { formatDepth, formatMagnitude, magnitudeColor, placeTitle } from '@/features/earthquakes/format';
 import { SOURCES } from '@/features/earthquakes/repository';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { formatDateTimeTr, relativeTimeTr } from '@/utils/time';
 
 /**
@@ -93,7 +93,7 @@ export default function OfficialInfo() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -105,4 +105,4 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
   },
   mag: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-});
+}));

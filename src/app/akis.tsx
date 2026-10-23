@@ -8,7 +8,7 @@ import { LiveFeedTab } from '@/features/home/tabs';
 import type { ReportFilter } from '@/features/reports/components/CategoryChips';
 import { useApp } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, font, radius, spacing } from '@/theme';
+import { colors, font, radius, spacing, themedStyles } from '@/theme';
 
 /** Tüm kullanıcı bildirimleri (canlı akış) — kategori filtreli. */
 export default function FeedScreen() {
@@ -52,7 +52,7 @@ export default function FeedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   fab: {
     position: 'absolute',
     right: spacing.lg,
@@ -65,4 +65,4 @@ const styles = StyleSheet.create({
     minHeight: 58,
     boxShadow: '0 8px 26px rgba(22,131,255,0.45)',
   },
-});
+}));

@@ -6,7 +6,7 @@ import { BellButton } from '@/components/ds';
 import { useAreaLabel } from '@/hooks/useAreaLabel';
 import { useApp } from '@/providers/AppProvider';
 import { useInbox } from '@/providers/InboxProvider';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 export function Logo({ compact }: { compact?: boolean }) {
   return (
@@ -70,8 +70,8 @@ export function HomeHeader() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 56 },
   loc: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 0 },
   right: { width: 50, alignItems: 'flex-end' },
-});
+}));

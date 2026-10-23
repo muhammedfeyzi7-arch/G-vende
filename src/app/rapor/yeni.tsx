@@ -16,7 +16,7 @@ import { MAX_DESCRIPTION, MAX_PHOTOS, validateReport } from '@/features/reports/
 import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
 import { isBackendConfigured } from '@/services/env';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { FeltIntensity, ReportCategory } from '@/types/report';
 import { coarsen, distanceKm } from '@/utils/geo';
 import { evaluateGates, gatesPass, LOCATION_REQUIRED, PHOTO_REQUIRED, type Gate } from '@/features/trust/rules';
@@ -417,7 +417,7 @@ export default function NewReport() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   catCard: {
     width: '31.5%',
@@ -478,4 +478,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

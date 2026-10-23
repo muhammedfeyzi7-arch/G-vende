@@ -1,6 +1,7 @@
 import type { QuakeSourceId } from '@/types/earthquake';
 
 export type MapStyleId = 'dark' | 'satellite' | 'light';
+export type ThemePref = 'system' | 'dark' | 'light';
 
 export interface Settings {
   /** Resmî kurum kaynaklı deprem kayıtları için bildirim (M eşiğinin üzerinde) */
@@ -15,6 +16,8 @@ export interface Settings {
   /** Konum gönderilmeyecek yerel kişi kimlikleri */
   hideLocationFrom: string[];
   mapStyle: MapStyleId;
+  /** Uygulama teması: cihazla aynı, koyu veya açık */
+  theme: ThemePref;
   /** Uygulama açılırken Face ID / parmak izi iste */
   biometricLock: boolean;
   /** Konum izni yoksa kullanıcının elle seçtiği il */
@@ -44,6 +47,7 @@ export const DEFAULT_SETTINGS: Settings = {
   locationSharing: false,
   hideLocationFrom: [],
   mapStyle: 'satellite',
+  theme: 'system',
   biometricLock: false,
   manualProvince: null,
   quakeNotifications: true,

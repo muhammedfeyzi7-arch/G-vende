@@ -16,7 +16,7 @@ import { KIT_ITEMS, KIT_SHORT } from '@/features/emergency/content';
 import { useFamilyActions } from '@/features/family/useFamilyActions';
 import { DEFAULT_LAYERS, QuakeMap } from '@/features/map/QuakeMap';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { formatDistance } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
 
@@ -122,7 +122,12 @@ export default function EmergencyScreen() {
 
       {/* 112 */}
       <View style={styles.callCard}>
-        <LinearGradient colors={['#5A0F1C', '#3A0B14']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+        <LinearGradient
+          colors={[colors.alertFrom, colors.alertTo]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
         <Pressable
           onPress={() => Linking.openURL('tel:112')}
           accessibilityRole="button"
@@ -132,14 +137,14 @@ export default function EmergencyScreen() {
           <Ionicons name="call" size={34} color="#fff" />
         </Pressable>
         <View style={{ flex: 1 }}>
-          <AppText variant="label" color="#F6C9CE">
+          <AppText variant="label" color="#FDE3E6">
             Acil Çağrı
           </AppText>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-            <AppText variant="display" style={{ fontSize: 35, lineHeight: 38.5 }}>
+            <AppText variant="display" color={colors.onAccent} style={{ fontSize: 35, lineHeight: 38.5 }}>
               112
             </AppText>
-            <AppText variant="caption" color="#F6C9CE" style={{ fontSize: 10, lineHeight: 13, flexShrink: 1 }}>
+            <AppText variant="caption" color="#FDE3E6" style={{ fontSize: 10, lineHeight: 13, flexShrink: 1 }}>
               {'Sağlık · İtfaiye · Polis\nAFAD · Jandarma'}
             </AppText>
           </View>
@@ -403,7 +408,7 @@ export default function EmergencyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   modeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -421,7 +426,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: '#8A1F2E',
+    borderColor: colors.alertBorder,
     padding: spacing.md,
     overflow: 'hidden',
     boxShadow: '0 6px 24px rgba(255,53,72,0.25)',
@@ -455,6 +460,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     padding: spacing.sm,
     minHeight: 120,
+    boxShadow: colors.shadowSoft,
   },
   card: {
     backgroundColor: colors.surface,
@@ -463,6 +469,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     paddingVertical: spacing.md,
     gap: spacing.sm,
+    boxShadow: colors.shadowSoft,
   },
   cardHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md },
   step: { flex: 1, flexBasis: 0, minWidth: 0, gap: 2 },
@@ -470,7 +477,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     height: 80,
     borderRadius: radius.md,
-    backgroundColor: '#0B1928',
+    backgroundColor: colors.surfaceRaised,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
     alignItems: 'center',
@@ -492,7 +499,7 @@ const styles = StyleSheet.create({
   pair: { flexDirection: 'row', gap: spacing.sm },
   halfCard: { flex: 1, paddingHorizontal: spacing.sm + 2 },
   halfHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  miniMap: { height: 110, borderRadius: radius.md, overflow: 'hidden', backgroundColor: '#0A1824' },
+  miniMap: { height: 110, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.mapPlaceholder },
   kitRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 24 },
   news: {
     flexDirection: 'row',
@@ -503,4 +510,4 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   srcBadge: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#C81E32', alignItems: 'center', justifyContent: 'center' },
-});
+}));

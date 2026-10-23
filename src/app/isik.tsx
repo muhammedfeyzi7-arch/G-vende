@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StatusBar, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui';
-import { radius, spacing } from '@/theme';
+import { radius, spacing, themedStyles } from '@/theme';
 
 // Mors SOS: ... --- ...  (birim = 250 ms)
 const U = 250;
@@ -97,11 +97,11 @@ export default function LightScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, justifyContent: 'flex-end' },
   controls: { paddingHorizontal: spacing.lg, gap: spacing.sm },
   segment: { flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.12)', borderRadius: radius.pill, padding: 4 },
   segBtn: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill },
   segActive: { backgroundColor: '#1683FF' },
   close: { minHeight: 52, borderRadius: radius.pill, backgroundColor: 'rgba(0,0,0,0.75)', alignItems: 'center', justifyContent: 'center' },
-});
+}));

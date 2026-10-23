@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
-import { colors } from '@/theme';
+import { colors, themedStyles } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { VERIFY_THRESHOLD } from './rules';
 
@@ -36,7 +36,7 @@ export function TrustBadge({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -48,4 +48,4 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     flexShrink: 1,
   },
-});
+}));

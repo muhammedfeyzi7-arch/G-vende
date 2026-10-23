@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, Pill } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { relativeTimeTr } from '@/utils/time';
 import { CATEGORY_META, feltColor, reportHeadline } from '../categories';
@@ -48,7 +48,7 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     width: 236,
     minHeight: 120,
@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderStrong,
     padding: spacing.md,
+    boxShadow: colors.shadowSoft,
   },
   icon: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   thumb: { width: 76, height: 92, borderRadius: radius.md, backgroundColor: colors.surface },
-});
+}));

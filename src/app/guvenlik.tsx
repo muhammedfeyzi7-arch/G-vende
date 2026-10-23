@@ -8,7 +8,7 @@ import { authenticate, biometricAvailability } from '@/features/settings/Biometr
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { friendlyError, getSupabase } from '@/services/supabase';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /**
  * Güvenlik. GÜVENDE parola kullanmaz: giriş, e-postaya gelen tek kullanımlık kodla yapılır;
@@ -127,7 +127,7 @@ export default function SecurityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     minHeight: 48,
     borderRadius: radius.md,
@@ -138,4 +138,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: 14,
   },
-});
+}));

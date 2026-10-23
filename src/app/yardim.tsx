@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { GroupTitle, ListRow, Page, RowGroup } from '@/components/ds';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 const FAQ: { q: string; a: string }[] = [
   {
@@ -73,7 +73,7 @@ export default function HelpCenter() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   item: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -82,4 +82,4 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.sm,
   },
-});
+}));

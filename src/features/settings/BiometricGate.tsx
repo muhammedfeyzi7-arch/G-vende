@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AppState, Linking, StyleSheet, View } from 'react-native';
 import { AppText, Button } from '@/components/ui';
 import { useApp } from '@/providers/AppProvider';
-import { colors, spacing } from '@/theme';
+import { colors, spacing, themedStyles } from '@/theme';
 
 /** Arka planda bu süreden uzun kalırsa tekrar kilit istenir. */
 const RELOCK_MS = 5 * 60_000;
@@ -71,6 +71,6 @@ export function BiometricGate({ children }: { children: ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   lock: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', gap: spacing.md, padding: spacing.xxl },
-});
+}));

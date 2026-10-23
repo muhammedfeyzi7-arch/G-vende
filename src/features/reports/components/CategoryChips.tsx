@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { AppText } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { ReportCategory } from '@/types/report';
 import { CATEGORY_META, FILTERS } from '../categories';
 
@@ -37,7 +37,7 @@ export function CategoryChips({ value, onChange }: { value: ReportFilter; onChan
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: { gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   chip: {
     flexDirection: 'row',
@@ -51,4 +51,4 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-});
+}));

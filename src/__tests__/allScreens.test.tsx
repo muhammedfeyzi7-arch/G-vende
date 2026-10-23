@@ -311,6 +311,15 @@ describe('alt ekranlar', () => {
     expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:settings')).mapStyle).toBe('dark');
   });
 
+  it('Tercihler: açık tema seçilir ve kaydedilir', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const Screen = require('@/app/tercihler').default;
+    await open(<Screen />);
+    await fireEvent.press(screen.getAllByText('Açık', { exact: true })[1]!);
+    await flush();
+    expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:settings')).theme).toBe('light');
+  });
+
   it('Gizlilik: konum paylaşımı onayla açılır ve durdurulur', async () => {
     const alert = jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'Aç')?.onPress?.());
     const Screen = require('@/app/gizlilik/index').default;

@@ -9,7 +9,7 @@ import { DEFAULT_LAYERS, QuakeMap } from '@/features/map/QuakeMap';
 import { ReportRow } from '@/features/reports/components/ReportRow';
 import { useApp } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { distanceKm, formatDistance } from '@/utils/geo';
 import { formatDateTimeTr, relativeTimeTr } from '@/utils/time';
 
@@ -181,7 +181,7 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   magBig: { width: 96, height: 96, borderRadius: radius.lg, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   mapBox: { height: 240, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.surface },
-});
+}));

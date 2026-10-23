@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, Pill } from '@/components/ui';
-import { colors, hitSlop, radius, spacing } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { relativeTimeTr } from '@/utils/time';
 import { CATEGORY_META, feltColor, reportHeadline } from '../categories';
@@ -78,7 +78,7 @@ export function ReportRow({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -98,4 +98,4 @@ const styles = StyleSheet.create({
   side: { alignSelf: 'stretch', alignItems: 'flex-end', justifyContent: 'space-between', paddingVertical: 2 },
   time: { fontSize: 11.5 },
   helpful: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 32, paddingLeft: 6 },
-});
+}));

@@ -5,7 +5,7 @@ import { IconTile, Page } from '@/components/ds';
 import { GUIDES } from '@/features/emergency/content';
 import { DCH_STEPS } from '@/features/emergency/DropCoverHold';
 import { Linking } from 'react-native';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 export default function GuideDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,7 +51,7 @@ export default function GuideDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   dch: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: radius.xl, paddingVertical: spacing.md },
   step: {
     flexDirection: 'row',
@@ -62,4 +62,4 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   num: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-});
+}));

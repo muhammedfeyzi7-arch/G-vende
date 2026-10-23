@@ -19,7 +19,7 @@ import { SelectionCard } from '@/features/map/SelectionCard';
 import type { ReportFilter } from '@/features/reports/components/CategoryChips';
 import { useApp, useVisibleQuakes } from '@/providers/AppProvider';
 import { useReports } from '@/providers/ReportsProvider';
-import { colors, font, radius, spacing } from '@/theme';
+import { colors, font, radius, spacing, themedStyles } from '@/theme';
 import { distanceKm } from '@/utils/geo';
 
 type TabKey = 'feed' | 'official' | 'assembly' | 'help' | 'details';
@@ -273,12 +273,12 @@ export default function MapScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.bg },
   // Referanstaki gibi kenardan kenara harita.
   map: {
     overflow: 'hidden',
-    backgroundColor: '#0A1824',
+    backgroundColor: colors.mapPlaceholder,
   },
   mapBottom: {
     position: 'absolute',
@@ -312,4 +312,4 @@ const styles = StyleSheet.create({
     minHeight: 58,
     boxShadow: '0 8px 26px rgba(22,131,255,0.45)',
   },
-});
+}));

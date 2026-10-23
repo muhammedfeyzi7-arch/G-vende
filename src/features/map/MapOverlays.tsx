@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
 import { AppText } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { FELT_LEVELS } from '../reports/categories';
 import type { MapLayers } from './QuakeMap';
 
@@ -188,15 +188,15 @@ export function NearbyAssemblyButton({ onPress, count, mine }: { onPress: () => 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   controls: { position: 'absolute', right: spacing.sm, top: spacing.sm, gap: spacing.xs + 2 },
   ctrl: {
     width: 76,
     minHeight: 62,
     borderRadius: 14,
-    backgroundColor: 'rgba(8,20,33,0.88)',
+    backgroundColor: colors.mapPanel,
     borderWidth: 1,
-    borderColor: 'rgba(60,90,120,0.45)',
+    borderColor: colors.mapPanelBorder,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     right: 92,
     top: spacing.md,
     width: 230,
-    backgroundColor: 'rgba(7,21,34,0.97)',
+    backgroundColor: colors.mapPanel,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.borderStrong,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   layerRow: { flexDirection: 'row', alignItems: 'center', minHeight: 40 },
   legend: {
     flexShrink: 1,
-    backgroundColor: 'rgba(3,11,20,0.7)',
+    backgroundColor: colors.mapPanel,
     borderRadius: radius.md,
     paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs + 2,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: 'rgba(5,15,25,0.9)',
+    backgroundColor: colors.mapPanel,
     boxShadow: '0 4px 18px rgba(0,0,0,0.45)',
     borderRadius: radius.pill,
     borderWidth: 1,
@@ -262,4 +262,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

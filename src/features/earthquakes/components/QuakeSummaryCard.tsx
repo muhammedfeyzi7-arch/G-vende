@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui';
-import { colors, hitSlop, radius, spacing } from '@/theme';
+import { colors, hitSlop, radius, spacing, themedStyles } from '@/theme';
 import type { EarthquakeEvent } from '@/types/earthquake';
 import { distanceKm, formatDistance, type LatLng } from '@/utils/geo';
 import { relativeTimeTr } from '@/utils/time';
@@ -120,7 +120,7 @@ export function QuakeSummaryCard({ event, user, feltReports }: { event: Earthqua
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     backgroundColor: colors.surfaceRaised,
     borderRadius: radius.xl,
@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     padding: spacing.md,
     gap: spacing.md,
+    boxShadow: colors.shadowSoft,
   },
   top: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   vsep: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch', backgroundColor: colors.borderStrong, marginHorizontal: 2 },
@@ -150,4 +151,4 @@ const styles = StyleSheet.create({
   },
   metric: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5, minWidth: 0 },
   metricIcon: { width: 20, alignItems: 'center', justifyContent: 'center' },
-});
+}));

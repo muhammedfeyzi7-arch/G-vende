@@ -5,7 +5,7 @@ import { AppText, Button } from '@/components/ui';
 import { acceptInvite } from '@/features/family/api';
 import { useApp } from '@/providers/AppProvider';
 import { friendlyError } from '@/services/supabase';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /** guvende://aile/davet/<token> derin bağlantısı */
 export default function AcceptInvite() {
@@ -53,7 +53,7 @@ export default function AcceptInvite() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     minHeight: 48,
     borderRadius: radius.md,
@@ -64,4 +64,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: 14,
   },
-});
+}));

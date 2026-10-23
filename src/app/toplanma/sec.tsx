@@ -8,7 +8,7 @@ import { EDEVLET_ASSEMBLY_URL } from '@/features/assembly-points/api';
 import { loadMyPoint, saveMyPoint } from '@/features/assembly-points/mine';
 import { DEFAULT_LAYERS, QuakeMap, type QuakeMapHandle } from '@/features/map/QuakeMap';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import { Linking } from 'react-native';
 
 /** Kullanıcının kendisine atanmış toplanma alanını haritadan seçip bu cihaza kaydetmesi. */
@@ -122,8 +122,8 @@ export default function PickAssemblyPoint() {
   );
 }
 
-const styles = StyleSheet.create({
-  mapBox: { flex: 1, minHeight: 280, backgroundColor: '#0A1824' },
+const styles = themedStyles(() => ({
+  mapBox: { flex: 1, minHeight: 280, backgroundColor: colors.mapPlaceholder },
   crosshair: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
   hint: {
     position: 'absolute',
@@ -144,4 +144,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     fontSize: 13,
   },
-});
+}));

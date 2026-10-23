@@ -8,7 +8,7 @@ import { EDEVLET_ASSEMBLY_URL, getSaved, openDirections, toggleSaved } from '@/f
 import { saveMyPoint } from '@/features/assembly-points/mine';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { useApp } from '@/providers/AppProvider';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
 import { distanceKm, formatDistance } from '@/utils/geo';
 import { formatDateTr, relativeTimeTr } from '@/utils/time';
@@ -193,7 +193,7 @@ export default function AssemblyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   myCard: { borderColor: colors.safe + '66' },
   apIcon: {
     width: 36,
@@ -213,4 +213,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));
