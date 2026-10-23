@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [scripts/preview-shots.mjs, .github/workflows/preview-shots.yml, 'src/app/(tabs)/harita.tsx', 'src/features/map/**', 'src/features/emergency/**', 'src/app/(tabs)/acil.tsx']
+    paths: [scripts/preview-shots.mjs, .github/workflows/preview-shots.yml, 'src/app/(tabs)/harita.tsx', 'src/features/map/**', 'src/features/emergency/**', 'src/app/(tabs)/acil.tsx', 'src/app/(tabs)/ailem.tsx', 'src/app/(tabs)/ayarlar.tsx']
 permissions:
   contents: write
 jobs:

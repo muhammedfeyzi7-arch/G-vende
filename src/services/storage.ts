@@ -32,3 +32,16 @@ export async function clearAll(): Promise<void> {
     await AsyncStorage.multiRemove(keys);
   } catch {}
 }
+
+/** Yalnızca önbellekleri siler (ör. toplanma alanı karoları, deprem listesi); kullanıcı verisine dokunmaz. */
+export async function clearCaches(keys: string[], prefixes: string[]): Promise<number> {
+  try {
+    const all = (await AsyncStorage.getAllKeys()).filter(
+      (k) => k.startsWith(PREFIX) && (keys.includes(k.slice(PREFIX.length)) || prefixes.some((p) => k.slice(PREFIX.length).startsWith(p))),
+    );
+    await AsyncStorage.multiRemove(all);
+    return all.length;
+  } catch {
+    return 0;
+  }
+}

@@ -303,7 +303,7 @@ describe('alt sekmeler', () => {
       .mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'Güvende işaretle')?.onPress?.());
     const Ailem = require('@/app/(tabs)/ailem').default;
     await open(<Ailem />);
-    await fireEvent(screen.getByLabelText(/^Annem:/), 'longPress');
+    await fireEvent(screen.getByLabelText(/^Annem: (Bilinmiyor|Yanıtsız)/), 'longPress');
     await flush();
     expect(alert.mock.calls[0]?.[2]?.map((b) => b.text)).toEqual(['Ara', 'Durum sor (SMS)', 'Güvende işaretle', 'Evde işaretle', 'Vazgeç']);
     expect(screen.getByText('Ailende 1 kişiden 1’i güvende')).toBeTruthy();
@@ -330,18 +330,38 @@ describe('alt sekmeler', () => {
     alert.mockRestore();
   });
 
-  it('Ailem: davet bağlantısı sunucusuz kurulumda açıklama gösterir; Üye Ekle yönlendirir', async () => {
+  it('Ailem: boşken uydurma kişi yok; hızlı eylemler, buluşma noktası ve plan bağlantıları', async () => {
     const alert = jest.spyOn(Alert, 'alert');
     const { router } = require('expo-router');
     const Ailem = require('@/app/(tabs)/ailem').default;
     await open(<Ailem />);
-    expect(screen.getByText('Henüz aile üyesi eklemediniz')).toBeTruthy();
-    await fireEvent.press(screen.getByText('Davet Linki Oluştur'));
-    expect(alert).toHaveBeenCalledWith('Davet bağlantısı', expect.stringMatching(/sunucu yapılandırılmadı/), expect.any(Array));
+    expect(screen.getByText('Aile üyelerinizin durumunu takip edin')).toBeTruthy();
+    expect(screen.getByText(/harita burada görünür/)).toBeTruthy();
     await fireEvent.press(screen.getByLabelText('Üye ekle'));
     expect(router.push).toHaveBeenCalledWith('/aile/ekle');
-    // Haritada gösterilecek aile konumu yoksa harita yerine açıklama satırı görünür.
-    expect(screen.getByText(/Aile haritası, buluşma noktası belirlediğinizde/)).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Konum İste. SMS ile konum sor'));
+    expect(alert).toHaveBeenCalledWith('Acil durum kişisi yok', expect.any(String), expect.any(Array));
+    await fireEvent.press(screen.getByLabelText('Arama Yap. Aile üyelerini ara'));
+    expect(router.push).toHaveBeenCalledWith('/arama');
+    await fireEvent.press(screen.getByLabelText('Buluşma noktasını belirle'));
+    expect(router.push).toHaveBeenCalledWith('/aile/bulusma');
+    await fireEvent.press(screen.getByLabelText('Aile Acil Durum Planı: Görüntüle'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/hazirlik', params: { grup: 'plan' } });
+  });
+
+  it('Ailem: kişi satırından ara, SMS ile durum sor ve konum gönder', async () => {
+    const SMS = require('expo-sms');
+    await require('@react-native-async-storage/async-storage').setItem(
+      'guvende:v1:local-contacts',
+      JSON.stringify([{ id: '1', name: 'Ayşe', phone: '+905321234567', relation: 'Annem', status: null }]),
+    );
+    const Ailem = require('@/app/(tabs)/ailem').default;
+    await open(<Ailem />);
+    await fireEvent.press(screen.getByLabelText('Annem: ara'));
+    expect(openURL).toHaveBeenCalledWith('tel:+905321234567');
+    await fireEvent.press(screen.getByLabelText('Annem: SMS ile durum sor'));
+    await flush();
+    expect(SMS.sendSMSAsync).toHaveBeenCalledWith(['+905321234567'], expect.stringMatching(/durumunu merak ediyorum/));
   });
 
   it('Üye ekle: kişiyi cihaza kaydeder', async () => {
@@ -369,31 +389,64 @@ describe('alt sekmeler', () => {
     expect(spy).toHaveBeenCalledWith('Eklenemedi', 'Telefon numarası geçersiz.');
   });
 
-  it('Ayarlar: profil kartı, hızlı kartlar, bildirim tercihleri kalıcı', async () => {
-    const AsyncStorage = require('@react-native-async-storage/async-storage');
+  it('Ayarlar: profil kartı ve bölüm satırları doğru ekranlara gider', async () => {
     const Ayarlar = require('@/app/(tabs)/ayarlar').default;
     const { router } = require('expo-router');
     await open(<Ayarlar />);
     expect(screen.getByText('Profilinizi oluşturun')).toBeTruthy();
-    expect(screen.getByLabelText('Konum Paylaşımı: Kapalı')).toBeTruthy();
+    for (const t of ['Acil Durum Ayarları', 'Uygulama Tercihleri', 'Veri ve Gizlilik', 'Hesap ve Güvenlik', 'Hakkında']) expect(screen.getByText(t)).toBeTruthy();
+    expect(screen.getByLabelText(/^Konum paylaşımı\. .*Kapalı$/)).toBeTruthy();
+    const go: [RegExp, string][] = [
+      [/^Acil arama ayarları/, '/arama'],
+      [/^Acil durum bildirimleri/, '/bildirim-ayarlari'],
+      [/^Acil durum çantası/, '/canta'],
+      [/^Tema/, '/tercihler'],
+      [/^Kimlik doğrulama/, '/kimlik'],
+      [/^Giriş ve güvenlik/, '/guvenlik'],
+      [/^Geri bildirim/, '/geri-bildirim'],
+      [/^Kaynaklar/, '/rehber/kaynaklar'],
+    ];
+    for (const [label, href] of go) {
+      await fireEvent.press(screen.getByLabelText(label));
+      expect(router.push).toHaveBeenCalledWith(href);
+    }
+  });
+
+  it('Ayarlar: önbellek temizleme kullanıcı verisini korur', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    await AsyncStorage.setItem('guvende:v1:local-contacts', '[]');
+    await AsyncStorage.setItem('guvende:v1:quake-cache', '{}');
+    await AsyncStorage.setItem('guvende:v1:ap-tile:11/1/1', '{}');
+    jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'Temizle')?.onPress?.());
+    const Ayarlar = require('@/app/(tabs)/ayarlar').default;
+    await open(<Ayarlar />);
+    await fireEvent.press(screen.getByLabelText(/^Depolama yönetimi/));
+    await flush();
+    expect(await AsyncStorage.getItem('guvende:v1:quake-cache')).toBeNull();
+    expect(await AsyncStorage.getItem('guvende:v1:ap-tile:11/1/1')).toBeNull();
+    expect(await AsyncStorage.getItem('guvende:v1:local-contacts')).toBe('[]');
+  });
+
+  it('Güvenlik: biyometrik desteklenmiyorsa açıklama gösterir, açmaz', async () => {
+    const alert = jest.spyOn(Alert, 'alert');
+    const Screen = require('@/app/guvenlik').default;
+    await open(<Screen />);
+    await fireEvent(screen.getByLabelText('Biyometrik giriş'), 'valueChange', true);
+    await flush();
+    expect(alert).toHaveBeenCalledWith('Biyometrik giriş kullanılamıyor', expect.any(String));
+    expect(screen.getByLabelText('Biyometrik giriş').props.value).toBe(false);
+  });
+
+  it('Bildirim ayarları: tercih kalıcı', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const Screen = require('@/app/bildirim-ayarlari').default;
+    await open(<Screen />);
     const sw = screen.getByLabelText('Topluluk bildirimleri');
     expect(sw.props.value).toBe(false);
     await fireEvent(sw, 'valueChange', true);
     await flush();
     const saved = JSON.parse(await AsyncStorage.getItem('guvende:v1:settings'));
     expect(saved.communityNotifications).toBe(true);
-    await fireEvent.press(screen.getByText('Yardım Merkezi'));
-    expect(router.push).toHaveBeenCalledWith('/yardim');
-  });
-
-  it('Ayarlar: biyometrik desteklenmiyorsa açıklama gösterir, açmaz', async () => {
-    const alert = jest.spyOn(Alert, 'alert');
-    const Ayarlar = require('@/app/(tabs)/ayarlar').default;
-    await open(<Ayarlar />);
-    await fireEvent(screen.getByLabelText('Biyometrik giriş'), 'valueChange', true);
-    await flush();
-    expect(alert).toHaveBeenCalledWith('Biyometrik giriş kullanılamıyor', expect.stringMatching(/donanımı yok/));
-    expect(screen.getByLabelText('Biyometrik giriş').props.value).toBe(false);
   });
 });
 

@@ -1,65 +1,70 @@
-import { useToast } from '@/components/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useBottomTabBarHeight } from 'expo-router/js-tabs';
 import { useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, Share, StyleSheet, View, RefreshControl } from 'react-native';
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useToast } from '@/components/Toast';
 import { AppText } from '@/components/ui';
-import { Avatar, Icon, IconTile, ScreenHeader, accent } from '@/components/ds';
-import { createInvite, inviteLink } from '@/features/family/api';
+import { Avatar } from '@/components/ds';
 import { ASK_STATUS_MESSAGE, callPhone, formatPhone, sendSms } from '@/features/family/local';
 import { OnlineGroupSection } from '@/features/family/OnlineGroupSection';
-import { buildPeople, safeCount, STATUS_LABEL, type PersonSummary } from '@/features/family/people';
+import { buildPeople, safeCount, type PersonSummary } from '@/features/family/people';
 import { useFamily } from '@/features/family/useFamily';
 import { useFamilyActions } from '@/features/family/useFamilyActions';
+import { GuideImage } from '@/features/guide/Art';
 import { DEFAULT_LAYERS, QuakeMap, type FamilyPin, type QuakeMapHandle } from '@/features/map/QuakeMap';
 import { useProfile } from '@/hooks/useProfile';
 import { useApp } from '@/providers/AppProvider';
-import { isBackendConfigured } from '@/services/env';
-import { friendlyError } from '@/services/supabase';
-import { colors, radius, spacing, themedStyles } from '@/theme';
+import { alpha, colors, radius, spacing, themedStyles } from '@/theme';
 import type { AssemblyPoint } from '@/types/assembly';
 import { formatTimeTr, relativeTimeTr } from '@/utils/time';
 
-function StatTile({ icon, color, value, label }: { icon: string; color: string; value: number; label: string }) {
-  return (
-    <View style={styles.stat} accessible accessibilityLabel={`${value} ${label}`}>
-      <IconTile icon={icon} color={color} size={30} solid={color !== accent.gray} />
-      <View style={{ flexShrink: 1, minWidth: 0 }}>
-        <AppText variant="title" style={{ fontSize: 17, lineHeight: 20 }}>
-          {value}
-        </AppText>
-        <AppText variant="caption" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={{ fontSize: 10.5 }}>
-          {label}
-        </AppText>
-      </View>
-    </View>
-  );
-}
+const LOCATION_REQUEST_MESSAGE = 'GÜVENDE: Neredesin? Uygun olduğunda konumunu benimle paylaşır mısın?';
+const STATUS_ICON: Record<string, string> = {
+  safe: 'shield-checkmark',
+  help: 'alert-circle',
+  waiting: 'time-outline',
+  home: 'home',
+  unknown: 'help-circle-outline',
+};
 
-function StatusPill({ p }: { p: PersonSummary }) {
+function SectionHead({ title, action, onAction }: { title: string; action: string; onAction: () => void }) {
   return (
-    <View style={[styles.pill, { borderColor: p.color + '88', backgroundColor: p.color + '22' }]}>
-      <AppText variant="caption" color={p.color} style={{ fontSize: 10.5, fontWeight: '700' }}>
-        {p.label}
+    <View style={styles.sectionHead}>
+      <View style={styles.sectionBar} />
+      <AppText variant="heading" accessibilityRole="header" style={{ flex: 1, fontSize: 18 }}>
+        {title}
       </AppText>
+      <Pressable onPress={onAction} accessibilityRole="link" accessibilityLabel={`${title}: ${action}`} hitSlop={8} style={styles.headLink}>
+        <AppText variant="label" color={colors.primary} style={{ fontSize: 13.5 }}>
+          {action}
+        </AppText>
+        <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+      </Pressable>
     </View>
   );
 }
 
-/** Ailem: aile üyelerinin durumu, izinli konumları, davet ve buluşma noktası. */
+/**
+ * Ailem sekmesi: üyeler ve durumları, aile haritası, hızlı eylemler (SMS/arama telefonun kendi
+ * uygulamasında açılır), buluşma noktası, acil durum kişileri ve aile planı. Uygulama kişilerin
+ * durumunu kendiliğinden bilemez; yanıt vermeyen kişi tehlikede sayılmaz.
+ */
 export default function FamilyScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
-  const { userCoords, location, settings, session } = useApp();
+  const { width } = useWindowDimensions();
+  const { userCoords, location, settings } = useApp();
   const family = useFamily();
   const fam = useFamilyActions();
   const toast = useToast();
   const { profile } = useProfile();
-  const [view, setView] = useState<'map' | 'list'>('map');
   const [refreshing, setRefreshing] = useState(false);
   const mapRef = useRef<QuakeMapHandle>(null);
+  const pageW = Math.min(width, 640);
+  const gap = spacing.sm;
+  const cellW = (pageW - spacing.md * 2 - gap * 3) / 4;
 
   const groups =
     family.state.status === 'ready'
@@ -77,8 +82,7 @@ export default function FamilyScreen() {
   // Harita: "Ben" + çevrimiçi gruptaki izinli konumlar + buluşma noktası. Yerel kişilerin konumu bilinmez.
   const pins: FamilyPin[] = useMemo(() => {
     const out: FamilyPin[] = [];
-    if (userCoords) {
-      const me = people[0]!;
+    if (userCoords)
       out.push({
         id: 'me',
         name: 'Ben',
@@ -89,9 +93,8 @@ export default function FamilyScreen() {
         status: 'unknown',
         label: 'Ben',
       });
-    }
-    for (const p of people) {
-      if (p.source === 'group' && p.location) {
+    for (const p of people)
+      if (p.source === 'group' && p.location)
         out.push({
           id: p.key,
           name: p.name,
@@ -102,8 +105,6 @@ export default function FamilyScreen() {
           status: p.status === 'safe' ? 'safe' : p.status === 'help' ? 'help' : 'unknown',
           label: p.label,
         });
-      }
-    }
     return out;
   }, [people, userCoords]);
   const meeting: AssemblyPoint[] =
@@ -128,16 +129,24 @@ export default function FamilyScreen() {
         ]
       : [];
   const sharedLocations = pins.filter((p) => p.id !== 'me').length;
+  const hasMap = pins.length > 0 || meeting.length > 0;
 
-  const bannerTone = counts.help ? colors.danger : counts.total && counts.safe === counts.total ? colors.safe : colors.warning;
-  const bannerText = !counts.total
-    ? 'Henüz aile üyesi eklemediniz'
-    : counts.help
-      ? `${counts.help} kişi yardım istiyor`
-      : `Ailende ${counts.total} kişiden ${counts.safe}’${counts.safe === 1 ? 'i' : 'si'} güvende`;
+  const bannerTone = counts.help ? colors.danger : counts.total > 0 && counts.safe === counts.total ? colors.safe : '#F7B548';
+  const bannerTitle =
+    counts.total === 0
+      ? 'Aile üyelerinizin durumunu takip edin'
+      : counts.help
+        ? `${counts.help} kişi yardım istiyor`
+        : `Ailende ${counts.total} kişiden ${counts.safe}’${counts.safe === 1 ? 'i' : 'si'} güvende`;
+  const bannerSub =
+    counts.total === 0
+      ? 'Konum, güvenlik durumu ve acil durum bildirimleri tek ekranda.'
+      : counts.lastAt
+        ? `Son güncelleme: ${formatTimeTr(counts.lastAt)} · durum sormak için dokunun`
+        : 'Durum sormak veya bildirmek için dokunun';
 
   const onBanner = () =>
-    Alert.alert('Ailene haber ver', 'SMS, telefonunuzun mesaj uygulamasında hazırlanır.', [
+    Alert.alert('Ailene haber ver', 'SMS, telefonunuzun mesaj uygulamasında hazırlanır; gönder’e siz basarsınız.', [
       { text: 'Vazgeç', style: 'cancel' },
       { text: 'Herkese durum sor', onPress: fam.askEveryone },
       { text: 'Güvendeyim gönder', onPress: () => fam.sendStatus('safe') },
@@ -176,79 +185,39 @@ export default function FamilyScreen() {
     ]);
   };
 
-  const invite = async () => {
-    if (!isBackendConfigured()) {
-      return Alert.alert(
-        'Davet bağlantısı',
-        'Davet bağlantısı çevrimiçi aile grubu gerektirir; bu kurulumda sunucu yapılandırılmadı. Aile üyelerini telefon numarasıyla ekleyip SMS ile haberleşebilirsiniz.',
-        [
-          { text: 'Tamam', style: 'cancel' },
-          { text: 'Üye ekle', onPress: () => router.push('/aile/ekle') },
-        ],
-      );
-    }
-    if (!session) return router.push('/giris');
-    const owned = groups.find((g) => g.members.some((m) => m.userId === myUserId && m.role === 'owner'));
-    if (!owned)
-      return Alert.alert(
-        'Önce grup oluşturun',
-        'Davet bağlantısı için sayfanın altındaki “Çevrimiçi aile grubu” bölümünden bir grup oluşturun.',
-      );
-    try {
-      const inv = await createInvite(owned.id);
-      await Share.share({
-        message: `GÜVENDE aile grubuna katıl (“${owned.name}”). Bağlantı 48 saat geçerlidir ve bir kez kullanılabilir: ${inviteLink(inv.token)}`,
-      });
-    } catch (e) {
-      Alert.alert('Davet oluşturulamadı', friendlyError(e));
-    }
-  };
-
-  const memberRow = (p: PersonSummary, i: number) => {
-    const contact = p.contactId ? fam.contacts.find((c) => c.id === p.contactId) : null;
-    const name = p.source === 'me' ? 'Ben' : (contact?.relation ?? p.name);
-    const sub =
-      p.source === 'me'
-        ? profile.name || 'Durumunu bildirmek için dokun'
-        : contact
-          ? `${contact.relation ? `${contact.name} · ` : ''}${formatPhone(contact.phone)}`
-          : 'Çevrimiçi aile grubu';
-    const shown = p;
-    return (
-      <Pressable
-        key={p.key}
-        onPress={() => onPerson(p)}
-        onLongPress={() => quickActions(p)}
-        accessibilityHint={contact ? 'Uzun basınca arama ve durum seçenekleri' : undefined}
-        accessibilityRole="button"
-        accessibilityLabel={`${name}: ${shown.label}${p.at ? `, ${relativeTimeTr(p.at)}` : ''}`}
-        style={[styles.member, i > 0 && styles.divider]}
-      >
-        <Avatar
-          name={p.source === 'me' ? profile.name || 'Ben' : p.name}
-          uri={p.source === 'me' ? profile.photoUri : p.photoUri}
-          size={42}
-          status={p.status}
-          ring={p.color}
-        />
-        <View style={{ flex: 1 }}>
-          <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
-            {name}
-          </AppText>
-          <AppText variant="label" numberOfLines={1} style={{ fontSize: 11.5 }}>
-            {sub}
-          </AppText>
-        </View>
-        <View style={{ alignItems: 'flex-end', gap: 4 }}>
-          <StatusPill p={shown} />
-          <AppText variant="caption">{p.at ? relativeTimeTr(p.at) : ' '}</AppText>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-      </Pressable>
+  const askLocation = async () => {
+    if (!fam.contacts.length)
+      return Alert.alert('Acil durum kişisi yok', 'Önce aile üyesi ekleyin.', [
+        { text: 'Vazgeç', style: 'cancel' },
+        { text: 'Üye ekle', onPress: () => router.push('/aile/ekle') },
+      ]);
+    const r = await sendSms(
+      fam.contacts.map((c) => c.phone),
+      LOCATION_REQUEST_MESSAGE,
     );
+    if (!r.ok) Alert.alert('Gönderilemedi', r.reason);
   };
 
-  const hasMapData = pins.some((p) => p.id !== 'me') || meeting.length > 0;
+  const nameOf = (p: PersonSummary) => {
+    if (p.source === 'me') return 'Ben';
+    const c = p.contactId ? fam.contacts.find((x) => x.id === p.contactId) : null;
+    return c?.relation || p.name;
+  };
+
+  const ACTIONS = [
+    {
+      key: 'sor',
+      title: 'Durum Sor',
+      sub: 'Herkese mesaj gönder',
+      icon: 'chatbubble-ellipses',
+      color: '#12A37F',
+      onPress: fam.askEveryone,
+    },
+    { key: 'acil', title: 'Acil Bildirim', sub: 'Herkese uyarı gönder', icon: 'warning', color: '#E5484D', onPress: fam.confirmHelp },
+    { key: 'konum', title: 'Konum İste', sub: 'SMS ile konum sor', icon: 'location', color: '#2F7CF6', onPress: askLocation },
+    { key: 'ara', title: 'Arama Yap', sub: 'Aile üyelerini ara', icon: 'call', color: '#7C5CF6', onPress: () => router.push('/arama') },
+  ];
+
   return (
     <ScrollView
       refreshControl={
@@ -263,329 +232,444 @@ export default function FamilyScreen() {
         />
       }
       contentContainerStyle={{
-        paddingTop: insets.top + spacing.md,
+        paddingTop: insets.top + spacing.sm,
         paddingHorizontal: spacing.md,
         paddingBottom: tabBarHeight + spacing.xl,
-        gap: spacing.md,
+        gap: spacing.sm + 4,
+        width: '100%',
+        maxWidth: 640,
+        alignSelf: 'center',
       }}
     >
-      <ScreenHeader
-        title="Ailem"
-        subtitle="Sevdiklerinizin durumunu takip edin."
-        right={
+      {/* Başlık */}
+      <View style={styles.head}>
+        <View style={{ flex: 1 }}>
+          <AppText variant="display" accessibilityRole="header" style={{ fontSize: 30, lineHeight: 36 }}>
+            Ailem
+          </AppText>
+          <AppText variant="body" color={colors.textSecondary} style={{ fontSize: 13.5 }}>
+            Sevdiklerinizin güvenliği her zaman sizinle.
+          </AppText>
+        </View>
+        <Pressable
+          onPress={() => router.push('/aile/ekle')}
+          accessibilityRole="button"
+          accessibilityLabel="Üye ekle"
+          style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.85 }]}
+        >
+          <Ionicons name="person-add" size={18} color={colors.text} />
+          <AppText variant="heading" color={colors.text} style={{ fontSize: 14 }}>
+            Üye Ekle
+          </AppText>
+        </Pressable>
+      </View>
+
+      {/* Üyeler */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap }} style={{ marginHorizontal: -2 }}>
+        {people.map((p, i) => {
+          const c = p.contactId ? fam.contacts.find((x) => x.id === p.contactId) : null;
+          const sub = p.source === 'me' ? 'Ben' : p.at ? relativeTimeTr(p.at) : c ? formatPhone(c.phone) : '—';
+          return (
+            <Pressable
+              key={p.key}
+              onPress={() => onPerson(p)}
+              onLongPress={() => quickActions(p)}
+              accessibilityRole="button"
+              accessibilityLabel={`${nameOf(p)}: ${p.label}${p.at ? `, ${relativeTimeTr(p.at)}` : ''}`}
+              accessibilityHint={c ? 'Uzun basınca arama ve durum seçenekleri' : undefined}
+              style={({ pressed }) => [
+                styles.member,
+                { width: Math.max(cellW, 84) },
+                i === 0 && { borderColor: colors.safe, borderWidth: 1.5 },
+                pressed && { opacity: 0.88 },
+              ]}
+            >
+              <Avatar
+                name={p.source === 'me' ? profile.name || 'Ben' : p.name}
+                uri={p.source === 'me' ? profile.photoUri : p.photoUri}
+                size={50}
+                status={p.status}
+                ring={p.color}
+              />
+              <AppText variant="heading" numberOfLines={1} style={{ fontSize: 13.5 }}>
+                {nameOf(p)}
+              </AppText>
+              <AppText variant="caption" numberOfLines={1} style={{ fontSize: 10.5 }}>
+                {p.source === 'me' ? profile.name || 'Durum bildir' : sub}
+              </AppText>
+              <View style={styles.statusRow}>
+                <Ionicons name={STATUS_ICON[p.status ?? 'unknown'] as never} size={12} color={p.color} />
+                <AppText variant="caption" color={p.color} numberOfLines={1} style={{ fontSize: 10.5, fontWeight: '600', flexShrink: 1 }}>
+                  {p.label}
+                </AppText>
+              </View>
+            </Pressable>
+          );
+        })}
+        {fam.loaded && fam.contacts.length === 0 ? (
           <Pressable
             onPress={() => router.push('/aile/ekle')}
             accessibilityRole="button"
-            accessibilityLabel="Üye ekle"
-            style={({ pressed }) => [styles.addBtn, pressed && { opacity: 0.85 }]}
+            accessibilityLabel="Aile üyesi ekle"
+            style={({ pressed }) => [styles.member, styles.addMember, { width: Math.max(cellW, 84) }, pressed && { opacity: 0.88 }]}
           >
-            <Ionicons name="person-add" size={20} color={colors.primary} />
-            <AppText variant="heading" color={colors.text} style={{ fontSize: 13 }}>
-              Üye Ekle
+            <View style={styles.addCircle}>
+              <Ionicons name="add" size={26} color={colors.primary} />
+            </View>
+            <AppText variant="heading" style={{ fontSize: 13 }}>
+              Üye ekle
+            </AppText>
+            <AppText variant="caption" style={{ fontSize: 10, textAlign: 'center' }}>
+              Telefon numarasıyla
             </AppText>
           </Pressable>
-        }
-      />
+        ) : null}
+      </ScrollView>
 
+      {/* Durum bandı */}
       <Pressable
         onPress={onBanner}
         accessibilityRole="button"
+        accessibilityLabel={`${bannerTitle}. ${bannerSub}`}
         style={({ pressed }) => [
           styles.banner,
-          { borderColor: bannerTone + '99', backgroundColor: bannerTone + '1A' },
+          { borderColor: alpha(bannerTone, 0.8), backgroundColor: alpha(bannerTone, 0.1) },
           pressed && { opacity: 0.9 },
         ]}
       >
-        <Icon name={counts.help ? 'alert-circle' : 'shield-checkmark'} size={34} color={bannerTone} />
-        <View style={{ flex: 1 }}>
-          <AppText variant="heading" color={bannerTone} style={{ fontSize: 15 }}>
-            {bannerText}
+        <Ionicons name={counts.help ? 'alert-circle' : 'shield-checkmark'} size={38} color={bannerTone} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <AppText variant="heading" style={{ fontSize: 15 }}>
+            {bannerTitle}
           </AppText>
-          <AppText variant="caption">
-            {counts.lastAt ? `Son güncelleme: ${formatTimeTr(counts.lastAt)}` : 'Durum sormak veya bildirmek için dokunun'}
+          <AppText variant="caption" style={{ fontSize: 11.5 }}>
+            {bannerSub}
           </AppText>
         </View>
         <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
       </Pressable>
 
-      {/* Harita / Liste: haritada gösterilecek aile konumu veya buluşma noktası yoksa yer kaplamaz. */}
-      {hasMapData ? (
-        <View style={styles.mapCard}>
-          {' '}
-          {view === 'map' ? (
-            <QuakeMap
-              ref={mapRef}
-              mapStyle={settings.mapStyle}
-              events={[]}
-              focus={null}
-              reports={[]}
-              assemblyPoints={meeting}
-              family={pins}
-              user={null}
-              userIsPrecise={location.status === 'granted'}
-              layers={{ ...DEFAULT_LAYERS, rings: false }}
-              onSelect={() => router.push('/aile/bulusma')}
-              initialCenter={userCoords ?? undefined}
-              initialZoom={userCoords ? 10.2 : 5}
-            />
-          ) : (
-            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: 56, paddingHorizontal: spacing.sm }}>
-              {' '}
-              {people.map(memberRow)}{' '}
-            </ScrollView>
-          )}{' '}
-          <View style={styles.segment} accessibilityRole="tablist">
-            {' '}
-            {(['map', 'list'] as const).map((v) => (
-              <Pressable
-                key={v}
-                onPress={() => setView(v)}
-                accessibilityRole="tab"
-                accessibilityLabel={v === 'map' ? 'Aile haritası' : 'Aile listesi'}
-                accessibilityState={{ selected: view === v }}
-                style={[styles.segBtn, view === v && styles.segOn]}
-              >
-                {' '}
-                <Ionicons
-                  name={v === 'map' ? 'map-outline' : 'list-outline'}
-                  size={16}
-                  color={view === v ? '#fff' : colors.textSecondary}
-                />{' '}
-                <AppText variant="label" color={view === v ? '#fff' : colors.textSecondary}>
-                  {' '}
-                  {v === 'map' ? 'Harita' : 'Liste'}{' '}
-                </AppText>{' '}
-              </Pressable>
-            ))}{' '}
-          </View>{' '}
-          {view === 'map' ? (
+      {/* Aile haritası */}
+      <View style={[styles.card, { padding: 0, overflow: 'hidden' }]}>
+        <View style={styles.mapHead}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <AppText variant="heading" style={{ fontSize: 17 }}>
+              Aile Haritası
+            </AppText>
+            <AppText variant="caption" style={{ fontSize: 11.5 }}>
+              Aile üyelerinizin son konumlarını görün.
+            </AppText>
+          </View>
+          <Pressable
+            onPress={() => router.push('/harita')}
+            accessibilityRole="button"
+            accessibilityLabel="Haritayı Aç"
+            style={({ pressed }) => [styles.mapBtn, pressed && { opacity: 0.85 }]}
+          >
+            <Ionicons name="map" size={15} color={colors.text} />
+            <AppText variant="label" color={colors.text} style={{ fontWeight: '700', fontSize: 12 }}>
+              Haritayı Aç
+            </AppText>
+            <Ionicons name="chevron-forward" size={14} color={colors.text} />
+          </Pressable>
+        </View>
+        <View style={styles.mapBox}>
+          {hasMap ? (
             <>
-              {' '}
-              <View style={styles.mapCtrls}>
-                {' '}
-                <Pressable
-                  onPress={() => (userCoords ? mapRef.current?.flyTo(userCoords, 13) : router.push('/konum'))}
-                  accessibilityRole="button"
-                  accessibilityLabel="Konumuma git"
-                  style={styles.ctrl}
-                >
-                  {' '}
-                  <Ionicons name="navigate-outline" size={22} color={colors.text} />{' '}
-                </Pressable>{' '}
-                <Pressable
-                  onPress={() => router.push('/gizlilik')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Konum paylaşımı ayarları"
-                  style={styles.ctrl}
-                >
-                  {' '}
-                  <Ionicons name="layers" size={22} color={colors.text} />{' '}
-                </Pressable>{' '}
-                <Pressable
-                  onPress={() => router.push('/harita')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Büyük harita"
-                  style={styles.ctrl}
-                >
-                  {' '}
-                  <Ionicons name="scan-outline" size={22} color={colors.text} />{' '}
-                </Pressable>{' '}
-              </View>{' '}
+              <QuakeMap
+                ref={mapRef}
+                mapStyle={settings.mapStyle}
+                events={[]}
+                focus={null}
+                reports={[]}
+                assemblyPoints={meeting}
+                family={pins}
+                user={null}
+                userIsPrecise={location.status === 'granted'}
+                layers={{ ...DEFAULT_LAYERS, rings: false }}
+                onSelect={() => router.push('/aile/bulusma')}
+                initialCenter={userCoords ?? meeting[0] ?? undefined}
+                initialZoom={12}
+              />
+              <Pressable
+                onPress={() => (userCoords ? mapRef.current?.flyTo(userCoords, 13) : router.push('/konum'))}
+                accessibilityRole="button"
+                accessibilityLabel="Konumuma git"
+                style={styles.locate}
+              >
+                <Ionicons name="locate" size={22} color={colors.text} />
+              </Pressable>
               {!sharedLocations ? (
                 <View style={styles.mapNote} pointerEvents="none">
-                  {' '}
-                  <AppText variant="caption" color={colors.text} style={{ textAlign: 'center' }}>
-                    {' '}
-                    Aile üyelerinin konumu yalnızca çevrimiçi grupta ve kendi izinleriyle görünür.{' '}
-                  </AppText>{' '}
+                  <AppText variant="caption" color={colors.text} style={{ fontSize: 10.5 }}>
+                    Aile üyelerinin konumu yalnızca çevrimiçi grupta ve kendi izinleriyle görünür.
+                  </AppText>
                 </View>
-              ) : null}{' '}
+              ) : null}
             </>
-          ) : null}{' '}
+          ) : (
+            <Pressable onPress={() => router.push('/konum')} accessibilityRole="button" style={styles.mapEmpty}>
+              <Ionicons name="map-outline" size={26} color={colors.textSecondary} />
+              <AppText variant="caption" style={{ textAlign: 'center', fontSize: 12 }}>
+                Konumunuz belirlendiğinde, buluşma noktası eklediğinizde veya çevrimiçi aile grubundaki kişiler konum paylaştığında harita
+                burada görünür.
+              </AppText>
+            </Pressable>
+          )}
         </View>
-      ) : (
+      </View>
+
+      {/* Hızlı eylemler */}
+      <View style={{ flexDirection: 'row', gap }}>
+        {ACTIONS.map((a) => (
+          <Pressable
+            key={a.key}
+            onPress={a.onPress}
+            accessibilityRole="button"
+            accessibilityLabel={`${a.title}. ${a.sub}`}
+            style={({ pressed }) => [styles.action, { width: cellW }, pressed && { opacity: 0.85 }]}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: a.color }]}>
+              <Ionicons name={a.icon as never} size={20} color="#fff" />
+            </View>
+            <AppText variant="heading" numberOfLines={1} style={{ fontSize: cellW < 80 ? 11.5 : 13 }}>
+              {a.title}
+            </AppText>
+            <AppText variant="caption" style={{ fontSize: cellW < 80 ? 9.5 : 10.5, lineHeight: cellW < 80 ? 12 : 13.5 }}>
+              {a.sub}
+            </AppText>
+          </Pressable>
+        ))}
+      </View>
+
+      {/* Buluşma noktası */}
+      <View style={styles.meet}>
+        <GuideImage img="family-plan" style={styles.meetArt} />
+        <View style={{ flex: 1, gap: 3 }}>
+          <AppText variant="heading" style={{ fontSize: 14.5 }}>
+            Buluşma Noktamız
+          </AppText>
+          <AppText variant="caption" numberOfLines={2} style={{ fontSize: 11.5, lineHeight: 15 }}>
+            {fam.meetingPoint ? fam.meetingPoint.name : 'Acil durumda buluşacağınız güvenli alanı belirleyin.'}
+          </AppText>
+        </View>
         <Pressable
           onPress={() => router.push('/aile/bulusma')}
           accessibilityRole="button"
-          style={({ pressed }) => [styles.mapHint, pressed && { opacity: 0.85 }]}
+          accessibilityLabel={fam.meetingPoint ? 'Buluşma noktasını değiştir' : 'Buluşma noktasını belirle'}
+          style={({ pressed }) => [styles.meetBtn, pressed && { opacity: 0.85 }]}
         >
-          <Ionicons name="map-outline" size={20} color={colors.textSecondary} />
-          <AppText variant="caption" style={{ flex: 1 }}>
-            Aile haritası, buluşma noktası belirlediğinizde veya çevrimiçi aile grubundaki kişiler konum paylaştığında görünür.
+          <AppText variant="label" color="#fff" style={{ fontWeight: '700' }}>
+            {fam.meetingPoint ? 'Değiştir' : 'Belirle'}
           </AppText>
-          <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-        </Pressable>
-      )}
-
-      <View style={styles.stats}>
-        <StatTile icon="shield-checkmark" color={accent.green} value={counts.safe} label="Güvende" />
-        <StatTile icon="warning" color={accent.red} value={counts.waiting + counts.help} label={counts.help ? 'Yardım' : 'Yanıtsız'} />
-        <StatTile icon="home" color={accent.gray} value={counts.home} label="Evde" />
-        <StatTile icon="person-add" color={accent.gray} value={counts.total} label="Toplam" />
-      </View>
-
-      <View style={styles.sectionHead}>
-        <AppText variant="title" style={{ fontSize: 17.5, flex: 1 }}>
-          Aile Üyeleri
-        </AppText>
-        <Pressable onPress={fam.askEveryone} accessibilityRole="button" style={{ padding: 4 }}>
-          <AppText variant="label" color={colors.primary}>
-            Herkese durum sor ›
-          </AppText>
+          <Ionicons name="chevron-forward" size={15} color="#fff" />
         </Pressable>
       </View>
-      <View style={styles.list}>
-        {people.map(memberRow)}
-        {fam.loaded && fam.contacts.length === 0 ? (
-          <Pressable onPress={() => router.push('/aile/ekle')} style={[styles.member, styles.divider]} accessibilityRole="button">
-            <IconTile icon="person-add-outline" color={accent.blue} size={52} />
-            <AppText variant="label" style={{ flex: 1 }}>
-              Aile üyesi ekleyin; durumlarını SMS ile sorup burada takip edin.
+
+      {/* Acil durum kişileri */}
+      <SectionHead
+        title="Acil Durum Kişileri"
+        action={fam.contacts.length ? 'Düzenle' : 'Ekle'}
+        onAction={() => router.push('/aile/ekle')}
+      />
+      <View style={styles.card}>
+        {fam.contacts.length ? (
+          fam.contacts.map((c, i) => (
+            <View key={c.id} style={[styles.contact, i > 0 && styles.divider]}>
+              <Pressable
+                onPress={() => router.push({ pathname: '/aile/kisi/[id]', params: { id: c.id } })}
+                accessibilityRole="button"
+                accessibilityLabel={`${c.relation || c.name}, ${formatPhone(c.phone)}. Düzenle`}
+                style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}
+              >
+                <Avatar name={c.name} uri={c.photoUri} size={44} />
+                <View style={{ flex: 1 }}>
+                  <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
+                    {c.relation || c.name}
+                  </AppText>
+                  <AppText variant="caption" numberOfLines={1} style={{ fontSize: 12 }}>
+                    {formatPhone(c.phone)}
+                  </AppText>
+                </View>
+              </Pressable>
+              <Pressable
+                onPress={() => callPhone(c.phone)}
+                accessibilityRole="button"
+                accessibilityLabel={`${c.relation || c.name}: ara`}
+                style={[styles.round, { backgroundColor: '#12A37F' }]}
+              >
+                <Ionicons name="call" size={18} color="#fff" />
+              </Pressable>
+              <Pressable
+                onPress={async () => {
+                  const r = await sendSms([c.phone], ASK_STATUS_MESSAGE);
+                  if (r.ok && r.status !== 'cancelled') fam.setContactStatus([c.id], 'waiting');
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`${c.relation || c.name}: SMS ile durum sor`}
+                style={[styles.round, { backgroundColor: '#2F7CF6' }]}
+              >
+                <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+              </Pressable>
+              <Pressable
+                onPress={() => fam.shareLocation([c.id])}
+                accessibilityRole="button"
+                accessibilityLabel={`${c.relation || c.name}: konumumu gönder`}
+                style={[styles.round, { backgroundColor: '#E5484D' }]}
+              >
+                <Ionicons name="location" size={18} color="#fff" />
+              </Pressable>
+            </View>
+          ))
+        ) : (
+          <Pressable onPress={() => router.push('/aile/ekle')} accessibilityRole="button" style={styles.contact}>
+            <Ionicons name="person-add-outline" size={24} color={colors.primary} />
+            <AppText variant="caption" style={{ flex: 1, fontSize: 12.5 }}>
+              Acil durumda aranacak ve SMS gönderilecek kişileri ekleyin (en fazla 10). Bilgiler yalnızca bu cihazda saklanır.
             </AppText>
           </Pressable>
-        ) : null}
+        )}
       </View>
-      <AppText variant="caption" style={{ marginHorizontal: 4 }}>
+
+      {/* Aile acil durum planı */}
+      <SectionHead
+        title="Aile Acil Durum Planı"
+        action="Görüntüle"
+        onAction={() => router.push({ pathname: '/rehber/hazirlik', params: { grup: 'plan' } })}
+      />
+      <Pressable
+        onPress={() => router.push({ pathname: '/rehber/hazirlik', params: { grup: 'plan' } })}
+        accessibilityRole="button"
+        accessibilityLabel="Aile planınızı oluşturun"
+        style={({ pressed }) => [styles.card, styles.plan, pressed && { opacity: 0.88 }]}
+      >
+        <GuideImage img="checklist" style={styles.planArt} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <AppText variant="heading" style={{ fontSize: 14.5 }}>
+            Aile planınızı oluşturun
+          </AppText>
+          <AppText variant="caption" style={{ fontSize: 11.5 }}>
+            Buluşma noktası, iletişim yolu ve önemli belgeler (AFAD önerileri).
+          </AppText>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+      </Pressable>
+
+      <OnlineGroupSection state={family.state} reload={family.reload} />
+      <AppText variant="caption" style={{ marginHorizontal: 4, fontSize: 11 }}>
         Uygulama kişilerin durumunu kendiliğinden bilemez: “Yanıtsız” durum sorduğunuzda, diğerleri siz işaretlediğinizde kaydedilir. Yanıt
         vermeyen kişi tehlikede sayılmaz.
       </AppText>
-
-      <View style={styles.actions}>
-        <Pressable onPress={invite} accessibilityRole="button" style={({ pressed }) => [styles.action, pressed && { opacity: 0.85 }]}>
-          <IconTile icon="qr-code-outline" color={accent.gray} size={40} />
-          <View style={{ flex: 1 }}>
-            <AppText variant="heading" style={{ fontSize: 13 }}>
-              Davet Linki Oluştur
-            </AppText>
-            <AppText variant="caption" numberOfLines={2}>
-              Aileni kolayca davet et
-            </AppText>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-        </Pressable>
-        <Pressable
-          onPress={() => router.push('/aile/bulusma')}
-          accessibilityRole="button"
-          style={({ pressed }) => [styles.action, pressed && { opacity: 0.85 }]}
-        >
-          <IconTile icon="people" color={accent.gray} size={40} />
-          <View style={{ flex: 1 }}>
-            <AppText variant="heading" style={{ fontSize: 13 }}>
-              Toplanma Noktası
-            </AppText>
-            <AppText variant="caption" numberOfLines={2}>
-              {fam.meetingPoint ? fam.meetingPoint.name : 'Buluşma yeri belirle'}
-            </AppText>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-        </Pressable>
-      </View>
-
-      <OnlineGroupSection state={family.state} reload={family.reload} />
     </ScrollView>
   );
 }
 
 const styles = themedStyles(() => ({
-  mapHint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
-  },
+  head: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
     borderWidth: 1.5,
     borderColor: colors.primary,
-    backgroundColor: colors.primaryMuted,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-    minHeight: 46,
+    backgroundColor: alpha(colors.primary, 0.14),
   },
-  banner: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderWidth: 1, borderRadius: radius.lg, padding: spacing.md },
-  mapCard: {
-    height: 220,
-    borderRadius: radius.xl,
-    overflow: 'hidden',
-    backgroundColor: colors.mapPlaceholder,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderStrong,
-  },
-  segment: {
-    position: 'absolute',
-    top: spacing.sm,
-    left: spacing.sm,
-    flexDirection: 'row',
-    backgroundColor: colors.mapPanel,
-    borderRadius: radius.pill,
-    padding: 3,
+  member: {
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: 6,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.borderStrong,
+    borderColor: colors.border,
   },
-  segBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, minHeight: 36, borderRadius: radius.pill },
-  segOn: { backgroundColor: colors.primary },
-  mapCtrls: { position: 'absolute', right: spacing.sm, top: spacing.sm, gap: spacing.xs + 2 },
-  ctrl: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: colors.mapPanel,
-    borderWidth: 1,
-    borderColor: colors.mapPanelBorder,
+  addMember: { justifyContent: 'center', borderStyle: 'dashed' },
+  addCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: alpha(colors.primary, 0.14),
+  },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 3, maxWidth: '100%' },
+  banner: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderWidth: 1.5, borderRadius: 18, padding: spacing.md },
+  card: { backgroundColor: colors.surface, borderRadius: 18, borderWidth: 1, borderColor: colors.border, padding: spacing.sm },
+  mapHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2 },
+  mapBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    minHeight: 38,
+    paddingHorizontal: spacing.sm + 4,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+  },
+  mapBox: { height: 150, backgroundColor: colors.mapPlaceholder },
+  mapEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6, padding: spacing.md },
+  locate: {
+    position: 'absolute',
+    right: spacing.sm,
+    bottom: spacing.sm,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: alpha(colors.surface, 0.94),
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
   },
   mapNote: {
     position: 'absolute',
-    left: spacing.md,
-    right: 64,
-    bottom: spacing.md,
-    backgroundColor: colors.overlay,
-    borderRadius: radius.md,
-    padding: spacing.sm,
+    left: spacing.sm,
+    right: 60,
+    bottom: spacing.sm,
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: alpha(colors.bg, 0.8),
   },
-  stats: { flexDirection: 'row', gap: spacing.xs + 2 },
-  stat: {
-    flex: 1,
-    minWidth: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.sm,
-    minHeight: 60,
-    boxShadow: colors.shadowSoft,
-  },
-  sectionHead: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs },
-  list: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.sm,
-    boxShadow: colors.shadowSoft,
-  },
-  member: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 54, paddingVertical: 5 },
-  divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  pill: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 2 },
-  actions: { flexDirection: 'row', gap: spacing.sm },
   action: {
-    flex: 1,
+    minHeight: 104,
+    borderRadius: 16,
+    padding: spacing.sm,
+    gap: 4,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  actionIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+  meet: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: 18,
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.md,
-    boxShadow: colors.shadowSoft,
   },
+  meetArt: { width: 84, height: 60, borderRadius: 12 },
+  meetBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    minHeight: 42,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+  },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
+  sectionBar: { width: 5, height: 24, borderRadius: 3, backgroundColor: colors.danger },
+  headLink: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 32 },
+  contact: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xs + 2, paddingHorizontal: 4 },
+  divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  round: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  plan: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  planArt: { width: 52, height: 52, borderRadius: 12 },
 }));

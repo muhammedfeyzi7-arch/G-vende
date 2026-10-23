@@ -20,6 +20,16 @@ const server = createServer((req, res) => {
 }).listen(8099);
 
 const SHOTS = [
+  { route: '/ailem', name: 'ailem-koyu', theme: 'dark', w: 393, h: 852 },
+  { route: '/ailem', name: 'ailem-koyu-2', theme: 'dark', w: 393, h: 852, scroll: 700 },
+  { route: '/ailem', name: 'ailem-acik', theme: 'light', w: 393, h: 852 },
+  // Yalnızca görüntü testi: tarayıcı deposuna tek bir "Test Kişi" yazılır (uygulamaya veri eklenmez).
+  { route: '/ailem', name: 'ailem-test-kisi', theme: 'dark', w: 393, h: 852, seedContact: true },
+  { route: '/ailem', name: 'ailem-kucuk', theme: 'dark', w: 320, h: 640 },
+  { route: '/ayarlar', name: 'ayarlar-koyu', theme: 'dark', w: 393, h: 852 },
+  { route: '/ayarlar', name: 'ayarlar-koyu-2', theme: 'dark', w: 393, h: 852, scroll: 760 },
+  { route: '/ayarlar', name: 'ayarlar-acik', theme: 'light', w: 393, h: 852 },
+  { route: '/ayarlar', name: 'ayarlar-kucuk', theme: 'dark', w: 320, h: 640 },
   { route: '/acil', name: 'acil-koyu', theme: 'dark', w: 393, h: 852 },
   { route: '/acil', name: 'acil-koyu-2', theme: 'dark', w: 393, h: 852, scroll: 700 },
   { route: '/acil', name: 'acil-acik', theme: 'light', w: 393, h: 852 },
@@ -35,7 +45,13 @@ for (const s of SHOTS) {
   await ctx.grantPermissions(['geolocation']);
   // İzmir Konak (resmî İzmir BB toplanma alanı verisinin bulunduğu bölge)
   await ctx.setGeolocation({ latitude: 38.4189, longitude: 27.1287 });
-  await ctx.addInitScript((theme) => localStorage.setItem('guvende:v1:settings', JSON.stringify({ onboardingSeen: true, theme })), s.theme);
+  await ctx.addInitScript(
+    ([theme, seed]) => {
+      localStorage.setItem('guvende:v1:settings', JSON.stringify({ onboardingSeen: true, theme }));
+      if (seed) localStorage.setItem('guvende:v1:local-contacts', JSON.stringify([{ id: 't1', name: 'Test Kişi', phone: '+905000000000', relation: 'Test Kişi', status: null }]));
+    },
+    [s.theme, !!s.seedContact],
+  );
   const page = await ctx.newPage();
   const tiles = { ok: 0, fail: 0 };
   page.on('response', (r) => {

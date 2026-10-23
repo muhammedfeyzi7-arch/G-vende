@@ -94,7 +94,9 @@ export function useFamilyActions() {
       );
   }, [ensureContacts, fam]);
 
-  const shareLocation = useCallback(async () => {
+  /** Konumu paylaş; `only` verilirse yalnızca o kişi(ler)e (ör. kişi satırındaki konum düğmesi). */
+  const shareLocation = useCallback(async (only?: string[] | unknown) => {
+    const onlyIds = Array.isArray(only) ? (only as string[]) : null;
     const gps = await currentGps();
     if (!gps) {
       return Alert.alert('Konum alınamadı', 'Konumunuzu paylaşmak için konum iznini açın.', [
@@ -104,13 +106,13 @@ export function useFamilyActions() {
     }
     const p = coarsen(gps, 0.0001);
     const text = `GÜVENDE: Şu anki konumum https://maps.google.com/?q=${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`;
-    const targets = fam.contacts.filter((c) => !settings.hideLocationFrom.includes(c.id));
+    const targets = fam.contacts.filter((c) => !settings.hideLocationFrom.includes(c.id) && (!onlyIds || onlyIds.includes(c.id)));
     Alert.alert('Konumunu paylaş', `Konumunuz yalnızca bu bir defalığına, seçtiğiniz kişilerle paylaşılır. Gönder’e siz basarsınız.\n\nPaylaşılacak mesaj:\n${text}`, [
       { text: 'Vazgeç', style: 'cancel' },
       ...(targets.length
         ? [
             {
-              text: `Acil kişilerime SMS (${targets.length})`,
+              text: onlyIds ? 'SMS ile gönder' : `Acil kişilerime SMS (${targets.length})`,
               onPress: async () => {
                 const r = await sendSms(
                   targets.map((c) => c.phone),
