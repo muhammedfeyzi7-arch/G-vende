@@ -6,6 +6,7 @@ import type { AssemblyPoint } from '@/types/assembly';
 import { distanceKm, type LatLng } from '@/utils/geo';
 import { fetchNearby, type NearbyResult } from './api';
 import { loadMyPoint, myPointAsAssembly, type MyAssemblyPoint } from './mine';
+import { assemblyTiles } from './store';
 
 export type NearbyState =
   | { status: 'no-location' }
@@ -24,7 +25,8 @@ export function useNearbyAssembly(center: LatLng | null, radiusKm = 5) {
     loadMyPoint().then(setMine);
     if (lat == null || lon == null) return setState({ status: 'no-location' });
     if (!isBackendConfigured()) return setState({ status: 'not-configured' });
-    setState({ status: 'loading' });
+    // Gösterilen veri varken yenileme sırasında iskelet gösterme (titreme olmasın).
+    setState((s) => (s.status === 'ready' ? s : { status: 'loading' }));
     try {
       setState({ status: 'ready', ...(await fetchNearby({ latitude: lat, longitude: lon }, radiusKm)) });
     } catch (e) {
@@ -35,6 +37,8 @@ export function useNearbyAssembly(center: LatLng | null, radiusKm = 5) {
   useEffect(() => {
     load();
   }, [load]);
+  // Sunucuda veri seti değişti (Realtime): önbellek geçersiz, görünen alan yeniden yüklenir.
+  useEffect(() => assemblyTiles.subscribe(() => void load()), [load]);
 
   // Kayıt başka ekranda değişmiş olabilir.
   useFocusEffect(

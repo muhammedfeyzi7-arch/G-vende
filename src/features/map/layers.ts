@@ -94,15 +94,35 @@ export const QUAKE_LAYERS: LayerDef[] = [
   { id: 'quake-core', type: 'circle', filter: isFocus, paint: { 'circle-radius': 4, 'circle-color': '#FFFFFF' } },
 ];
 
+const isCluster = ['has', 'point_count'];
+const notCluster = ['!', ['has', 'point_count']];
+
+/** Toplanma alanları kümelenir: binlerce nokta tek tek çizilmez; dokununca yakınlaşır. */
 export const ASSEMBLY_LAYERS: LayerDef[] = [
+  {
+    id: 'assembly-cluster',
+    type: 'circle',
+    filter: isCluster,
+    paint: {
+      'circle-radius': ['step', ['get', 'point_count'], 13, 10, 17, 50, 22, 200, 28],
+      'circle-color': colors.safe,
+      'circle-opacity': 0.35,
+      'circle-stroke-color': colors.safe,
+      'circle-stroke-width': 2,
+    },
+  },
   {
     id: 'assembly-glow',
     type: 'circle',
+    filter: notCluster,
     paint: { 'circle-radius': 12, 'circle-color': colors.safe, 'circle-opacity': 0.25, 'circle-blur': 1 },
   },
   {
     id: 'assembly-dot',
     type: 'circle',
+    filter: notCluster,
     paint: { 'circle-radius': 5, 'circle-color': colors.safe, 'circle-stroke-color': '#062A20', 'circle-stroke-width': 2 },
   },
 ];
+/** Küme ayarı (native ve web aynı). */
+export const ASSEMBLY_CLUSTER = { cluster: true, clusterRadius: 44, clusterMaxZoom: 14 } as const;

@@ -6,6 +6,7 @@ import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, StateMessage } from '@/components/ui';
 import { Icon } from '@/components/ds';
+import { mergeAssembly, useAssemblyInView } from '@/features/assembly-points/useAssemblyInView';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { QuakeListItem } from '@/features/earthquakes/components/QuakeListItem';
 import { useFamily } from '@/features/family/useFamily';
@@ -57,6 +58,9 @@ export default function FullscreenMap() {
   const nearby = useNearbyAssembly(target ?? userCoords, 10);
   const family = useFamily();
   const mapRef = useRef<QuakeMapHandle>(null);
+  // Haritada görünen alanın toplanma noktaları (karo önbelleği; kaydırma bitince, tek istekte).
+  const inView = useAssemblyInView();
+  const mapAssembly = useMemo(() => mergeAssembly(nearby.points, inView.points), [nearby.points, inView.points]);
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
   const [layersOpen, setLayersOpen] = useState(false);
   const [selection, setSelection] = useState<MapSelection | null>(target ? { kind: 'assembly', id: toplanma! } : null);
@@ -189,7 +193,8 @@ export default function FullscreenMap() {
         initialCenter={target ?? undefined}
         initialZoom={target ? 16 : undefined}
         reports={shownReports}
-        assemblyPoints={nearby.points}
+        assemblyPoints={mapAssembly}
+        onViewportChange={inView.onViewport}
         family={familyPins}
         user={userCoords}
         userIsPrecise={location.status === 'granted'}
@@ -215,7 +220,7 @@ export default function FullscreenMap() {
             selection={selection}
             events={events}
             reports={reports}
-            assembly={nearby.points}
+            assembly={mapAssembly}
             user={userCoords}
             onClose={() => setSelection(null)}
           />
@@ -223,7 +228,8 @@ export default function FullscreenMap() {
           <MapLegend />
         )}
         <AppText variant="caption" style={styles.count}>
-          {shown.length} deprem · {shownReports.length} bildirim · {nearby.points.length} toplanma alanı
+          {shown.length} deprem · {shownReports.length} bildirim · {mapAssembly.length} toplanma alanı
+          {inView.status === 'zoom-in' ? ' (tümü için yakınlaştırın)' : ''}
           {familyPins.length ? ` · ${familyPins.length} aile konumu` : ''}
         </AppText>
       </View>

@@ -54,5 +54,7 @@ export type QuakeMapProps = {
   family?: FamilyPin[];
   /** Ölçek çubuğu (sol alt) */
   scaleBar?: boolean;
+  /** Kaydırma/yakınlaştırma bitince görünen alan [batı, güney, doğu, kuzey] ve yakınlaştırma */
+  onViewportChange?: (v: { bounds: [number, number, number, number]; zoom: number }) => void;
 };
 

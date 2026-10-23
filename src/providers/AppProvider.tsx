@@ -1,4 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
+import { assemblyTiles } from '@/features/assembly-points/store';
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
@@ -193,6 +194,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!row?.source || !serverRef.current) return;
         serverRef.current = { ...serverRef.current, sync: upsertSync(serverRef.current.sync, row) };
         schedulePublish();
+      })
+      // Toplanma alanı veri seti sürümü: büyük tablo değil, tek satır dinlenir (önbellek geçersiz kılma).
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'dataset_versions' }, (payload) => {
+        const row = payload.new as { name?: string; version?: number };
+        if (row?.name === 'assembly_points' && row.version != null) assemblyTiles.setVersion(Number(row.version));
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {

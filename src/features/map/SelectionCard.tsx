@@ -74,7 +74,11 @@ export function SelectionCard({
     body = (
       <>
         <AppText variant="label" color={colors.safe}>
-          {p.isUserSaved ? 'Size atanan alan (kendi kaydınız)' : 'Resmî toplanma alanı'}
+          {p.isUserSaved
+            ? 'Size atanan alan (kendi kaydınız)'
+            : p.sourceKind === 'community'
+              ? 'Topluluk verisi (OpenStreetMap) · resmî değil'
+              : 'Resmî toplanma alanı'}
           {user ? ` · ${formatDistance(distanceKm(user, p))}` : ''}
         </AppText>
         <AppText variant="heading">{p.name}</AppText>

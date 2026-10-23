@@ -12,6 +12,8 @@ export interface AssemblyPoint {
   sourceUrl: string;
   sourcePublishedAt: string | null;
   importedAt: string;
+  /** official = belediye/AFAD açık verisi; community = OpenStreetMap katkıcıları */
+  sourceKind?: 'official' | 'community';
   /** Kullanıcının kendi kaydettiği alan (resmî veri tabanından değil) */
   isUserSaved?: boolean;
 }

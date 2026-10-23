@@ -1,4 +1,14 @@
-import { Camera, GeoJSONSource, Layer, Map, Marker, type CameraRef, type LayerProps, type MapRef } from '@maplibre/maplibre-react-native';
+import {
+  Camera,
+  GeoJSONSource,
+  Layer,
+  Map,
+  Marker,
+  type CameraRef,
+  type GeoJSONSourceRef,
+  type LayerProps,
+  type MapRef,
+} from '@maplibre/maplibre-react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -12,7 +22,7 @@ import type { EarthquakeEvent } from '@/types/earthquake';
 import type { UserReport } from '@/types/report';
 import type { LatLng } from '@/utils/geo';
 import { assemblyToGeoJSON, quakesToGeoJSON, reportsToGeoJSON, ringsToGeoJSON } from './geojson';
-import { ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './layers';
+import { ASSEMBLY_CLUSTER, ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './layers';
 import type { MapStyleId } from '@/features/settings/settings';
 import { isLightMap, offlineOnlyStyle, paletteFor, styleFor } from './mapStyle';
 import { visibleLabels } from './offline/base';
@@ -21,8 +31,6 @@ import { CATEGORY_META } from '@/features/reports/categories';
 import type { FamilyPin, MapLayers, MapSelection, QuakeMapHandle, QuakeMapProps as Props } from './mapTypes';
 
 const TURKEY_CENTER: [number, number] = [35.2, 39.0];
-/** Simgeli işaretçi sayısı sınırlı (view annotation performansı); geri kalanı daire katmanıyla çizilir. */
-const MAX_ASSEMBLY_MARKERS = 12;
 const MAX_REPORT_MARKERS = 30;
 const HITBOX = { top: 14, right: 14, bottom: 14, left: 14 };
 
@@ -56,10 +64,12 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
     interactive = true,
     family = [],
     scaleBar = false,
+    onViewportChange,
   },
   ref,
 ) {
   const camera = useRef<CameraRef>(null);
+  const assemblySource = useRef<GeoJSONSourceRef>(null);
   const mapRef = useRef<MapRef>(null);
   const scheme = currentScheme();
   const STYLES = useMemo(() => styleChain(mapStyle, scheme), [mapStyle, scheme]);
@@ -116,6 +126,16 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
 
   const handlePress = (e: { nativeEvent: { features: GeoJSON.Feature[] } }) => {
     const f = e.nativeEvent.features[0];
+    // Kümeye dokunma: dağılacağı yakınlaştırmaya git.
+    const clusterId = f?.properties?.cluster_id as number | undefined;
+    if (clusterId != null && f?.geometry.type === 'Point') {
+      const [lon, lat] = f.geometry.coordinates as [number, number];
+      assemblySource.current
+        ?.getClusterExpansionZoom(clusterId)
+        .then((z) => camera.current?.flyTo({ center: [lon, lat], zoom: Math.min(16, z + 0.5), duration: 500 }))
+        .catch(() => camera.current?.flyTo({ center: [lon, lat], zoom: 14, duration: 500 }));
+      return;
+    }
     const kind = f?.properties?.kind as MapSelection['kind'] | undefined;
     const id = f?.properties?.id as string | undefined;
     if (kind && id) onSelect({ kind, id } as MapSelection);
@@ -144,6 +164,13 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
       onRegionDidChange={(e) => {
         const z = Math.round(e.nativeEvent.zoom * 2) / 2;
         if (z !== zoom) setZoom(z);
+        onViewportChange?.({ bounds: e.nativeEvent.bounds as [number, number, number, number], zoom: e.nativeEvent.zoom });
+      }}
+      onDidFinishLoadingMap={async () => {
+        // İlk görünüm için de bildir (kullanıcı kaydırmadan önce yakındaki alanlar yüklensin).
+        if (!onViewportChange) return;
+        const [b, z] = await Promise.all([mapRef.current?.getBounds(), mapRef.current?.getZoom()]).catch(() => [null, null]);
+        if (b && z != null) onViewportChange({ bounds: b as [number, number, number, number], zoom: z as number });
       }}
     >
       <Camera ref={camera} initialViewState={{ center: initialCenter, zoom: initialZoom ?? (focus ? 5.9 : 4.8) }} minZoom={3} maxZoom={16} />
@@ -161,7 +188,7 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
       ) : null}
 
       {layers.assembly ? (
-        <GeoJSONSource id="assembly" data={assemblyData} onPress={handlePress} hitbox={HITBOX}>
+        <GeoJSONSource ref={assemblySource} id="assembly" data={assemblyData} onPress={handlePress} hitbox={HITBOX} {...ASSEMBLY_CLUSTER}>
           {renderLayers(ASSEMBLY_LAYERS)}
         </GeoJSONSource>
       ) : null}
@@ -212,8 +239,9 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
             })
         : null}
 
+      {/* Simgeli işaretçi yalnızca kullanıcının kendi alanı için; resmî alanlar GPU katmanıyla (kümelenerek) çizilir. */}
       {layers.assembly
-        ? assemblyPoints.slice(0, MAX_ASSEMBLY_MARKERS).map((p) => (
+        ? assemblyPoints.filter((p) => p.isUserSaved).map((p) => (
             <Marker
               key={p.id}
               id={`ap-${p.id}`}

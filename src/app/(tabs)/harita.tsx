@@ -7,6 +7,7 @@ import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDime
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui';
 import { TopTabs } from '@/components/TopTabs';
+import { mergeAssembly, useAssemblyInView } from '@/features/assembly-points/useAssemblyInView';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { computeAlertState } from '@/features/earthquakes/alertState';
 import { AlertCard } from '@/features/earthquakes/components/AlertCard';
@@ -48,6 +49,9 @@ export default function MapScreen() {
   const nearby = useNearbyAssembly(userCoords, 10);
   const family = useFamily();
   const mapRef = useRef<QuakeMapHandle>(null);
+  // Haritada görünen alanın toplanma noktaları (karo önbelleği; kaydırma bitince, tek istekte).
+  const inView = useAssemblyInView();
+  const mapAssembly = useMemo(() => mergeAssembly(nearby.points, inView.points), [nearby.points, inView.points]);
   const [layers, setLayers] = useState(DEFAULT_LAYERS);
   const [layersOpen, setLayersOpen] = useState(false);
   const [filters, setFilters] = useState<MapFilters>({ hours: 24, minMag: 0 });
@@ -150,7 +154,8 @@ export default function MapScreen() {
             events={mapEvents}
             focus={focus}
             reports={shownReports}
-            assemblyPoints={nearby.points}
+            assemblyPoints={mapAssembly}
+            onViewportChange={inView.onViewport}
             family={familyPins}
             user={userCoords}
             userIsPrecise={location.status === 'granted'}
@@ -178,7 +183,7 @@ export default function MapScreen() {
                   selection={selection}
                   events={events}
                   reports={feed.reports}
-                  assembly={nearby.points}
+                  assembly={mapAssembly}
                   user={userCoords}
                   onClose={() => setSelection(null)}
                 />

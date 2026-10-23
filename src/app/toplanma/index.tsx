@@ -55,6 +55,11 @@ export default function AssemblyScreen() {
         </Pressable>
       </View>
       {p.capacity ? <AppText variant="caption">Kapasite: {p.capacity.toLocaleString('tr-TR')} kişi (kaynağa göre)</AppText> : null}
+      {p.sourceKind === 'community' ? (
+        <AppText variant="caption" color={colors.caution}>
+          Topluluk verisi (OpenStreetMap) — resmî değildir; e-Devlet’teki AFAD sorgusuyla doğrulayın.
+        </AppText>
+      ) : null}
       <AppText variant="caption">
         Kaynak: {p.sourceName}
         {p.sourcePublishedAt ? ` · yayım ${formatDateTr(p.sourcePublishedAt)}` : ''} · içe aktarıldı {formatDateTr(p.importedAt)}
@@ -184,7 +189,11 @@ export default function AssemblyScreen() {
       ) : state.status === 'ready' && state.points.length > 0 ? (
         <>
           <AppText variant="caption">
-            {state.points.length} resmî alan · {state.fromCache ? 'önbellekten, ' : ''}güncellendi {relativeTimeTr(state.fetchedAt)}
+            {state.points.length} alan
+            {state.points.some((p) => p.sourceKind === 'community')
+              ? ` (${state.points.filter((p) => p.sourceKind !== 'community').length} resmî)`
+              : ' · tümü resmî'}{' '}
+            · {state.fromCache ? 'çevrimdışı önbellekten' : `güncellendi ${relativeTimeTr(state.fetchedAt)}`}
           </AppText>
           {state.points.map(renderPoint)}
         </>
