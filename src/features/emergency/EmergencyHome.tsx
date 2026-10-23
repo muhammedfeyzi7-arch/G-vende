@@ -150,14 +150,14 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
         style={({ pressed }) => [styles.sos, pressed && { opacity: 0.92 }]}
       >
         <LinearGradient colors={['#E8323F', '#B0141F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-        <View style={styles.sosIcon}>
-          <Ionicons name="call" size={narrow ? 30 : 36} color="#fff" />
+        <View style={[styles.sosIcon, narrow && { width: 48, height: 48, borderRadius: 14 }]}>
+          <Ionicons name="call" size={narrow ? 24 : 36} color="#fff" />
         </View>
         <View style={{ flex: 1, gap: 2 }}>
-          <AppText variant="display" color="#fff" numberOfLines={1} style={{ fontSize: narrow ? 21 : 25, lineHeight: narrow ? 26 : 30 }}>
+          <AppText variant="display" color="#fff" numberOfLines={1} style={{ fontSize: narrow ? 18 : 25, lineHeight: narrow ? 23 : 30 }}>
             Acil Durum
           </AppText>
-          <AppText variant="heading" color="#fff" style={{ fontSize: narrow ? 14 : 16 }}>
+          <AppText variant="heading" color="#fff" numberOfLines={1} style={{ fontSize: narrow ? 12.5 : 16 }}>
             Hemen arayın
           </AppText>
           <AppText variant="caption" color="#FFD9DC" numberOfLines={1} style={{ fontSize: narrow ? 9 : 10.5 }}>
@@ -167,9 +167,11 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
         <AppText variant="display" color="#fff" style={{ fontSize: narrow ? 34 : 46, lineHeight: narrow ? 40 : 52, fontWeight: '800' }}>
           112
         </AppText>
-        <View style={styles.sosChev}>
-          <Ionicons name="chevron-forward" size={24} color="#fff" />
-        </View>
+        {narrow ? null : (
+          <View style={styles.sosChev}>
+            <Ionicons name="chevron-forward" size={24} color="#fff" />
+          </View>
+        )}
       </Pressable>
 
       {/* Hizmet kartları */}
@@ -214,7 +216,7 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
           </AppText>
           <View style={styles.serviceFoot}>
             <AppText variant="caption" color={colors.text} numberOfLines={1} style={{ fontSize: narrow ? 9.5 : 10.5, flex: 1 }}>
-              Resmî site
+              {narrow ? 'Site' : 'Resmî site'}
             </AppText>
             <Ionicons name="open-outline" size={13} color={colors.text} />
           </View>
@@ -222,11 +224,11 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
       </View>
 
       {/* Konumumu paylaş */}
-      <View style={styles.share}>
+      <View style={[styles.share, narrow && { flexWrap: 'wrap' }]}>
         <View style={styles.shareIcon}>
           <Ionicons name="location" size={26} color="#FF4B55" />
         </View>
-        <View style={{ flex: 1, gap: 2 }}>
+        <View style={{ flex: 1, gap: 2, minWidth: narrow ? 180 : 0 }}>
           <AppText variant="heading" style={{ fontSize: 15 }}>
             Konumumu paylaş
           </AppText>
@@ -238,7 +240,7 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
           onPress={fam.shareLocation}
           accessibilityRole="button"
           accessibilityLabel="Konum paylaş"
-          style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [styles.shareBtn, narrow && { flexGrow: 1, justifyContent: 'center' }, pressed && { opacity: 0.85 }]}
         >
           <Ionicons name="navigate" size={16} color="#fff" />
           <AppText variant="label" color="#fff" style={{ fontWeight: '700', fontSize: 12.5 }}>
@@ -256,10 +258,10 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
             onPress={() => router.push(t.href)}
             accessibilityRole="button"
             accessibilityLabel={`${t.title}. ${t.sub}`}
-            style={({ pressed }) => [styles.tool, { width: cellW }, pressed && { opacity: 0.85 }]}
+            style={({ pressed }) => [styles.tool, { width: cellW }, narrow && { padding: 6 }, pressed && { opacity: 0.85 }]}
           >
             <Ionicons name={t.icon} size={narrow ? 26 : 32} color={t.color} />
-            <AppText variant="heading" style={{ fontSize: narrow ? 11.5 : 13, lineHeight: narrow ? 14 : 16 }}>
+            <AppText variant="heading" style={{ fontSize: narrow ? 10.5 : 13, lineHeight: narrow ? 13 : 16 }}>
               {t.title}
             </AppText>
             <AppText variant="caption" style={{ fontSize: narrow ? 9.5 : 10.5, lineHeight: narrow ? 12 : 13.5 }}>
