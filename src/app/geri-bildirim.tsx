@@ -1,3 +1,4 @@
+import { useToast } from '@/components/Toast';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -12,6 +13,7 @@ import { colors, radius, spacing, themedStyles } from '@/theme';
 /** Geri bildirim: girişliyse sunucuya kaydedilir; değilse metin paylaşım menüsüyle iletilebilir. */
 export default function Feedback() {
   const { session } = useApp();
+  const toast = useToast();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const version = Constants.expoConfig?.version ?? '';
@@ -26,7 +28,8 @@ export default function Feedback() {
       .insert({ message: text.trim(), app_version: version, platform: Platform.OS === 'ios' ? 'ios' : 'android' });
     setBusy(false);
     if (error) return Alert.alert('Gönderilemedi', friendlyError(error));
-    Alert.alert('Teşekkürler', 'Geri bildiriminiz alındı.', [{ text: 'Tamam', onPress: () => router.back() }]);
+    toast.show({ text: 'Teşekkürler, geri bildiriminiz alındı.' });
+    router.back();
   };
 
   return (

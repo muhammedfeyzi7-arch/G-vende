@@ -1,3 +1,4 @@
+import { useToast } from '@/components/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 import { Image } from 'expo-image';
@@ -38,6 +39,7 @@ export default function NewReport() {
   const { location, userCoords, requestLocation, settings, session, online } = useApp();
   const events = useVisibleQuakes();
   const { submit, mine } = useReports();
+  const toast = useToast();
   const family = useLocalFamily();
   const [category, setCategory] = useState<ReportCategory | null>(null);
   const [felt, setFelt] = useState<FeltIntensity | null>(null);
@@ -129,7 +131,12 @@ export default function NewReport() {
       setSending(true);
       const res = await submit(input);
       setSending(false);
-      Alert.alert(res.sent ? 'Gönderildi' : 'Gönderim bekliyor', res.message, [{ text: 'Tamam', onPress: () => router.back() }]);
+      toast.show({
+        text: res.message,
+        tone: res.sent ? 'success' : 'warning',
+        action: { label: 'Takip et', onPress: () => router.push('/rapor/benim') },
+      });
+      router.back();
     };
     if (v.warnings.length)
       Alert.alert('Kişisel bilgi uyarısı', v.warnings.join('\n'), [

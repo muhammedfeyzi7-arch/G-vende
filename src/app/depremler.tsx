@@ -1,3 +1,4 @@
+import { ListSkeleton } from '@/components/Skeleton';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -113,7 +114,7 @@ export default function QuakeHistory() {
       }
       ListEmptyComponent={
         quakes.loading ? (
-          <StateMessage icon="hourglass-outline" title="Yükleniyor…" compact />
+          <ListSkeleton />
         ) : (
           <StateMessage
             icon="pulse-outline"

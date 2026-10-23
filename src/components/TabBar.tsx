@@ -1,4 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { haptic } from '@/services/haptics';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,7 +24,10 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
         const focused = state.index === index;
         const onPress = () => {
           const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+          if (!focused && !event.defaultPrevented) {
+            haptic.select();
+            navigateToTab(route.key);
+          }
         };
         // Acil Durum her zaman kırmızıdır (hızlı erişim; alarm göstergesi değildir).
         const color = item.center ? colors.danger : focused ? colors.primary : colors.textSecondary;

@@ -409,6 +409,21 @@ describe('alt ekranlar', () => {
     expect(screen.getByText('Bu filtrede bildirim yok')).toBeTruthy();
   });
 
+  it('Hoş geldin: adımlar ilerler, Başla tanıtımı kapatır', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const { router } = require('expo-router');
+    const Screen = require('@/app/hosgeldin').default;
+    await open(<Screen />);
+    expect(screen.getByText(/erken uyarı sistemi değildir/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Devam'));
+    expect(screen.getByText('İzinler')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Devam'));
+    await fireEvent.press(screen.getByText('Başla'));
+    await flush();
+    expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:settings')).onboardingSeen).toBe(true);
+    expect(router.replace).toHaveBeenCalledWith('/');
+  });
+
   it('İl seçimi konumu ayarlar', async () => {
     const Konum = require('@/app/konum').default;
     await open(<Konum />);

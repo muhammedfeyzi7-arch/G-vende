@@ -1,3 +1,4 @@
+import { ListSkeleton } from '@/components/Skeleton';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
@@ -253,7 +254,7 @@ function AssemblyList({
         />
       </View>
     );
-  if (state.status === 'loading') return <StateMessage icon="hourglass-outline" title="Yükleniyor…" compact />;
+  if (state.status === 'loading') return <ListSkeleton />;
   return (
     <View style={{ padding: spacing.lg, gap: spacing.sm }}>
       {state.fromCache ? (

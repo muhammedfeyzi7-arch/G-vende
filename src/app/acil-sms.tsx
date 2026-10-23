@@ -1,3 +1,4 @@
+import { useToast } from '@/components/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -76,6 +77,7 @@ export default function EmergencyMessages() {
   const fam = useFamilyActions();
   const nearby = useNearbyAssembly(null);
   const [withLocation, setWithLocation] = useState(true);
+  const toast = useToast();
   const [active, setActive] = useState<Template | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<{ id: string | null; title: string; text: string } | null>(null);
@@ -145,6 +147,7 @@ export default function EmergencyMessages() {
       );
       if (!r.ok) return Alert.alert('Gönderilemedi', r.reason);
       if (r.status !== 'cancelled') applyEffect(active, group);
+      if (r.status === 'sent') toast.show({ text: `“${active.title}” ${group.length} kişiye gönderildi` });
     }
     setActive(null);
   };
@@ -174,6 +177,7 @@ export default function EmergencyMessages() {
       : [...list, { id: `c${Date.now()}`, title, text }].slice(0, 10);
     updateSettings({ customMessages: next });
     setEditing(null);
+    toast.show({ text: editing.id ? 'Mesaj güncellendi' : 'Hazır mesaj eklendi' });
   };
 
   const deleteCustom = (id: string) =>

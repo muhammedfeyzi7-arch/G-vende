@@ -1,3 +1,4 @@
+import { ListSkeleton } from '@/components/Skeleton';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -157,7 +158,7 @@ export default function AssemblyScreen() {
           onAction={() => router.push('/konum')}
         />
       ) : state.status === 'loading' ? (
-        <StateMessage icon="hourglass-outline" title="Yükleniyor…" compact />
+        <ListSkeleton />
       ) : state.status === 'ready' && state.points.length > 0 ? (
         <>
           <AppText variant="caption">

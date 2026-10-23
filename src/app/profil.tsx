@@ -1,3 +1,4 @@
+import { useToast } from '@/components/Toast';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -41,6 +42,7 @@ export default function EditProfile() {
     }
   };
 
+  const toast = useToast();
   const save = async () => {
     const phone = p.phone.trim() ? normalizePhone(p.phone) : '';
     if (phone === null) return Alert.alert('Telefon numarası geçersiz');
@@ -54,6 +56,7 @@ export default function EditProfile() {
       if (error) Alert.alert('Ad sunucuya kaydedilemedi', 'Cihazda kaydedildi; daha sonra tekrar deneyin.');
     }
     setSaving(false);
+    toast.show({ text: 'Profil kaydedildi' });
     router.back();
   };
 

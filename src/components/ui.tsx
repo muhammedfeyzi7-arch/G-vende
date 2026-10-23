@@ -1,5 +1,7 @@
 import { useContext } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { haptic } from '@/services/haptics';
 import type { ComponentProps, ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { darkPalette, ForceDark, colors, font, hitSlop, minTouch, radius, spacing, themedStyles } from '@/theme';
@@ -91,15 +93,29 @@ export function Button({
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       disabled={disabled || loading}
-      onPress={onPress}
+      onPress={() => {
+        haptic.tap();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.button,
         size === 'sm' && styles.buttonSm,
-        { backgroundColor: bg, opacity: disabled ? 0.45 : pressed ? 0.85 : 1 },
+        { backgroundColor: bg, opacity: disabled ? 0.45 : pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] },
         variant === 'secondary' && { borderWidth: 1, borderColor: colors.borderStrong },
+        (variant === 'primary' || variant === 'danger') && !disabled && { boxShadow: `0 6px 16px ${bg}55` },
         style,
       ]}
     >
+      {variant === 'primary' || variant === 'danger' ? (
+        // Üstten hafif aydınlık degrade: düz renge göre daha derin, "basılabilir" görünüm
+        <LinearGradient
+          colors={['rgba(255,255,255,0.18)', 'rgba(255,255,255,0)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={[StyleSheet.absoluteFill, { borderRadius: size === 'sm' ? radius.md : radius.md }]}
+          pointerEvents="none"
+        />
+      ) : null}
       {loading ? <ActivityIndicator color={fg} /> : icon ? <Ionicons name={icon} size={size === 'sm' ? 16 : 20} color={fg} /> : null}
       <Text
         style={[styles.buttonText, size === 'sm' && { fontSize: 11.5 }, { color: fg }]}

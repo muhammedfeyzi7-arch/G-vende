@@ -9,6 +9,7 @@ import { InboxProvider, useInbox } from '@/providers/InboxProvider';
 import { ReportsProvider } from '@/providers/ReportsProvider';
 import { TrustProvider } from '@/features/trust/TrustProvider';
 import { ThemeGate } from '@/theme/ThemeGate';
+import { ToastProvider } from '@/components/Toast';
 import { colors } from '@/theme';
 
 Notifications.setNotificationHandler({
@@ -95,6 +96,7 @@ function RootStack() {
       <Stack.Screen name="acil-mod" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <Stack.Screen name="acil-sms" options={{ title: 'Hazır Mesajlar' }} />
       <Stack.Screen name="arama" options={{ title: 'Acil Arama' }} />
+      <Stack.Screen name="hosgeldin" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="rapor/benim" options={{ title: 'Bildirimlerim' }} />
       <Stack.Screen name="duyurular" options={{ title: 'Resmî Bilgiler' }} />
       <Stack.Screen name="canta" options={{ title: 'Acil Durum Çantası' }} />
@@ -119,9 +121,11 @@ export default function RootLayout() {
             <ReportsProvider>
               <NotificationRouting />
               <ThemeGate>
-                <BiometricGate>
-                  <RootStack />
-                </BiometricGate>
+                <ToastProvider>
+                  <BiometricGate>
+                    <RootStack />
+                  </BiometricGate>
+                </ToastProvider>
               </ThemeGate>
             </ReportsProvider>
           </InboxProvider>

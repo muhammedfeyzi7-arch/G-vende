@@ -7,6 +7,7 @@ import { AppText, Banner, Button } from '@/components/ui';
 import { accent } from '@/components/ds';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { computeAlertState } from '@/features/earthquakes/alertState';
+import { Skeleton } from '@/components/Skeleton';
 import { AlertCard } from '@/features/earthquakes/components/AlertCard';
 import { EventInfoRow } from '@/features/earthquakes/components/EventInfoRow';
 import { QuakeListItem } from '@/features/earthquakes/components/QuakeListItem';
@@ -191,6 +192,7 @@ export function HomeScreen() {
               subtitle: 'Acil Çağrı',
               big: true,
               onPress: () => Linking.openURL('tel:112'),
+              onLongPress: () => router.push('/arama'),
             },
             {
               key: 'aile',
@@ -265,9 +267,22 @@ export function HomeScreen() {
                   onPress={() => router.push({ pathname: '/deprem/[id]', params: { id: e.id } })}
                 />
               ))
+          ) : quakes.loading ? (
+            <View style={{ paddingHorizontal: spacing.lg, gap: spacing.md }} accessibilityLabel="Depremler yükleniyor">
+              {[0, 1, 2].map((i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+                  <Skeleton width={44} height={44} radius={22} />
+                  <View style={{ flex: 1, gap: 6 }}>
+                    <Skeleton width="60%" height={13} />
+                    <Skeleton width="40%" height={10} />
+                  </View>
+                  <Skeleton width={48} height={10} />
+                </View>
+              ))}
+            </View>
           ) : (
             <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
-              <AppText variant="label">{quakes.loading ? 'Yükleniyor…' : (quakes.error ?? 'Seçili eşiğin üzerinde kayıt yok.')}</AppText>
+              <AppText variant="label">{quakes.error ?? 'Seçili eşiğin üzerinde kayıt yok.'}</AppText>
               {!quakes.loading ? <Button label="Tekrar dene" variant="secondary" icon="refresh" onPress={refreshQuakes} /> : null}
             </View>
           )}

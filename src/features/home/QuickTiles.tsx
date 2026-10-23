@@ -4,7 +4,16 @@ import { AppText } from '@/components/ui';
 import { Icon } from '@/components/ds';
 import { colors, currentScheme, radius, spacing, themedStyles } from '@/theme';
 
-export type Tile = { key: string; icon: string; color: string; title: string; subtitle?: string; onPress: () => void; big?: boolean };
+export type Tile = {
+  key: string;
+  icon: string;
+  color: string;
+  title: string;
+  subtitle?: string;
+  onPress: () => void;
+  onLongPress?: () => void;
+  big?: boolean;
+};
 
 /** Ana sayfadaki renkli hızlı erişim kutuları (yatay sığar; dar ekranda kaydırılır). */
 export function QuickTiles({ tiles }: { tiles: Tile[] }) {
@@ -15,6 +24,8 @@ export function QuickTiles({ tiles }: { tiles: Tile[] }) {
         <Pressable
           key={t.key}
           onPress={t.onPress}
+          onLongPress={t.onLongPress}
+          accessibilityHint={t.onLongPress ? 'Uzun basınca diğer acil numaralar' : undefined}
           accessibilityRole="button"
           accessibilityLabel={[t.title, t.subtitle].filter(Boolean).join(', ')}
           style={({ pressed }) => [

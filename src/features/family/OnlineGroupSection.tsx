@@ -1,3 +1,4 @@
+import { ListSkeleton } from '@/components/Skeleton';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -87,7 +88,7 @@ export function OnlineGroupSection({ state, reload }: { state: FamilyState; relo
       />
     );
   } else if (state.status === 'loading') {
-    body = <StateMessage icon="hourglass-outline" title="Yükleniyor…" compact />;
+    body = <ListSkeleton />;
   } else if (state.status === 'error' && !state.cached) {
     body = (
       <StateMessage

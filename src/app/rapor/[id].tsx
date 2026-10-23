@@ -1,3 +1,4 @@
+import { useToast } from '@/components/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -22,6 +23,7 @@ export default function ReportDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { session, userCoords } = useApp();
+  const toast = useToast();
   const { reports, helpful, toggleHelpful, flag, votes, vote } = useReports();
   const { trust } = useTrust();
   const [flagged, setFlagged] = useState(false);
@@ -79,7 +81,7 @@ export default function ReportDetail() {
         if (!perm.granted) throw new Error('Oy vermek için konum izni gerekir (yakınlık kontrolü).');
         const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
         await vote(r.id, v, { latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy ?? 9999 });
-        Alert.alert('Oyunuz kaydedildi', 'Teşekkürler. Bildirimin durumu oylara göre güncellenir.');
+        toast.show({ text: 'Oyunuz kaydedildi. Teşekkürler.' });
       } catch (e) {
         Alert.alert('Oy verilemedi', (e as Error).message);
       } finally {
@@ -96,7 +98,7 @@ export default function ReportDetail() {
             flag(r.id, f.value)
               .then(() => {
                 setFlagged(true);
-                Alert.alert('Teşekkürler', 'Şikâyetiniz alındı. Birden fazla şikâyet alan bildirimler inceleme için gizlenir.');
+                toast.show({ text: 'Şikâyetiniz alındı.', tone: 'info' });
               })
               .catch((e: Error) => Alert.alert('Gönderilemedi', e.message)),
         })),
