@@ -1,16 +1,19 @@
 import { router } from 'expo-router';
-import { Alert, Share } from 'react-native';
-import { AppText, Card } from '@/components/ui';
-import { GroupTitle, ListRow, Page, RowGroup, accent } from '@/components/ds';
+import { Alert, Share, StyleSheet, View } from 'react-native';
+import { AppText, Button, Pill } from '@/components/ui';
+import { Avatar, GroupTitle, IconTile, ListRow, Page, RowGroup, accent } from '@/components/ds';
+import { useProfile } from '@/hooks/useProfile';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
 import { clearAll } from '@/services/storage';
 import { friendlyError, getSupabase } from '@/services/supabase';
-import { spacing } from '@/theme';
+import { colors, radius, spacing, themedStyles } from '@/theme';
 
 /** Hesap durumu. Uygulamada ücretli üyelik yoktur; tüm özellikler ücretsizdir. */
 export default function AccountScreen() {
   const { session } = useApp();
+  const { profile } = useProfile();
+  const name = profile.name || session?.user.email?.split('@')[0] || 'Misafir';
 
   const exportData = async () => {
     const sb = getSupabase();
@@ -45,45 +48,58 @@ export default function AccountScreen() {
 
   return (
     <Page>
-      <Card style={{ gap: spacing.xs }}>
-        <AppText variant="heading">{session ? 'Hesap bağlı' : 'Misafir kullanım'}</AppText>
-        <AppText variant="label">
-          GÜVENDE ücretsizdir; ücretli paket veya üyelik yoktur. Deprem verileri, harita, Acil Durum araçları, SMS ile aile bildirimi ve
-          toplanma alanınız hesap olmadan çalışır.
-          {isBackendConfigured()
-            ? ' Hesap; herkese açık bildirim paylaşmak ve çevrimiçi aile grubu için gereklidir.'
-            : ' Bu kurulumda sunucu bağlantısı olmadığı için hesap özellikleri kapalıdır.'}
-        </AppText>
-      </Card>
-      {isBackendConfigured() ? (
+      <View style={styles.head}>
+        {session ? <Avatar name={name} uri={profile.photoUri} size={56} /> : <IconTile icon="person" color={accent.gray} size={56} solid />}
+        <View style={{ flex: 1, gap: 4 }}>
+          <AppText variant="title" style={{ fontSize: 18 }} numberOfLines={1}>
+            {session ? name : 'Misafir kullanım'}
+          </AppText>
+          {session ? (
+            <AppText variant="caption" numberOfLines={1}>
+              {session.user.email}
+            </AppText>
+          ) : null}
+          <Pill label={session ? 'Hesap bağlı' : 'Hesapsız'} color={session ? colors.safe : colors.textSecondary} />
+        </View>
+      </View>
+      {!session && isBackendConfigured() ? <Button label="Giriş yap" icon="log-in-outline" onPress={() => router.push('/giris')} /> : null}
+      <AppText variant="caption">
+        GÜVENDE ücretsizdir; ücretli paket veya üyelik yoktur. Deprem verileri, harita, Acil Durum araçları, SMS ile aile bildirimi ve
+        toplanma alanınız hesap olmadan çalışır.
+        {isBackendConfigured()
+          ? ' Hesap; herkese açık bildirim paylaşmak ve çevrimiçi aile grubu için gereklidir.'
+          : ' Bu kurulumda sunucu bağlantısı olmadığı için hesap özellikleri kapalıdır.'}
+      </AppText>
+      {isBackendConfigured() && session ? (
         <>
           <GroupTitle>Hesap</GroupTitle>
           <RowGroup>
-            {session ? (
-              <>
-                <ListRow first icon="mail-outline" title="E-posta" value={session.user.email ?? ''} />
-                <ListRow
-                  icon="download-outline"
-                  title="Verilerimi indir"
-                  subtitle="Sunucudaki verilerinizin kopyası (JSON)"
-                  onPress={exportData}
-                />
-                <ListRow icon="log-out-outline" title="Çıkış yap" onPress={() => getSupabase()?.auth.signOut()} />
-                <ListRow icon="trash-outline" title="Hesabımı sil" danger onPress={deleteAccount} />
-              </>
-            ) : (
-              <ListRow
-                first
-                icon="log-in-outline"
-                iconColor={accent.blue}
-                title="Giriş yap"
-                subtitle="E-posta ile tek kullanımlık bağlantı"
-                onPress={() => router.push('/giris')}
-              />
-            )}
+            <ListRow first icon="mail-outline" title="E-posta" value={session.user.email ?? ''} />
+            <ListRow
+              icon="download-outline"
+              title="Verilerimi indir"
+              subtitle="Sunucudaki verilerinizin kopyası (JSON)"
+              onPress={exportData}
+            />
+            <ListRow icon="log-out-outline" title="Çıkış yap" onPress={() => getSupabase()?.auth.signOut()} />
+            <ListRow icon="trash-outline" title="Hesabımı sil" danger onPress={deleteAccount} />
           </RowGroup>
         </>
       ) : null}
     </Page>
   );
 }
+
+const styles = themedStyles(() => ({
+  head: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.xl,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    boxShadow: colors.shadowSoft,
+  },
+}));

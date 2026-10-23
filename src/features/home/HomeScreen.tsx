@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, Banner, Button } from '@/components/ui';
-import { accent } from '@/components/ds';
+import { IconTile, accent } from '@/components/ds';
 import { useNearbyAssembly } from '@/features/assembly-points/useNearbyAssembly';
 import { computeAlertState } from '@/features/earthquakes/alertState';
 import { Skeleton } from '@/components/Skeleton';
@@ -238,14 +238,29 @@ export function HomeScreen() {
               ))}
             </ScrollView>
           ) : (
-            <View style={{ paddingHorizontal: spacing.lg, gap: spacing.sm }}>
-              <AppText variant="label">
-                {feed.status === 'not-configured'
-                  ? 'Topluluk bildirimleri sunucu bağlantısı gerektirir (bu kurulumda yok). Sahte kayıt gösterilmez.'
-                  : feed.status === 'error'
-                    ? `Bildirimler alınamadı. ${feed.error ?? ''}`
-                    : 'Son 48 saatte paylaşılan bildirim yok.'}
-              </AppText>
+            <View style={styles.emptyFeed}>
+              <IconTile
+                icon={feed.status === 'error' ? 'cloud-offline-outline' : 'chatbubbles-outline'}
+                color={feed.status === 'error' ? accent.orange : accent.blue}
+                size={40}
+              />
+              <View style={{ flex: 1, gap: 2 }}>
+                <AppText variant="heading" style={{ fontSize: 14 }}>
+                  {feed.status === 'error' ? 'Bildirimler alınamadı' : 'Yakınınızda yeni bildirim yok'}
+                </AppText>
+                <AppText variant="caption">
+                  {feed.status === 'not-configured'
+                    ? 'Topluluk bildirimleri sunucu bağlantısı gerektirir. Sahte kayıt gösterilmez.'
+                    : feed.status === 'error'
+                      ? 'İnternet bağlantınızı kontrol edin.'
+                      : 'Son 48 saatte paylaşılan bildirim yok. Gördüğünüz bir durumu ilk siz bildirin.'}
+                </AppText>
+              </View>
+              {feed.status === 'error' ? (
+                <Button label="Tekrar" size="sm" variant="secondary" onPress={() => feed.refresh()} />
+              ) : feed.status !== 'not-configured' ? (
+                <Button label="Bildir" icon="add" size="sm" onPress={() => router.push('/rapor/yeni')} />
+              ) : null}
             </View>
           )}
           {recentReports.length ? (
@@ -298,6 +313,17 @@ export function HomeScreen() {
 }
 
 const styles = themedStyles(() => ({
+  emptyFeed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginHorizontal: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
   screen: { flex: 1, backgroundColor: colors.bg },
   infoCard: {
     backgroundColor: colors.surface,

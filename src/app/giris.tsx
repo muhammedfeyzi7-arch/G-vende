@@ -1,9 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { AppText, Button, StateMessage } from '@/components/ui';
+import { IconTile, accent } from '@/components/ds';
 import { parseAuthLink, signInWithAuthLink } from '@/features/auth/authLink';
 import { useApp } from '@/providers/AppProvider';
 import { isBackendConfigured } from '@/services/env';
@@ -84,55 +87,111 @@ export default function SignIn() {
     if (text) verify(text);
   };
 
+  const validEmail = /^\S+@\S+\.\S+$/.test(email.trim());
+
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }} keyboardShouldPersistTaps="handled">
-        <AppText variant="label">
-          Bildirim paylaşmak ve aile ağını kullanmak için giriş gerekir. E-posta adresiniz diğer kullanıcılara gösterilmez.
-        </AppText>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={styles.hero}>
+          <View style={styles.logo}>
+            <LinearGradient colors={['#4D8DFF', '#1F5FE0']} style={StyleSheet.absoluteFill} />
+            <Ionicons name={step === 'email' ? 'person' : 'mail-open'} size={34} color="#fff" />
+          </View>
+          <AppText variant="display" style={{ fontSize: 24, textAlign: 'center' }}>
+            {step === 'email' ? 'Hesabınıza giriş yapın' : 'E-postanızı kontrol edin'}
+          </AppText>
+          <AppText variant="label" style={{ textAlign: 'center' }}>
+            {step === 'email'
+              ? 'Şifre yok: e-postanıza tek kullanımlık bir giriş bağlantısı göndeririz.'
+              : `${email.trim()} adresine “Your sign-in link” konulu bir e-posta gönderdik.`}
+          </AppText>
+        </View>
+
         {step === 'email' ? (
           <>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="E-posta adresi"
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              textContentType="emailAddress"
-              style={styles.input}
-              accessibilityLabel="E-posta adresi"
-            />
-            <Button label="Giriş bağlantısı gönder" onPress={sendCode} loading={busy} disabled={!/^\S+@\S+\.\S+$/.test(email.trim())} />
+            <View style={styles.inputWrap}>
+              <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="ornek@eposta.com"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+                textContentType="emailAddress"
+                returnKeyType="send"
+                onSubmitEditing={() => validEmail && sendCode()}
+                style={styles.input}
+                accessibilityLabel="E-posta adresi"
+              />
+            </View>
+            <Button label="Giriş bağlantısı gönder" icon="paper-plane-outline" onPress={sendCode} loading={busy} disabled={!validEmail} />
+
+            <View style={styles.benefits}>
+              {[
+                { icon: 'people', color: accent.blue, text: 'Çevrimiçi aile grubu ve “Güvendeyim” bildirimleri' },
+                { icon: 'megaphone', color: accent.orange, text: 'Yakınınızdaki olayları bildirme ve doğrulama' },
+                { icon: 'lock-closed', color: accent.green, text: 'E-postanız diğer kullanıcılara gösterilmez' },
+              ].map((b) => (
+                <View key={b.text} style={styles.benefit}>
+                  <IconTile icon={b.icon} color={b.color} size={34} />
+                  <AppText variant="label" color={colors.text} style={{ flex: 1 }}>
+                    {b.text}
+                  </AppText>
+                </View>
+              ))}
+            </View>
+            <AppText variant="caption" style={{ textAlign: 'center' }}>
+              Deprem verileri, harita ve Acil Durum araçları giriş yapmadan da çalışır.
+            </AppText>
           </>
         ) : (
           <>
-            <AppText variant="heading" style={{ fontSize: 16 }}>
-              E-postanızı kontrol edin
-            </AppText>
-            <AppText variant="label">
-              {email} adresine “Your sign-in link” konulu bir e-posta gönderdik (gereksiz klasörüne de bakın).
-            </AppText>
-            <AppText variant="label">
-              E-postadaki “Sign in” bağlantısına dokunmadan basılı tutun, “Bağlantıyı Kopyala” deyin ve aşağıdaki düğmeye basın.
-            </AppText>
+            <View style={styles.steps}>
+              {[
+                'E-posta uygulamanızı açın (gelmediyse gereksiz klasörüne bakın).',
+                '“Sign in” bağlantısına dokunmayın; basılı tutup “Bağlantıyı Kopyala” deyin.',
+                'Buraya dönüp aşağıdaki düğmeye basın.',
+              ].map((t, i) => (
+                <View key={t} style={styles.step}>
+                  <View style={styles.stepNo}>
+                    <AppText variant="heading" color="#fff" style={{ fontSize: 13 }}>
+                      {i + 1}
+                    </AppText>
+                  </View>
+                  <AppText variant="label" color={colors.text} style={{ flex: 1 }}>
+                    {t}
+                  </AppText>
+                </View>
+              ))}
+            </View>
             <Button label="Kopyaladığım bağlantıyla giriş yap" icon="clipboard-outline" onPress={pasteLink} loading={busy} />
-            <TextInput
-              value={code}
-              onChangeText={setCode}
-              placeholder="veya bağlantıyı / kodu buraya yapıştırın"
-              placeholderTextColor={colors.textMuted}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="one-time-code"
-              textContentType="oneTimeCode"
-              style={styles.input}
-              accessibilityLabel="Giriş bağlantısı veya kodu"
-            />
+            <View style={styles.or}>
+              <View style={styles.line} />
+              <AppText variant="caption">veya elle yapıştırın</AppText>
+              <View style={styles.line} />
+            </View>
+            <View style={styles.inputWrap}>
+              <Ionicons name="link-outline" size={20} color={colors.textSecondary} />
+              <TextInput
+                value={code}
+                onChangeText={setCode}
+                placeholder="Giriş bağlantısı veya kod"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="one-time-code"
+                textContentType="oneTimeCode"
+                style={styles.input}
+                accessibilityLabel="Giriş bağlantısı veya kodu"
+              />
+            </View>
             <Button label="Giriş yap" variant="secondary" onPress={() => verify()} loading={busy} disabled={code.trim().length < 6} />
-            <Button label="Yeniden gönder" variant="ghost" onPress={sendCode} disabled={busy} />
-            <Button label="E-postayı değiştir" variant="ghost" onPress={() => setStep('email')} />
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.md }}>
+              <Button label="Yeniden gönder" icon="refresh" variant="ghost" size="sm" onPress={sendCode} disabled={busy} />
+              <Button label="E-postayı değiştir" icon="create-outline" variant="ghost" size="sm" onPress={() => setStep('email')} />
+            </View>
           </>
         )}
       </ScrollView>
@@ -141,14 +200,49 @@ export default function SignIn() {
 }
 
 const styles = themedStyles(() => ({
-  input: {
-    minHeight: 48,
-    borderRadius: radius.md,
+  content: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xxl },
+  hero: { alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.xs },
+  logo: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 10px 28px rgba(31,95,224,0.35)',
+  },
+  inputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 52,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.borderStrong,
     backgroundColor: colors.surface,
-    color: colors.text,
     paddingHorizontal: spacing.md,
-    fontSize: 14,
   },
+  input: { flex: 1, minHeight: 50, color: colors.text, fontSize: 15 },
+  benefits: {
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    marginTop: spacing.sm,
+  },
+  benefit: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  steps: {
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  step: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  stepNo: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  or: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  line: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.borderStrong },
 }));
