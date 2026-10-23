@@ -120,6 +120,21 @@ describe('alt sekmeler', () => {
     expect(router.push).toHaveBeenCalledWith('/bildirimler');
   });
 
+  it('Ana Sayfa: ACİL DURUM kartı 7 başlığı gösterir ve doğru rehbere götürür', async () => {
+    const { HomeScreen } = require('@/features/home/HomeScreen');
+    const { router } = require('expo-router');
+    await open(<HomeScreen />);
+    expect(screen.getByText('ACİL DURUM')).toBeTruthy();
+    await fireEvent.press(screen.getByLabelText('Deprem anında ne yapmalıyım?'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'during-indoor' } });
+    await fireEvent.press(screen.getByLabelText('Enkaz altında kaldım'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'trapped' } });
+    await fireEvent.press(screen.getByLabelText('Araçtaysam'));
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/rehber/[id]', params: { id: 'during-vehicle' } });
+    await fireEvent.press(screen.getByLabelText('Acil durum çantam hazır mı?'));
+    expect(router.push).toHaveBeenCalledWith('/canta');
+  });
+
   it('Harita: deprem paneli sekmeleri, katman filtreleri ve Bildirim Ekle', async () => {
     const Map = require('@/app/(tabs)/harita').default;
     const { router } = require('expo-router');
@@ -304,7 +319,8 @@ describe('alt ekranlar', () => {
     ['rapor/benim', /Henüz olay bildirmediniz/],
     ['duyurular', /Resmî deprem kayıtları/],
     ['canta', /Hazır olma durumunuz/],
-    ['rehber/index', /Yangın/],
+    ['rehber/index', /Şu an sarsıntı mı var\?/],
+    ['rehber/hazirlik', /Hazırlık durumunuz/],
     ['saglik-bilgilerim', /Kan grubu/],
     ['acil-mod', /112’yi Ara/],
     ['aile/bulusma', /buluşacağınız yeri/],
@@ -314,11 +330,36 @@ describe('alt ekranlar', () => {
     expect(screen.getAllByText(expected).length).toBeGreaterThan(0);
   });
 
-  it('rehber detayı açılır', async () => {
+  it('rehber detayı: ne yapmalı → neden → ne yapmamalı → kaynak ve tarih', async () => {
+    mockParams = { id: 'during-indoor' };
+    const Screen = require('@/app/rehber/[id]').default;
+    await open(<Screen />);
+    expect(screen.getByText('Ne yapmalıyım?')).toBeTruthy();
+    expect(screen.getByText('Neden?')).toBeTruthy();
+    expect(screen.getByText('Ne yapmamalıyım?')).toBeTruthy();
+    expect(screen.getByText(/Asansör kullanmayın/)).toBeTruthy();
+    expect(screen.getAllByText(/Son kontrol: /).length).toBeGreaterThan(0);
+    // İnceleme bekleyen (doğrulanmamış) maddeler gösterilmez
+    expect(screen.queryByText(/Hayat üçgeni/i)).toBeNull();
+    expect(screen.queryByText(/yastıkla koruyun/)).toBeNull();
+  });
+
+  it('rehber: doğrulama bekleyen veya bilinmeyen konu açılmaz', async () => {
     mockParams = { id: 'fire' };
     const Screen = require('@/app/rehber/[id]').default;
     await open(<Screen />);
-    expect(screen.getByText(/Yangını fark ederseniz/)).toBeTruthy();
+    expect(screen.getByText('Rehber bulunamadı')).toBeTruthy();
+  });
+
+  it('hazırlık listesi işaretlenir, ilerleme yüzdesi güncellenir ve cihazda saklanır', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const Screen = require('@/app/rehber/hazirlik').default;
+    await open(<Screen />);
+    expect(screen.getByText('%0')).toBeTruthy();
+    await fireEvent.press(screen.getAllByRole('checkbox')[0]!);
+    await flush();
+    expect(screen.queryByText('%0')).toBeNull();
+    expect(JSON.parse(await AsyncStorage.getItem('guvende:v1:prep-checked'))).toHaveLength(1);
   });
 
   it('Tercihler: harita görünümü seçilir ve kaydedilir', async () => {

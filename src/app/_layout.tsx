@@ -128,7 +128,8 @@ function RootStack() {
       <Stack.Screen name="rapor/benim" options={{ title: 'Olay Bildirimlerim' }} />
       <Stack.Screen name="duyurular" options={{ title: 'Resmî Bilgiler' }} />
       <Stack.Screen name="canta" options={{ title: 'Acil Durum Çantası' }} />
-      <Stack.Screen name="rehber/index" options={{ title: 'Afet Rehberleri' }} />
+      <Stack.Screen name="rehber/index" options={{ title: 'Acil Durum Rehberi' }} />
+      <Stack.Screen name="rehber/hazirlik" options={{ title: 'Hazırlık Kontrol Listesi' }} />
       <Stack.Screen name="rehber/[id]" options={{ title: 'Rehber' }} />
       <Stack.Screen name="saglik-bilgilerim" options={{ title: 'Sağlık Bilgilerim' }} />
       <Stack.Screen name="aile/ekle" options={{ title: 'Üye Ekle', presentation: 'modal' }} />

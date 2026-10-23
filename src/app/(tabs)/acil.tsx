@@ -261,7 +261,7 @@ export default function EmergencyScreen() {
           {DCH_STEPS.map(({ n, title, text, Icon }) => (
             <Pressable
               key={n}
-              onPress={() => router.push({ pathname: '/rehber/[id]', params: { id: n === 4 ? 'after' : 'during' } })}
+              onPress={() => router.push({ pathname: '/rehber/[id]', params: { id: n === 4 ? 'after-first' : 'during-indoor' } })}
               style={styles.step}
               accessibilityRole="button"
               accessibilityLabel={`${n}. ${title}: ${text}`}

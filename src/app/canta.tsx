@@ -69,6 +69,10 @@ export default function KitScreen() {
           }
         />
       ) : null}
+      <AppText variant="caption">
+        AFAD, yardım ulaşana kadar ilk 72 saat için bir afet ve acil durum çantası hazırlanmasını önerir. Bu liste genel bir hazırlık
+        listesidir; AFAD’ın ayrıntılı listesiyle karşılaştırması sürüyor. İşaretleriniz yalnızca bu cihazda saklanır.
+      </AppText>
     </Page>
   );
 }
