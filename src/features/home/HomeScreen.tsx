@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, Linking, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Skeleton } from '@/components/Skeleton';
 import { useToast } from '@/components/Toast';
 import { AppText } from '@/components/ui';
 import { Icon } from '@/components/ds';
@@ -78,7 +79,7 @@ export function quakeStatus(
   };
 }
 
-function NewsCard({ e, width }: { e: EarthquakeEvent; width: number }) {
+function NewsCard({ e, width, compact }: { e: EarthquakeEvent; width: number; compact?: boolean }) {
   const src = SOURCES[e.primary.source].label;
   const m = e.primary.magnitude ?? 0;
   const tint = m >= 5 ? '#FF3548' : m >= 4 ? '#FF8A24' : '#E5484D';
@@ -89,16 +90,16 @@ function NewsCard({ e, width }: { e: EarthquakeEvent; width: number }) {
       accessibilityLabel={`${src}: ${placeTitle(e)}, ${formatMagnitude(e.primary.magnitude)} büyüklüğünde deprem, ${relativeTimeTr(e.primary.occurredAt)}`}
       style={({ pressed }) => [styles.news, { width }, pressed && { opacity: 0.85 }]}
     >
-      <View style={styles.newsTop}>
+      <View style={[styles.newsTop, compact && { flexDirection: 'column', alignItems: 'flex-start', gap: 4 }]}>
         <View style={[styles.newsIcon, { backgroundColor: alpha(tint, 0.18) }]}>
-          <Ionicons name="pulse" size={15} color={tint} />
+          <Ionicons name="pulse" size={14} color={tint} />
         </View>
-        <AppText variant="caption" numberOfLines={1} style={{ flex: 1, fontSize: 11 }}>
+        <AppText variant="caption" numberOfLines={1} style={{ flex: 1, fontSize: 10 }}>
           {relativeTimeTr(e.primary.occurredAt)}
         </AppText>
       </View>
-      <AppText variant="heading" numberOfLines={3} style={{ fontSize: 13, lineHeight: 17.5, fontWeight: '600' }}>
-        {src}: {placeTitle(e)} · {formatMagnitude(e.primary.magnitude)} büyüklüğünde deprem
+      <AppText variant="heading" numberOfLines={compact ? 6 : 4} style={{ fontSize: 12, lineHeight: 16, fontWeight: '600' }}>
+        {src}: {placeTitle(e).split(' · ')[0]} · {formatMagnitude(e.primary.magnitude)} büyüklüğünde deprem
       </AppText>
     </Pressable>
   );
@@ -124,8 +125,10 @@ export function HomeScreen() {
   const k = Math.min(1, quickW / 82);
   // Küçük telefonlar (ör. iPhone SE 320 pt): çevrimdışı rozeti yalnız simge, alt kartlar alt alta.
   const narrow = pageW < 360;
+  // Son gelişmeler: kart içinde üç eşit sütun
+  const newsW = (pageW - spacing.md * 2 - spacing.sm * 2 - gap * 2) / 3;
   const mapTextW = pageW - spacing.md * 4 - 150;
-  const pairTextW = (narrow ? pageW - spacing.md * 2 : (pageW - spacing.md * 2 - gap) / 2) - 42 - 20 - 12 - 14;
+  const pairTextW = (narrow ? pageW - spacing.md * 2 : (pageW - spacing.md * 2 - gap) / 2) - 38 - 14 - 10 - 14;
 
   const alert = useMemo(() => computeAlertState(events, userCoords), [events, userCoords]);
   const status = quakeStatus(alert, quakes.snapshot, quakes.loading, !!userCoords);
@@ -156,7 +159,7 @@ export function HomeScreen() {
         contentContainerStyle={{
           paddingHorizontal: spacing.md,
           paddingBottom: tabBarHeight + spacing.xl,
-          gap: spacing.sm + 4,
+          gap: 8,
           width: '100%',
           maxWidth: 640,
           alignSelf: 'center',
@@ -275,16 +278,16 @@ export function HomeScreen() {
               <AppText
                 variant="heading"
                 color={'red' in q ? '#fff' : colors.text}
-                numberOfLines={1}
-                style={{ fontSize: fit(q.title, quickW - 8, 12), marginTop: 8, textAlign: 'center' }}
+                numberOfLines={narrow ? 2 : 1}
+                style={{ fontSize: narrow ? 10.5 : fit(q.title, quickW - 8, 12), marginTop: 8, textAlign: 'center' }}
               >
                 {q.title}
               </AppText>
               <AppText
                 variant="caption"
                 color={'red' in q ? '#FFE3E5' : colors.textSecondary}
-                numberOfLines={1}
-                style={{ fontSize: fit(q.sub, quickW - 6, 10, false), marginTop: 2, textAlign: 'center' }}
+                numberOfLines={narrow ? 2 : 1}
+                style={{ fontSize: narrow ? 8.5 : fit(q.sub, quickW - 6, 10, false), marginTop: 2, textAlign: 'center' }}
               >
                 {q.sub}
               </AppText>
@@ -328,7 +331,7 @@ export function HomeScreen() {
           <View style={styles.quakeStatus}>
             <View style={[styles.dot, { backgroundColor: TONE_COLOR[status.tone], boxShadow: `0 0 8px ${TONE_COLOR[status.tone]}` }]} />
             <View style={{ flex: 1, gap: 2 }}>
-              <AppText variant="body" style={{ fontSize: 12.5, lineHeight: 17 }}>
+              <AppText variant="body" style={{ fontSize: 12, lineHeight: 16 }}>
                 {status.text}
               </AppText>
               {status.sub ? (
@@ -352,8 +355,8 @@ export function HomeScreen() {
               </AppText>
               <AppText
                 variant="caption"
-                numberOfLines={1}
-                style={{ fontSize: fit('Harita üzerinden güncel durumu takip edin.', mapTextW, 11, false) }}
+                numberOfLines={narrow ? 2 : 1}
+                style={{ fontSize: narrow ? 10 : fit('Harita üzerinden güncel durumu takip edin.', mapTextW, 11, false) }}
               >
                 Harita üzerinden güncel durumu takip edin.
               </AppText>
@@ -425,11 +428,11 @@ export function HomeScreen() {
               <AppText variant="heading" numberOfLines={1} style={{ fontSize: 14 }}>
                 Ailem
               </AppText>
-              <AppText variant="caption" style={{ fontSize: 9.5, lineHeight: 13 }}>
+              <AppText variant="caption" style={{ fontSize: 9.5, lineHeight: 12.5 }}>
                 Sevdiklerinizin durumunu takip edin.
               </AppText>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            <Ionicons name="chevron-forward" size={14} color={colors.textSecondary} />
           </Pressable>
           <Pressable
             onPress={() => router.push('/canta')}
@@ -457,7 +460,7 @@ export function HomeScreen() {
                 {kitDone}/{KIT_ITEMS.length} tamamlandı
               </AppText>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            <Ionicons name="chevron-forward" size={14} color={colors.textSecondary} />
           </Pressable>
         </View>
 
@@ -474,20 +477,32 @@ export function HomeScreen() {
             </Pressable>
           </View>
           {news.length ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap, paddingHorizontal: spacing.md }}>
-              {news.map((e) => (
-                <NewsCard key={e.id} e={e} width={Math.max(124, (pageW - spacing.md * 2) / 2.85)} />
+            <View style={styles.newsRow}>
+              {news.slice(0, 3).map((e) => (
+                <NewsCard key={e.id} e={e} width={newsW} compact={narrow} />
               ))}
-            </ScrollView>
+            </View>
+          ) : quakes.loading ? (
+            <View style={styles.newsRow} accessibilityLabel="Son gelişmeler yükleniyor">
+              {[0, 1, 2].map((i) => (
+                <View key={i} style={[styles.news, { width: newsW }]}>
+                  <View style={styles.newsTop}>
+                    <Skeleton width={26} height={26} radius={13} />
+                    <Skeleton width="55%" height={10} />
+                  </View>
+                  <Skeleton width="95%" height={11} />
+                  <Skeleton width="80%" height={11} />
+                  <Skeleton width="60%" height={11} />
+                </View>
+              ))}
+            </View>
           ) : (
             <View style={styles.empty}>
               <Ionicons name={quakes.error ? 'cloud-offline-outline' : 'time-outline'} size={22} color={colors.textSecondary} />
               <AppText variant="caption" style={{ flex: 1, fontSize: 13 }}>
-                {quakes.loading
-                  ? 'Kayıtlar yükleniyor…'
-                  : quakes.error
-                    ? 'Kayıtlar alınamadı. Lütfen internet bağlantınızı kontrol edin.'
-                    : 'Seçili büyüklük eşiğinin üzerinde son 7 günde kayıt yok.'}
+                {quakes.error
+                  ? 'Kayıtlar alınamadı. Lütfen internet bağlantınızı kontrol edin.'
+                  : 'Seçili büyüklük eşiğinin üzerinde son 7 günde kayıt yok.'}
               </AppText>
             </View>
           )}
@@ -499,7 +514,7 @@ export function HomeScreen() {
 
 const styles = themedStyles(() => ({
   screen: { flex: 1, backgroundColor: colors.bg },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 52 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 44 },
   brand: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minWidth: 0 },
   offline: {
     flexDirection: 'row',
@@ -555,12 +570,12 @@ const styles = themedStyles(() => ({
     boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
   },
   quick: {
-    minHeight: 78,
+    minHeight: 76,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 2,
-    paddingVertical: spacing.sm,
+    paddingVertical: 6,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
@@ -573,9 +588,9 @@ const styles = themedStyles(() => ({
     borderColor: colors.border,
     padding: spacing.md,
   },
-  quake: { minHeight: 118, overflow: 'hidden', justifyContent: 'space-between', gap: spacing.md, paddingLeft: spacing.lg },
+  quake: { minHeight: 106, overflow: 'hidden', justifyContent: 'space-between', gap: 6, paddingLeft: spacing.lg, paddingVertical: 10 },
   quakeBar: { position: 'absolute', left: 0, top: 16, width: 3, height: 28, borderRadius: 2 },
-  quakeArt: { position: 'absolute', right: 0, bottom: 0, width: '46%', height: '96%' },
+  quakeArt: { position: 'absolute', right: 0, bottom: 0, width: '52%', height: '100%' },
   shield: { position: 'absolute', right: '22%', bottom: 6 },
   quakeStatus: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, maxWidth: '62%' },
   dot: { width: 14, height: 14, borderRadius: 7, marginTop: 3 },
@@ -590,7 +605,7 @@ const styles = themedStyles(() => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mapHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2 },
+  mapHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   mapBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -601,7 +616,7 @@ const styles = themedStyles(() => ({
     borderWidth: 1,
     borderColor: colors.borderStrong,
   },
-  mapBox: { height: 112, backgroundColor: colors.mapPlaceholder },
+  mapBox: { height: 108, backgroundColor: colors.mapPlaceholder },
   legend: { position: 'absolute', left: spacing.sm, bottom: spacing.sm },
   locChip: {
     position: 'absolute',
@@ -619,27 +634,28 @@ const styles = themedStyles(() => ({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    minHeight: 66,
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: spacing.sm,
+    gap: 5,
+    minHeight: 60,
+    paddingHorizontal: 7,
+    paddingVertical: 7,
     overflow: 'hidden',
   },
-  pairIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  pairIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   track: { height: 6, borderRadius: 3, backgroundColor: alpha(colors.textSecondary, 0.2), overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 3, backgroundColor: colors.primary },
   newsHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md },
+  newsRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.sm },
   news: {
-    minHeight: 96,
+    minHeight: 104,
     gap: 6,
-    padding: spacing.sm + 2,
+    padding: spacing.sm,
     borderRadius: 16,
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
     borderColor: colors.border,
   },
   newsTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  newsIcon: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  newsIcon: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   empty: {
     flexDirection: 'row',
     alignItems: 'center',
