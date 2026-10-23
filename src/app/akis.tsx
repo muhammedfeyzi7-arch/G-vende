@@ -56,7 +56,7 @@ export default function FeedScreen() {
       >
         <Ionicons name="pencil" size={22} color="#fff" />
         <AppText variant="heading" color="#fff" style={{ fontSize: font.size.lg }}>
-          Bildirim Ekle
+          Olay Bildir
         </AppText>
       </Pressable>
     </View>

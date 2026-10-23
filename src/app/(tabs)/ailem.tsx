@@ -248,6 +248,7 @@ export default function FamilyScreen() {
     );
   };
 
+  const hasMapData = pins.some((p) => p.id !== 'me') || meeting.length > 0;
   return (
     <ScrollView
       refreshControl={
@@ -307,84 +308,114 @@ export default function FamilyScreen() {
         <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
       </Pressable>
 
-      {/* Harita / Liste */}
-      <View style={styles.mapCard}>
-        {view === 'map' ? (
-          <QuakeMap
-            ref={mapRef}
-            mapStyle={settings.mapStyle}
-            events={[]}
-            focus={null}
-            reports={[]}
-            assemblyPoints={meeting}
-            family={pins}
-            user={null}
-            userIsPrecise={location.status === 'granted'}
-            layers={{ ...DEFAULT_LAYERS, rings: false }}
-            onSelect={() => router.push('/aile/bulusma')}
-            initialCenter={userCoords ?? undefined}
-            initialZoom={userCoords ? 10.2 : 5}
-          />
-        ) : (
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: 56, paddingHorizontal: spacing.sm }}>
-            {people.map(memberRow)}
-          </ScrollView>
-        )}
-        <View style={styles.segment} accessibilityRole="tablist">
-          {(['map', 'list'] as const).map((v) => (
-            <Pressable
-              key={v}
-              onPress={() => setView(v)}
-              accessibilityRole="tab"
-              accessibilityLabel={v === 'map' ? 'Aile haritası' : 'Aile listesi'}
-              accessibilityState={{ selected: view === v }}
-              style={[styles.segBtn, view === v && styles.segOn]}
-            >
-              <Ionicons name={v === 'map' ? 'map-outline' : 'list-outline'} size={16} color={view === v ? '#fff' : colors.textSecondary} />
-              <AppText variant="label" color={view === v ? '#fff' : colors.textSecondary}>
-                {v === 'map' ? 'Harita' : 'Liste'}
-              </AppText>
-            </Pressable>
-          ))}
+      {/* Harita / Liste: haritada gösterilecek aile konumu veya buluşma noktası yoksa yer kaplamaz. */}
+      {hasMapData ? (
+        <View style={styles.mapCard}>
+          {' '}
+          {view === 'map' ? (
+            <QuakeMap
+              ref={mapRef}
+              mapStyle={settings.mapStyle}
+              events={[]}
+              focus={null}
+              reports={[]}
+              assemblyPoints={meeting}
+              family={pins}
+              user={null}
+              userIsPrecise={location.status === 'granted'}
+              layers={{ ...DEFAULT_LAYERS, rings: false }}
+              onSelect={() => router.push('/aile/bulusma')}
+              initialCenter={userCoords ?? undefined}
+              initialZoom={userCoords ? 10.2 : 5}
+            />
+          ) : (
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: 56, paddingHorizontal: spacing.sm }}>
+              {' '}
+              {people.map(memberRow)}{' '}
+            </ScrollView>
+          )}{' '}
+          <View style={styles.segment} accessibilityRole="tablist">
+            {' '}
+            {(['map', 'list'] as const).map((v) => (
+              <Pressable
+                key={v}
+                onPress={() => setView(v)}
+                accessibilityRole="tab"
+                accessibilityLabel={v === 'map' ? 'Aile haritası' : 'Aile listesi'}
+                accessibilityState={{ selected: view === v }}
+                style={[styles.segBtn, view === v && styles.segOn]}
+              >
+                {' '}
+                <Ionicons
+                  name={v === 'map' ? 'map-outline' : 'list-outline'}
+                  size={16}
+                  color={view === v ? '#fff' : colors.textSecondary}
+                />{' '}
+                <AppText variant="label" color={view === v ? '#fff' : colors.textSecondary}>
+                  {' '}
+                  {v === 'map' ? 'Harita' : 'Liste'}{' '}
+                </AppText>{' '}
+              </Pressable>
+            ))}{' '}
+          </View>{' '}
+          {view === 'map' ? (
+            <>
+              {' '}
+              <View style={styles.mapCtrls}>
+                {' '}
+                <Pressable
+                  onPress={() => (userCoords ? mapRef.current?.flyTo(userCoords, 13) : router.push('/konum'))}
+                  accessibilityRole="button"
+                  accessibilityLabel="Konumuma git"
+                  style={styles.ctrl}
+                >
+                  {' '}
+                  <Ionicons name="navigate-outline" size={22} color={colors.text} />{' '}
+                </Pressable>{' '}
+                <Pressable
+                  onPress={() => router.push('/gizlilik')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Konum paylaşımı ayarları"
+                  style={styles.ctrl}
+                >
+                  {' '}
+                  <Ionicons name="layers" size={22} color={colors.text} />{' '}
+                </Pressable>{' '}
+                <Pressable
+                  onPress={() => router.push('/harita')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Büyük harita"
+                  style={styles.ctrl}
+                >
+                  {' '}
+                  <Ionicons name="scan-outline" size={22} color={colors.text} />{' '}
+                </Pressable>{' '}
+              </View>{' '}
+              {!sharedLocations ? (
+                <View style={styles.mapNote} pointerEvents="none">
+                  {' '}
+                  <AppText variant="caption" color={colors.text} style={{ textAlign: 'center' }}>
+                    {' '}
+                    Aile üyelerinin konumu yalnızca çevrimiçi grupta ve kendi izinleriyle görünür.{' '}
+                  </AppText>{' '}
+                </View>
+              ) : null}{' '}
+            </>
+          ) : null}{' '}
         </View>
-        {view === 'map' ? (
-          <>
-            <View style={styles.mapCtrls}>
-              <Pressable
-                onPress={() => (userCoords ? mapRef.current?.flyTo(userCoords, 13) : router.push('/konum'))}
-                accessibilityRole="button"
-                accessibilityLabel="Konumuma git"
-                style={styles.ctrl}
-              >
-                <Ionicons name="navigate-outline" size={22} color={colors.text} />
-              </Pressable>
-              <Pressable
-                onPress={() => router.push('/gizlilik')}
-                accessibilityRole="button"
-                accessibilityLabel="Konum paylaşımı ayarları"
-                style={styles.ctrl}
-              >
-                <Ionicons name="layers" size={22} color={colors.text} />
-              </Pressable>
-              <Pressable
-                onPress={() => router.push('/harita')}
-                accessibilityRole="button"
-                accessibilityLabel="Büyük harita"
-                style={styles.ctrl}
-              >
-                <Ionicons name="scan-outline" size={22} color={colors.text} />
-              </Pressable>
-            </View>
-            {!sharedLocations ? (
-              <View style={styles.mapNote} pointerEvents="none">
-                <AppText variant="caption" color={colors.text} style={{ textAlign: 'center' }}>
-                  Aile üyelerinin konumu yalnızca çevrimiçi grupta ve kendi izinleriyle görünür.
-                </AppText>
-              </View>
-            ) : null}
-          </>
-        ) : null}
-      </View>
+      ) : (
+        <Pressable
+          onPress={() => router.push('/aile/bulusma')}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.mapHint, pressed && { opacity: 0.85 }]}
+        >
+          <Ionicons name="map-outline" size={20} color={colors.textSecondary} />
+          <AppText variant="caption" style={{ flex: 1 }}>
+            Aile haritası, buluşma noktası belirlediğinizde veya çevrimiçi aile grubundaki kişiler konum paylaştığında görünür.
+          </AppText>
+          <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+        </Pressable>
+      )}
 
       <View style={styles.stats}>
         <StatTile icon="shield-checkmark" color={accent.green} value={counts.safe} label="Güvende" />
@@ -456,6 +487,16 @@ export default function FamilyScreen() {
 }
 
 const styles = themedStyles(() => ({
+  mapHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',

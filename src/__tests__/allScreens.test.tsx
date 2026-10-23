@@ -220,7 +220,8 @@ describe('alt sekmeler', () => {
     expect(alert).toHaveBeenCalledWith('Davet bağlantısı', expect.stringMatching(/sunucu yapılandırılmadı/), expect.any(Array));
     await fireEvent.press(screen.getByLabelText('Üye ekle'));
     expect(router.push).toHaveBeenCalledWith('/aile/ekle');
-    await fireEvent.press(screen.getByRole('tab', { name: 'Aile listesi' }));
+    // Haritada gösterilecek aile konumu yoksa harita yerine açıklama satırı görünür.
+    expect(screen.getByText(/Aile haritası, buluşma noktası belirlediğinizde/)).toBeTruthy();
   });
 
   it('Üye ekle: kişiyi cihaza kaydeder', async () => {

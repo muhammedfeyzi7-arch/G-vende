@@ -413,19 +413,24 @@ export default function NewReport() {
             accessibilityHint="İnternet gerekmez; telefonunuzun SMS uygulaması açılır"
           />
         ) : null}
-        <Button
-          label={sending ? 'Gönderiliyor…' : 'Bildirimi herkese yayınla'}
-          icon="send"
-          onPress={onSubmit}
-          loading={sending}
-          disabled={!category || (category === 'other' && !description.trim()) || !canPublish}
-        />
+        {isBackendConfigured() && !signedIn ? (
+          // Girişsiz kullanıcı formu doldurduktan sonra takılmasın: giriş ekranı açılır, yazdıkları bu ekranda kalır.
+          <Button label="Giriş yap ve yayınla" icon="log-in-outline" onPress={() => router.push('/giris')} disabled={!category} />
+        ) : (
+          <Button
+            label={sending ? 'Gönderiliyor…' : 'Bildirimi herkese yayınla'}
+            icon="send"
+            onPress={onSubmit}
+            loading={sending}
+            disabled={!category || (category === 'other' && !description.trim()) || !canPublish}
+          />
+        )}
         {!canPublish ? (
           <AppText variant="caption" style={{ textAlign: 'center' }}>
             {!isBackendConfigured()
               ? 'Herkese açık yayın için sunucu bağlantısı gerekli (bu kurulumda yok).'
               : !signedIn
-                ? 'Herkese açık yayın için giriş yapmalısınız.'
+                ? 'Giriş yaptıktan sonra bu ekrana dönersiniz; yazdıklarınız kaybolmaz.'
                 : 'Yayın kontrollerindeki eksikleri tamamlayın.'}
           </AppText>
         ) : null}

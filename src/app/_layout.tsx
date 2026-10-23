@@ -97,7 +97,7 @@ function RootStack() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="deprem/[id]" options={{ title: 'Deprem Detayı' }} />
-      <Stack.Screen name="rapor/yeni" options={{ title: 'Bildirim Ekle', presentation: 'modal' }} />
+      <Stack.Screen name="rapor/yeni" options={{ title: 'Olay Bildir', presentation: 'modal' }} />
       <Stack.Screen name="rapor/[id]" options={{ title: 'Bildirim' }} />
       <Stack.Screen name="rapor/bekleyen" options={{ title: 'Bekleyen Gönderiler' }} />
       <Stack.Screen name="kimlik" options={{ title: 'Kimlik Doğrulama' }} />
