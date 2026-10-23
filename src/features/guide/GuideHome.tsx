@@ -44,19 +44,19 @@ const TILES: Tile[] = [
   {
     title: 'Deprem öncesi hazırlık',
     sub: 'Evinizi ve ailenizi hazırlayın.',
-    img: 'before',
+    img: 'home-safety',
     go: () => router.push({ pathname: '/rehber/kategori/[id]', params: { id: 'before' } }),
   },
   {
     title: 'Deprem anında',
     sub: 'Güvenli pozisyon alın.',
-    img: 'during',
+    img: 'drop-cover-hold',
     go: () => router.push({ pathname: '/rehber/kategori/[id]', params: { id: 'during' } }),
   },
   {
     title: 'Deprem sonrasında',
     sub: 'Güvenli şekilde hareket edin.',
-    img: 'after',
+    img: 'after-quake',
     go: () => router.push({ pathname: '/rehber/kategori/[id]', params: { id: 'after' } }),
   },
   {
@@ -68,13 +68,13 @@ const TILES: Tile[] = [
   {
     title: 'Dışarıda veya araçtayım',
     sub: 'Bulunduğunuz yere göre davranın.',
-    img: 'outside',
+    img: 'outdoor',
     go: () => router.push({ pathname: '/rehber/kategori/[id]', params: { id: 'outside' } }),
   },
   {
     title: 'Aileme nasıl ulaşırım?',
     sub: 'Güvenlik durumunu paylaşın.',
-    img: 'family',
+    img: 'family-plan',
     go: () => router.push({ pathname: '/rehber/[id]', params: { id: 'family' } }),
   },
 ];
@@ -173,8 +173,7 @@ export function GuideHome({ bottomPad = 0, back }: { bottomPad?: number; back?: 
       >
         <LinearGradient colors={['#A8151F', '#C81D26']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheetFill} />
         <View style={styles.heroArt}>
-          <GuideImage img="hero" style={{ width: '100%', height: '100%' }} />
-          <EdgeFade side="left" color="#C11C25" size={56} />
+          <GuideImage img="drop-cover-hold-hero" style={{ width: '100%', height: '100%' }} />
         </View>
         <View style={styles.heroText}>
           <AppText variant="display" color="#fff" numberOfLines={2} style={{ fontSize: 19.5, lineHeight: 25 }}>

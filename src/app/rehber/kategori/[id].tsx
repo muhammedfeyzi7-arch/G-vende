@@ -21,25 +21,25 @@ const CATS: Record<CatId, { title: string; sub: string; img: GuideImgKey; topics
   before: {
     title: 'Deprem öncesi hazırlık',
     sub: 'Kendinizi, ailenizi ve evinizi depreme karşı hazırlayın.',
-    img: 'prep-head',
+    img: 'home-safety',
     topics: () => [],
   },
   during: {
     title: 'Deprem anında',
     sub: 'Sarsıntı sırasında bulunduğunuz yere göre kendinizi koruyun.',
-    img: 'during',
+    img: 'drop-cover-hold',
     topics: () => PUBLISHED_TOPICS.filter((t) => t.cat === 'during'),
   },
   after: {
     title: 'Deprem sonrasında',
     sub: 'Sarsıntı bitince güvenli şekilde hareket edin.',
-    img: 'after',
+    img: 'after-quake',
     topics: () => PUBLISHED_TOPICS.filter((t) => t.cat === 'after'),
   },
   outside: {
     title: 'Dışarıda veya araçtayım',
     sub: 'Sokakta, araçta veya toplu taşımada ne yapmalı?',
-    img: 'outside',
+    img: 'outdoor',
     topics: () => OUTSIDE.map((id) => PUBLISHED_TOPICS.find((t) => t.id === id)).filter((t): t is Topic => !!t),
   },
 };
@@ -124,12 +124,12 @@ export default function GuideCategory() {
     const p = groupProgress(g, checked, kit);
     return p.done < p.total;
   });
-  const headW = Math.min(width, 640) * (isPrep ? 0.42 : 0.34);
+  const headW = Math.min(width, 640) * 0.4;
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl, width: '100%', maxWidth: 640, alignSelf: 'center' }}>
       <View style={{ paddingTop: insets.top + spacing.xs, paddingHorizontal: spacing.md, minHeight: insets.top + 170 }}>
-        <View style={[styles.headArt, { width: headW, height: isPrep ? headW * 0.56 : headW * 0.9, top: insets.top }]}>
+        <View style={[styles.headArt, { width: headW, height: headW, top: insets.top }]}>
           <GuideImage img={cat.img} style={{ width: '100%', height: '100%' }} />
           <EdgeFade side="left" color={colors.bg} size={48} />
           <EdgeFade side="bottom" color={colors.bg} size={28} />
@@ -198,7 +198,7 @@ export default function GuideCategory() {
             >
               <LinearGradient colors={['#0A6A5F', '#034E4A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fillAbs} />
               <View style={{ width: Math.min(width, 640) * 0.27, alignSelf: 'stretch' }}>
-                <GuideImage img="prep-hero" style={{ width: '100%', height: '100%' }} />
+                <GuideImage img="checklist" style={{ width: '100%', height: '100%' }} />
                 <EdgeFade color="#076158" size={18} />
               </View>
               <View style={{ flex: 1, gap: 4, paddingVertical: spacing.md }}>

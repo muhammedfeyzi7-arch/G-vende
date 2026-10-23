@@ -2,55 +2,62 @@ import { Image, type ImageStyle, type StyleProp } from 'react-native';
 import type { ArtId } from './content';
 
 /**
- * Rehber illüstrasyonları (uygulamaya gömülü raster görseller; internet gerekmez).
- * Kaynak: proje sahibinin verdiği tasarım görselleri (assets/guide/). Hiçbir kurumun görseli veya logosu yoktur.
+ * Rehber illüstrasyonları: GÜVENDE için çizilmiş özgün vektör sahnelerden üretilen raster dosyalar
+ * (kaynak: design/guide-art/scenes.mjs → `node design/guide-art/build.mjs`). Uygulamaya gömülüdür;
+ * internet gerekmez. Fotoğraf, dış görsel veya kurum logosu yoktur.
+ *
+ * Opak sahnelerin kenarları düz ART_BG rengindedir; "contain" ile gösterilir, böylece hiçbir öğe
+ * kırpılmaz ve kutunun kalan alanı aynı renkle dolar.
  */
+export const ART_BG = '#0E1A2E';
+
 export const GUIDE_IMG = {
-  hero: require('../../../assets/guide/hero.jpg'),
-  before: require('../../../assets/guide/before.jpg'),
-  during: require('../../../assets/guide/during.jpg'),
-  after: require('../../../assets/guide/after.jpg'),
-  trapped: require('../../../assets/guide/trapped.jpg'),
-  outside: require('../../../assets/guide/outside.jpg'),
-  family: require('../../../assets/guide/family.jpg'),
-  kit: require('../../../assets/guide/kit.jpg'),
-  logo: require('../../../assets/guide/logo.png'),
-  'prep-head': require('../../../assets/guide/prep-head.jpg'),
-  'prep-hero': require('../../../assets/guide/prep-hero.jpg'),
-  'prep-home': require('../../../assets/guide/prep-home.jpg'),
-  'prep-kit': require('../../../assets/guide/prep-kit.jpg'),
-  'prep-plan': require('../../../assets/guide/prep-plan.jpg'),
-  'prep-furniture': require('../../../assets/guide/prep-furniture.jpg'),
-  'prep-special': require('../../../assets/guide/prep-special.jpg'),
+  'home-safety': require('../../../assets/guide/art/home-safety.jpg'),
+  kit: require('../../../assets/guide/art/kit.jpg'),
+  'family-plan': require('../../../assets/guide/art/family-plan.jpg'),
+  furniture: require('../../../assets/guide/art/furniture.jpg'),
+  'drop-cover-hold': require('../../../assets/guide/art/drop-cover-hold.jpg'),
+  'drop-cover-hold-hero': require('../../../assets/guide/art/drop-cover-hold-hero.png'),
+  'after-quake': require('../../../assets/guide/art/after-quake.jpg'),
+  trapped: require('../../../assets/guide/art/trapped.jpg'),
+  outdoor: require('../../../assets/guide/art/outdoor.jpg'),
+  vehicle: require('../../../assets/guide/art/vehicle.jpg'),
+  transit: require('../../../assets/guide/art/transit.jpg'),
+  'special-needs': require('../../../assets/guide/art/special-needs.jpg'),
+  checklist: require('../../../assets/guide/art/checklist.jpg'),
+  logo: require('../../../assets/guide/art/logo.png'),
 } as const;
 export type GuideImgKey = keyof typeof GUIDE_IMG;
 
+/** Saydam zeminli dosyalar (kırmızı kart, başlık logosu) */
+const TRANSPARENT: GuideImgKey[] = ['drop-cover-hold-hero', 'logo'];
+
 /** Konu görseli → dosya ve ekran okuyucu açıklaması. */
 const SCENES: Record<ArtId, { img: GuideImgKey; label: string }> = {
-  indoor: { img: 'during', label: 'Masanın altında çökmüş, başını kollarıyla koruyan kişi' },
-  outdoor: { img: 'outside', label: 'Binalardan uzak, açık yolda bir araç' },
-  vehicle: { img: 'outside', label: 'Yolda seyreden araç' },
-  transit: { img: 'outside', label: 'Şehirde yol ve araç' },
-  wheelchair: { img: 'prep-special', label: 'Yaşlı bir kişi ve çocuk' },
-  after: { img: 'after', label: 'Sırt çantasıyla binalardan uzaklaşan kişi' },
-  gas: { img: 'after', label: 'Sırt çantasıyla binadan uzaklaşan kişi' },
-  trapped: { img: 'trapped', label: 'Enkaz altında yardım sinyali veren kişi' },
-  family: { img: 'family', label: 'Telefonla konum paylaşan aile' },
-  'prep-home': { img: 'prep-home', label: 'Ev' },
-  'prep-plan': { img: 'prep-plan', label: 'Haritada buluşma noktasına bakan aile' },
-  'prep-special': { img: 'prep-special', label: 'Yaşlı bir kişi, çocuk ve evcil hayvan' },
-  kit: { img: 'kit', label: 'Su, fener, radyo ve ilk yardım çantası' },
+  indoor: { img: 'drop-cover-hold', label: 'Masanın altında dizlerinin üzerine çökmüş, bir koluyla başını ve ensesini koruyan, diğer eliyle masa ayağına tutunan kişi' },
+  outdoor: { img: 'outdoor', label: 'Binalardan, ağaçtan ve direkten uzak açık alanda çömelip başını koruyan kişi' },
+  vehicle: { img: 'vehicle', label: 'Yolun sağ kenarına yanaşıp dörtlü flaşörle durmuş araç' },
+  transit: { img: 'transit', label: 'Metro vagonunda dikey direğe sıkıca tutunan kişi' },
+  wheelchair: { img: 'special-needs', label: 'Frenleri kilitli tekerlekli sandalyedeki kişi, ilaç çantası ve evcil hayvan taşıma çantası' },
+  after: { img: 'after-quake', label: 'Sırt çantasıyla hasarlı binadan uzaklaşıp toplanma alanına yürüyen kişi' },
+  gas: { img: 'after-quake', label: 'Binadan uzaklaşıp açık alana yürüyen kişi' },
+  trapped: { img: 'trapped', label: 'Enkaz altında, elindeki taşla boruya vurarak yerini duyuran kişi' },
+  family: { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
+  'prep-home': { img: 'home-safety', label: 'Ev, yangın söndürücü ve güvenlik kalkanı' },
+  'prep-plan': { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
+  'prep-special': { img: 'special-needs', label: 'Frenleri kilitli tekerlekli sandalyedeki kişi, ilaç çantası ve evcil hayvan taşıma çantası' },
+  kit: { img: 'kit', label: 'Su, fener, düdük, belge kılıfı ve ilk yardım çantası' },
 };
 
 export function GuideImage({ img, label, style }: { img: GuideImgKey; label?: string; style?: StyleProp<ImageStyle> }) {
   return (
     <Image
       source={GUIDE_IMG[img]}
-      resizeMode="cover"
+      resizeMode="contain"
       accessible={!!label}
       accessibilityRole={label ? 'image' : undefined}
       accessibilityLabel={label}
-      style={style}
+      style={[!TRANSPARENT.includes(img) && { backgroundColor: ART_BG }, style]}
     />
   );
 }

@@ -20,7 +20,7 @@ Sayfalar, geliştirme ortamının internet erişimi kısıtlı olduğu için Sup
 
 - AFAD sayfalarının altında "© 2026 T.C. İçişleri Bakanlığı Afet ve Acil Durum Yönetimi Başkanlığı" ibaresi var; açık lisans ifadesi bulunmuyor. Bu nedenle:
   - Metinler **birebir kopyalanmadı**; bilgiye dayanan kısa, özgün ifadeler yazıldı.
-  - **AFAD görseli, infografiği veya logosu kullanılmadı.** Rehber illüstrasyonları proje sahibinin verdiği tasarım görsellerinden kırpılmış raster dosyalardır (`assets/guide/`, `src/features/guide/Art.tsx`). Kaynak görseller ekran tasarımı boyutunda olduğundan 2× büyütüldü; yüksek çözünürlüklü asılları gelirse aynı adlarla değiştirilmelidir. Eski `DropCoverHold.tsx` vektörü yalnızca Acil Araçlar ekranında kalır.
+  - **AFAD görseli, infografiği, fotoğraf veya logo kullanılmadı.** Rehber illüstrasyonları GÜVENDE için elle yazılmış özgün vektör sahnelerdir (`design/guide-art/scenes.mjs`); `node design/guide-art/build.mjs` ile `assets/guide/art/` altına JPEG/PNG olarak üretilir. Önceki, tasarım ekran görüntülerinden kırpılmış dosyalar (`assets/guide/*.jpg|png`) artık kullanılmıyor; silinmeye adaydır.
   - Uygulamada "GÜVENDE, AFAD'ın veya başka bir kurumun resmî uygulaması değildir" ibaresi her konu sayfasında ve rehber merkezinde gösterilir.
 - **Hukuki değerlendirme önerilir:** Kaynak gösterilerek özetleme yapılması (FSEK m.35 alıntı/özet sınırları) ve kurum adının kaynak olarak anılması uygun kabul edilse de yayın öncesi bir hukukçunun onayı alınmalıdır.
 
