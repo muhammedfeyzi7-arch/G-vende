@@ -139,31 +139,45 @@ describe('alt sekmeler', () => {
     expect(alert).toHaveBeenCalledWith('Arama ekranı açılamadı', expect.stringMatching(/112/));
   });
 
-  it('Harita: deprem paneli sekmeleri, katman filtreleri ve Bildirim Ekle', async () => {
+  it('Harita: başlık, arama, katman çipleri, araçlar ve liste sekmeleri (gerçek veri yokken boş durumlar)', async () => {
     const Map = require('@/app/(tabs)/harita').default;
     const { router } = require('expo-router');
+    const alert = jest.spyOn(Alert, 'alert');
     await open(<Map />);
-    expect(screen.getByText(/Canlı akış henüz bağlı değil/)).toBeTruthy();
-    // Bildirim Ekle düğmesi akışa kaydırınca görünür.
-    expect(screen.queryByLabelText('Bildirim ekle')).toBeNull();
-    await fireEvent.scroll(screen.getByTestId('harita-scroll'), { nativeEvent: { contentOffset: { y: 600 } } });
-    expect(screen.getByLabelText('Bildirim ekle')).toBeTruthy();
-    const checks: [string, RegExp][] = [
-      ['Resmî Veriler', /Veri kaynakları/],
-      ['Toplanma Alanları', /Size atanan alanı işaretleyin/],
-      ['Yardım', /Hayati tehlike varsa 112/],
-      ['Detaylar', /Seçili deprem yok/],
-    ];
-    for (const [tab, expected] of checks) {
-      await fireEvent.press(screen.getByRole('tab', { name: tab }));
-      expect(screen.getByText(expected)).toBeTruthy();
-    }
-    expect(screen.queryByLabelText('Bildirim ekle')).toBeNull();
-    await fireEvent.press(screen.getByLabelText('Katmanlar'));
+    expect(screen.getByText('Harita')).toBeTruthy();
+    expect(screen.getByText('Güvenli alanlara daha hızlı ulaşın.')).toBeTruthy();
+    expect(screen.getByLabelText('Adres, mahalle veya ilçe ara')).toBeTruthy();
+    // Konum yok: yakındakiler için uydurma alan yerine konum istenir
+    expect(screen.getByText('Yakındaki alanlar için konum gerekli.')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Konum seç'));
+    expect(router.push).toHaveBeenCalledWith('/konum');
+    // Kaynağı olmayan katmanlar uydurma işaret göstermez
+    await fireEvent.press(screen.getByLabelText('Hastaneler: veri yok'));
+    expect(alert).toHaveBeenCalledWith('Hastane verisi yok', expect.stringMatching(/Uydurma işaret gösterilmez/));
+    // Toplanma alanları çipi katmanı kapatır/açar
+    const chip = screen.getByLabelText('Toplanma Alanları');
+    expect(chip.props.accessibilityState).toMatchObject({ checked: true });
+    await fireEvent.press(chip);
+    expect(screen.getByLabelText('Toplanma Alanları').props.accessibilityState).toMatchObject({ checked: false });
+    // Rota Çiz: hedef yokken rota hesaplandı izlenimi verilmez
+    await fireEvent.press(screen.getByLabelText('Rota Çiz'));
+    expect(alert).toHaveBeenCalledWith('Hedef alan yok', expect.any(String));
+    // Filtrele paneli: zaman filtresi
+    await fireEvent.press(screen.getByLabelText('Filtrele'));
     await fireEvent.press(screen.getByLabelText('Son 7 gün depremleri'));
     expect(screen.getByLabelText('Son 7 gün depremleri').props.accessibilityState).toMatchObject({ selected: true });
-    await fireEvent.press(screen.getByLabelText('Tam Ekran'));
-    expect(router.push).toHaveBeenCalledWith({ pathname: '/harita-tam', params: {} });
+    // Liste sekmeleri
+    await fireEvent.press(screen.getByRole('tab', { name: 'Favorilerim' }));
+    expect(screen.getByText(/Favori alan yok/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Rota Geçmişi' }));
+    expect(screen.getByText(/Henüz yol tarifi açmadınız/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Tümü' }));
+    expect(screen.getByText(/yakınlaştırın/)).toBeTruthy();
+    // Liste görünümü
+    await fireEvent.press(screen.getByLabelText('Liste görünümü'));
+    expect(screen.getByLabelText('Harita görünümü')).toBeTruthy();
+    await fireEvent.press(screen.getByText('Olay bildirimleri'));
+    expect(router.push).toHaveBeenCalledWith('/akis');
   });
 
   it('Tam ekran harita: liste görünümü', async () => {

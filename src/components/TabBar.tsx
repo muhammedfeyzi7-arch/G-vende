@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { haptic } from '@/services/haptics';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,11 +13,9 @@ const ITEMS: Record<string, { label: string; icon: string; iconActive: string; c
   ayarlar: { label: 'Ayarlar', icon: 'settings-outline', iconActive: 'settings' },
 };
 
-/** Referans tasarımdaki beş bölümlü alt navigasyon; ortadaki Acil Durum her zaman kırmızıdır. */
+/** Referans tasarımdaki beş bölümlü alt navigasyon; ortadaki Acil Durum her sekmede yükseltilmiş kırmızı dairedir. */
 export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  // Referans tasarımdaki gibi: Ana Sayfa'dayken Acil Durum yükseltilmiş kırmızı daire olarak öne çıkar.
-  const onHome = state.routes[state.index]?.name === 'index';
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]} accessibilityRole="tablist">
       {state.routes.map((route, index) => {
@@ -43,12 +41,10 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
             style={styles.item}
           >
             <View style={styles.iconWrap}>
-              {item.center && onHome ? (
+              {item.center ? (
                 <View style={styles.raised}>
                   <Ionicons name="warning-outline" size={26} color="#fff" />
                 </View>
-              ) : item.center ? (
-                <MaterialCommunityIcons name="alarm-light" size={28} color={color} style={focused ? styles.glow : undefined} />
               ) : (
                 <Ionicons name={item.iconActive as never} size={24} color={color} />
               )}
@@ -56,7 +52,7 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
             <Text
               style={[
                 styles.label,
-                { color: item.center && onHome ? colors.text : color, fontWeight: focused || item.center ? '600' : '500' },
+                { color: item.center ? colors.text : color, fontWeight: focused || item.center ? '600' : '500' },
               ]}
               numberOfLines={1}
               maxFontSizeMultiplier={1.3}
@@ -92,6 +88,5 @@ const styles = themedStyles(() => ({
     justifyContent: 'center',
     boxShadow: '0 0 20px rgba(255,53,72,0.6)',
   },
-  glow: { textShadowColor: 'rgba(255,53,72,0.8)', textShadowRadius: 12 },
   label: { fontSize: 11.5 },
 }));

@@ -115,13 +115,13 @@ export const ASSEMBLY_LAYERS: LayerDef[] = [
     id: 'assembly-glow',
     type: 'circle',
     filter: notCluster,
-    paint: { 'circle-radius': 12, 'circle-color': colors.safe, 'circle-opacity': 0.25, 'circle-blur': 1 },
+    paint: { 'circle-radius': 15, 'circle-color': colors.safe, 'circle-opacity': 0.3, 'circle-blur': 1 },
   },
   {
     id: 'assembly-dot',
     type: 'circle',
     filter: notCluster,
-    paint: { 'circle-radius': 5, 'circle-color': colors.safe, 'circle-stroke-color': '#062A20', 'circle-stroke-width': 2 },
+    paint: { 'circle-radius': 7.5, 'circle-color': colors.safe, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2.5 },
   },
 ];
 /** Küme ayarı (native ve web aynı). */
