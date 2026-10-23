@@ -1,4 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
+import { prefetchFaultLines } from '@/features/map/faults';
 import { assemblyTiles } from '@/features/assembly-points/store';
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -14,13 +15,15 @@ import { coordsOf, getPermissionStatus, readCurrent, requestAndGetLocation, type
 import { getSupabase } from '@/services/supabase';
 import { readJson, writeJson } from '@/services/storage';
 import type { QuakeSourceId, SourceReading } from '@/types/earthquake';
-import type { LatLng } from '@/utils/geo';
+import { distanceKm, type LatLng } from '@/utils/geo';
 import { userMessage } from '@/services/errors';
+import { nextRefreshDelay, RECONNECT_SPREAD_MS } from '@/features/earthquakes/refreshPolicy';
 
-/** Sunucu yokken (yalnızca bu durumda) kaynaklar cihazdan doğrudan bu aralıkla sorgulanır. */
-const DIRECT_REFRESH_MS = 60_000;
-/** Sunucu varken Realtime asıl güncelleme yoludur; bu aralıkla yalnızca GÜVENDE sunucusu yeniden okunur. */
-const SERVER_REFRESH_MS = 5 * 60_000;
+/** Konum en fazla bu yaşta tutulur; daha eskiyse uygulamaya dönüşte bir kez yeniden okunur. */
+const LOCATION_MAX_AGE_MS = 10 * 60_000;
+/** Bundan küçük yer değişikliği "aynı yer" sayılır. */
+const SIGNIFICANT_MOVE_M = 200;
+
 
 export type LiveStatus = 'off' | 'connecting' | 'connected';
 
@@ -49,6 +52,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [gpsLocation, setGpsLocation] = useState<LocationState>({ status: 'unknown' });
+  const gpsRef = useRef(gpsLocation);
+  gpsRef.current = gpsLocation;
   const [quakes, setQuakes] = useState<QuakeState>({ snapshot: null, loading: true, error: null });
   const [online, setOnline] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
@@ -56,6 +61,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const inflight = useRef(false);
   const serverRef = useRef<{ readings: SourceReading[]; sync: SyncRow[] } | null>(null);
   const [liveStatus, setLiveStatus] = useState<LiveStatus>('off');
+  const liveRef = useRef<LiveStatus>('off');
+  liveRef.current = liveStatus;
+  /** Art arda başarısız/eskimiş yenileme sayısı (bekleme süresini uzatmak için). */
+  const failuresRef = useRef(0);
 
   // Ayarlar
   useEffect(() => {
@@ -81,6 +90,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => setGpsLocation({ status: 'unavailable', message: 'Konum servisine erişilemedi' }));
   }, []);
+  // Pil: sürekli/arka plan GPS yok. Uygulamaya dönüldüğünde son konum 10 dk'dan eskiyse tek seferlik
+  // ucuz okuma yapılır (önce telefonun son bilinen konumu); 200 m'den az yer değişikliği yok sayılır,
+  // böylece konuma bağlı yeniden hesaplamalar ve istekler tetiklenmez.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', async (st) => {
+      if (st !== 'active') return;
+      const prev = gpsRef.current;
+      if (prev.status !== 'granted' || Date.now() - Date.parse(prev.at) < LOCATION_MAX_AGE_MS) return;
+      const next = await readCurrent();
+      if (next.status !== 'granted') return;
+      setGpsLocation(distanceKm(prev.coords, next.coords) * 1000 < SIGNIFICANT_MOVE_M ? { ...prev, at: next.at } : next);
+    });
+    return () => sub.remove();
+  }, []);
   const requestLocation = useCallback(async () => {
     const next = await requestAndGetLocation();
     setGpsLocation(next);
@@ -94,6 +117,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (p) return { status: 'manual', coords: { latitude: p.latitude, longitude: p.longitude }, label: `${p.name} (il merkezi, yaklaşık)` };
     return gpsLocation;
   }, [gpsLocation, settings.manualProvince]);
+
+  // Fay hatları (~80 KB) bağlantı varken bir kez indirilip saklanır: afet anında internet olmasa da katman çizilir.
+  useEffect(() => {
+    if (online) prefetchFaultLines();
+  }, [online]);
 
   // Ağ durumu
   useEffect(() => NetInfo.addEventListener((s) => setOnline(s.isConnected !== false && s.isInternetReachable !== false)), []);
@@ -140,12 +168,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         try {
           serverRef.current = await fetchServerReadings(sb, env.quakeSources);
           publishRef.current();
+          failuresRef.current = 0;
           return;
         } catch {
           // Sunucuya ulaşılamadı: aşağıda kaynaklardan doğrudan bir kez denenir (sürekli sorgu yapılmaz).
         }
       }
       const { snapshot, cache } = await loadEarthquakes(sources, fetchWithTimeout, cacheRef.current);
+      failuresRef.current = snapshot.stale ? failuresRef.current + 1 : 0;
       cacheRef.current = cache;
       writeJson('quake-cache', cache);
       setQuakes({
@@ -154,29 +184,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
         error: snapshot.stale ? 'Deprem kaynaklarına ulaşılamadı. Lütfen internet bağlantınızı kontrol edin.' : null,
       });
     } catch (e) {
+      failuresRef.current += 1;
       setQuakes((q) => ({ ...q, loading: false, error: userMessage(e, 'Deprem verisi alınamadı. Lütfen biraz sonra tekrar deneyin.') }));
     } finally {
       inflight.current = false;
     }
   }, [sources]);
 
+  // Yenileme zamanlayıcısı: sabit aralık yerine rastgele kaydırmalı ve hatada katlanarak uzayan bekleme
+  // (bkz. refreshPolicy). Uygulama arka plandayken hiç istek atılmaz.
   useEffect(() => {
     if (!settingsLoaded) return;
-    const every = getSupabase() ? SERVER_REFRESH_MS : DIRECT_REFRESH_MS;
-    refreshQuakes();
-    let timer: ReturnType<typeof setInterval> | null = setInterval(refreshQuakes, every);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let active = true;
+    const schedule = () => {
+      if (timer) clearTimeout(timer);
+      const delay = nextRefreshDelay({ hasServer: !!getSupabase(), live: liveRef.current === 'connected', failures: failuresRef.current });
+      timer = setTimeout(async () => {
+        if (!active) return;
+        await refreshQuakes();
+        schedule();
+      }, delay);
+    };
+    refreshQuakes().finally(schedule);
     const sub = AppState.addEventListener('change', (s) => {
       if (s === 'active') {
-        refreshQuakes();
-        if (!timer) timer = setInterval(refreshQuakes, every);
-      } else if (timer) {
-        clearInterval(timer);
+        active = true;
+        refreshQuakes().finally(schedule);
+      } else {
+        active = false;
+        if (timer) clearTimeout(timer);
         timer = null;
       }
     });
     return () => {
+      active = false;
       sub.remove();
-      if (timer) clearInterval(timer);
+      if (timer) clearTimeout(timer);
     };
   }, [settingsLoaded, refreshQuakes]);
 
@@ -207,8 +251,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           setLiveStatus('connected');
-          // Bağlantı kopup geri geldiyse aradaki değişiklikleri kaçırmamak için bir kez yeniden oku.
-          refreshQuakes();
+          // Bağlantı kopup geri geldiyse aradaki değişiklikleri kaçırmamak için bir kez yeniden oku;
+          // büyük depremde herkes aynı anda bağlanır, okuma birkaç saniyeye rastgele yayılır.
+          setTimeout(() => refreshQuakes(), Math.random() * RECONNECT_SPREAD_MS);
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') setLiveStatus('off');
       });
     return () => {

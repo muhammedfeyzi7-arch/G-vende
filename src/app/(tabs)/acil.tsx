@@ -121,7 +121,7 @@ export default function EmergencyScreen() {
         <Banner
           icon="cloud-offline-outline"
           tone="warning"
-          text="Çevrimdışısınız. Bu sayfadaki araçlar ve rehberler internetsiz çalışır."
+          text="İnternet yok. “Güvendeyim” ve yardım SMS’leri telefonunuzun SMS uygulamasıyla, 112 araması da şebeke üzerinden internetsiz çalışır."
         />
       ) : null}
 

@@ -6,7 +6,9 @@ import { AppText } from '@/components/ui';
 import { CATEGORY_META, feltColor } from '@/features/reports/categories';
 import { colors, currentScheme, themedStyles } from '@/theme';
 import type { LatLng } from '@/utils/geo';
+import { useFaultLines } from './faults';
 import { DISTANCE_RINGS_KM } from './geojson';
+import { FAULT_COLOR } from './layers';
 import { isLightMap, paletteFor } from './mapStyle';
 import type { QuakeMapHandle, QuakeMapProps } from './mapTypes';
 import TR from './offline/turkey.json';
@@ -160,6 +162,15 @@ export const SvgQuakeMap = forwardRef<QuakeMapHandle, QuakeMapProps>(function Sv
   const kmPx = (lat: number) => (k * TILE) / (40075 * Math.cos((lat * Math.PI) / 180));
 
   const labels = visibleLabels(view.z);
+  const faults = useFaultLines(layers.faults);
+  // Fay çizgileri dünya koordinatında bir kez yola çevrilir; yakınlaştırmada yalnızca dönüşüm değişir.
+  const faultPath = useMemo(
+    () =>
+      faults
+        .map((l) => 'M' + l.coords.map(([lon, lat]) => toWorld(lon, lat).map((n) => n.toFixed(4)).join(' ')).join('L'))
+        .join(''),
+    [faults],
+  );
   const zoomBy = (d: number) => {
     touched.current = true;
     setView((v) => ({ ...v, z: clampZoom(v.z + d) }));
@@ -190,6 +201,9 @@ export const SvgQuakeMap = forwardRef<QuakeMapHandle, QuakeMapProps>(function Sv
               vectorEffect="non-scaling-stroke"
             />
             <Path d={paths.borders} fill="none" stroke={pal.border} strokeOpacity={0.7} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
+            {faultPath ? (
+              <Path d={faultPath} fill="none" stroke={FAULT_COLOR} strokeOpacity={0.85} strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
+            ) : null}
           </G>
 
           {layers.rings && focus

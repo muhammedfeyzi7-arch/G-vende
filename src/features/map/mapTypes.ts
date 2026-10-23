@@ -5,8 +5,9 @@ import type { LatLng } from '@/utils/geo';
 import type { MapStyleId } from '@/features/settings/settings';
 
 /** Harita bileşeninin (native MapLibre ve Expo Go yedeği) ortak tipleri. */
-export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean; family: boolean };
-export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true, family: true };
+export type MapLayers = { quakes: boolean; rings: boolean; reports: boolean; assembly: boolean; family: boolean; faults: boolean };
+/** Fay hatları varsayılan kapalı (Katmanlar'dan açılır). */
+export const DEFAULT_LAYERS: MapLayers = { quakes: true, rings: true, reports: true, assembly: true, family: true, faults: false };
 
 /** Aile üyesinin izinli son konumu (yalnızca çevrimiçi grupta ve paylaşım açıksa). */
 export type FamilyPin = {

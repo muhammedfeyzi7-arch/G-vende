@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 import {
   fetchFeed,
   fetchMyReactions,
@@ -122,10 +123,29 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Akış ~60 sn'de bir (±%20 rastgele) yenilenir; uygulama arka plandayken istek atılmaz.
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const schedule = () => {
+      timer = setTimeout(() => {
+        refresh();
+        schedule();
+      }, 60_000 * (0.8 + 0.4 * Math.random()));
+    };
     refresh();
-    const t = setInterval(refresh, 60_000);
-    return () => clearInterval(t);
+    schedule();
+    const sub = AppState.addEventListener('change', (st) => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      if (st === 'active') {
+        refresh();
+        schedule();
+      }
+    });
+    return () => {
+      sub.remove();
+      if (timer) clearTimeout(timer);
+    };
   }, [refresh]);
 
   useEffect(() => {

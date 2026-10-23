@@ -23,3 +23,12 @@ describe('konum noktası', () => {
     expect(visibleLabels(6.5, [duzce]).map((l) => l.name)).not.toContain('Düzce');
   });
 });
+
+describe('fay hatları', () => {
+  it('çizgiler GeoJSON LineString olarak çizilir', () => {
+    const { faultsToGeoJSON } = require('../faults');
+    const fc = faultsToGeoJSON([{ id: 1, slip: 'Dextral', coords: [[30, 40.7], [31, 40.8]] }]);
+    expect(fc.features[0].geometry).toEqual({ type: 'LineString', coordinates: [[30, 40.7], [31, 40.8]] });
+    expect(fc.features[0].properties).toEqual({ kind: 'fault', slip: 'Dextral' });
+  });
+});

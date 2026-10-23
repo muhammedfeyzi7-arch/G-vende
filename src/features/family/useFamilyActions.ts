@@ -14,7 +14,7 @@ import { useLocalFamily } from './useLocalFamily';
  * konumu varsa eklenir; "Konumumu gizle" listesindeki kişilere konumsuz mesaj gider.
  */
 export function useFamilyActions() {
-  const { settings, location, requestLocation } = useApp();
+  const { settings, location, requestLocation, online } = useApp();
   const fam = useLocalFamily();
 
   const ensureContacts = useCallback(() => {
@@ -45,7 +45,7 @@ export function useFamilyActions() {
       const withoutLoc = fam.contacts.filter((c) => settings.hideLocationFrom.includes(c.id));
       const groups = loc && withoutLoc.length ? [[withLoc, loc] as const, [withoutLoc, null] as const] : [[fam.contacts, loc] as const];
       // Açık adres yalnızca konum paylaşılan kişilere eklenir (4 sn'de bulunamazsa yalnızca harita bağlantısı).
-      const address = loc ? await addressFor(gps!) : null;
+      const address = loc ? await addressFor(gps!, 4000, online) : null;
       let anySent = false;
       for (const [list, l] of groups) {
         if (!list.length) continue;
@@ -58,7 +58,7 @@ export function useFamilyActions() {
       }
       if (anySent) fam.setMyStatus({ kind: kind === 'safe' ? 'safe' : 'help', at: new Date().toISOString() });
     },
-    [ensureContacts, settings.locationSharing, settings.hideLocationFrom, currentGps, fam],
+    [ensureContacts, settings.locationSharing, settings.hideLocationFrom, currentGps, fam, online],
   );
 
   const confirmHelp = useCallback(

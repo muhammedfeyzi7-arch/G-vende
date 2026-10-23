@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { FAULT_ATTRIBUTION } from './faults';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
 import { AppText } from '@/components/ui';
 import { colors, radius, spacing, themedStyles } from '@/theme';
@@ -50,6 +51,7 @@ const LAYER_LABELS: { key: keyof MapLayers; label: string }[] = [
   { key: 'reports', label: 'Kullanıcı bildirimleri' },
   { key: 'assembly', label: 'Toplanma alanları' },
   { key: 'family', label: 'Aile konumları (izinli)' },
+  { key: 'faults', label: 'Fay hatlarını göster' },
 ];
 
 export type MapFilters = { hours: number; minMag: number };
@@ -134,6 +136,11 @@ export function LayerPanel({
       <AppText variant="caption" style={{ marginTop: 4 }}>
         Halkalar merkez üssüne 25 / 50 / 75 km uzaklığı gösterir; renkler görseldir, ölçülmüş sarsıntı alanı değildir.
       </AppText>
+      {layers.faults ? (
+        <AppText variant="caption" style={{ marginTop: 4 }}>
+          {FAULT_ATTRIBUTION}. Bulunduğunuz yerin fay riskini öğrenmek için MTA ve AFAD kaynaklarına bakın.
+        </AppText>
+      ) : null}
     </View>
   );
 }

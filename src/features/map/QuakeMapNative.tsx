@@ -24,7 +24,8 @@ import type { EarthquakeEvent } from '@/types/earthquake';
 import type { UserReport } from '@/types/report';
 import type { LatLng } from '@/utils/geo';
 import { assemblyToGeoJSON, quakesToGeoJSON, reportsToGeoJSON, ringsToGeoJSON } from './geojson';
-import { ASSEMBLY_CLUSTER, ASSEMBLY_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './layers';
+import { faultsToGeoJSON, useFaultLines } from './faults';
+import { ASSEMBLY_CLUSTER, ASSEMBLY_LAYERS, FAULT_LAYERS, QUAKE_LAYERS, REPORT_LAYERS, RING_LAYERS } from './layers';
 import type { MapStyleId } from '@/features/settings/settings';
 import { isLightMap, offlineOnlyStyle, paletteFor, styleFor } from './mapStyle';
 import { visibleLabels } from './offline/base';
@@ -104,6 +105,8 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
   const ringData = useMemo(() => ringsToGeoJSON(focus), [focus]);
   const reportData = useMemo(() => reportsToGeoJSON(reports), [reports]);
   const assemblyData = useMemo(() => assemblyToGeoJSON(assemblyPoints), [assemblyPoints]);
+  const faults = useFaultLines(layers.faults);
+  const faultData = useMemo(() => faultsToGeoJSON(faults), [faults]);
 
   const initialCenter: [number, number] = startAt
     ? [startAt.longitude, startAt.latitude]
@@ -181,6 +184,13 @@ export const QuakeMapNative = forwardRef<QuakeMapHandle, Props>(function QuakeMa
       }}
     >
       <Camera ref={camera} initialViewState={{ center: initialCenter, zoom: initialZoom ?? (focus ? 5.9 : 4.8) }} minZoom={3} maxZoom={16} />
+
+      {/* Fay hatları en altta: deprem ve bildirim noktalarının üstüne çizilmez. */}
+      {layers.faults && faults.length ? (
+        <GeoJSONSource id="faults" data={faultData}>
+          {renderLayers(FAULT_LAYERS)}
+        </GeoJSONSource>
+      ) : null}
 
       {layers.rings ? (
         <GeoJSONSource id="rings" data={ringData}>

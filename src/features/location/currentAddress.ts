@@ -13,19 +13,22 @@ const REUSE_MS = 6 * 3600_000;
  * Konumun açık adresini döndürür (mesajlar ve 112 için). Ağ yavaşsa 4 sn'de vazgeçer ve yakındaki
  * son bilinen adrese döner; hiçbiri yoksa null.
  */
-export async function addressFor(coords: LatLng, timeoutMs = 4000): Promise<string | null> {
-  try {
-    const result = await Promise.race([
-      Location.reverseGeocodeAsync(coords),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs)),
-    ]);
-    const f = formatTrAddress(result[0]);
-    if (f.full) {
-      writeJson<Cached>('last-address', { ...f, at: new Date().toISOString(), latitude: coords.latitude, longitude: coords.longitude });
-      return f.full;
+export async function addressFor(coords: LatLng, timeoutMs = 4000, online = true): Promise<string | null> {
+  // İnternet yoksa adres servisi beklenmez: doğrudan son kaydedilen adres (SMS gecikmesin).
+  if (online) {
+    try {
+      const result = await Promise.race([
+        Location.reverseGeocodeAsync(coords),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs)),
+      ]);
+      const f = formatTrAddress(result[0]);
+      if (f.full) {
+        writeJson<Cached>('last-address', { ...f, at: new Date().toISOString(), latitude: coords.latitude, longitude: coords.longitude });
+        return f.full;
+      }
+    } catch {
+      // zaman aşımı / servis hatası: aşağıda son bilinen adres
     }
-  } catch {
-    // çevrimdışı / zaman aşımı: aşağıda son bilinen adres
   }
   const last = await readJson<Cached>('last-address');
   if (!last?.full || last.latitude == null || last.longitude == null) return null;

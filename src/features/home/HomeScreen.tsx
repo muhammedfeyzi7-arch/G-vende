@@ -125,7 +125,7 @@ export function HomeScreen() {
           <Banner
             icon="cloud-offline-outline"
             tone="warning"
-            text="İnternet yok. Kayıtlı veriler gösteriliyor; Acil Durum araçları çalışır."
+            text="İnternet yok. Kayıtlı veriler gösteriliyor. “Güvendeyim” SMS’i ve 112 araması internetsiz çalışır."
             onPress={() => router.push('/acil')}
           />
         ) : null}

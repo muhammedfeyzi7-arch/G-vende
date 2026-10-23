@@ -126,3 +126,13 @@ export const ASSEMBLY_LAYERS: LayerDef[] = [
 ];
 /** Küme ayarı (native ve web aynı). */
 export const ASSEMBLY_CLUSTER = { cluster: true, clusterRadius: 44, clusterMaxZoom: 14 } as const;
+
+/** Aktif fay hatları: ince turuncu-kırmızı çizgi (deprem noktalarının altında kalır). */
+export const FAULT_COLOR = '#F2542D';
+export const FAULT_LAYERS: LayerDef[] = [
+  {
+    id: 'fault-line',
+    type: 'line',
+    paint: { 'line-color': FAULT_COLOR, 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1.2, 10, 2.5], 'line-opacity': 0.85 },
+  },
+];
