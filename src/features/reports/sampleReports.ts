@@ -7,11 +7,22 @@ import type { UserReport } from '@/types/report';
  */
 export function buildSampleReports(now = Date.now()): UserReport[] {
   const at = (min: number) => new Date(now - min * 60_000).toISOString();
-  const base = { earthquakeEventId: null, verification: 'unverified' as const, media: [], isSample: true };
+  const base = {
+    earthquakeEventId: null,
+    verification: 'unverified' as UserReport['verification'],
+    confirmCount: 0,
+    denyCount: 0,
+    authorRole: null as UserReport['authorRole'],
+    authorOrg: null as string | null,
+    media: [],
+    isSample: true,
+  };
   return [
     {
       ...base,
       id: 's1',
+      verification: 'community',
+      confirmCount: 3,
       category: 'shake',
       feltIntensity: 4,
       description: 'Sarsıntı hissettim.',
@@ -24,6 +35,7 @@ export function buildSampleReports(now = Date.now()): UserReport[] {
     {
       ...base,
       id: 's2',
+      confirmCount: 1,
       category: 'damage',
       feltIntensity: null,
       description: 'Örnek hasar bildirimi metni.',
@@ -36,6 +48,9 @@ export function buildSampleReports(now = Date.now()): UserReport[] {
     {
       ...base,
       id: 's3',
+      verification: 'official',
+      authorRole: 'official',
+      authorOrg: 'Örnek Kurum',
       category: 'road',
       feltIntensity: null,
       description: 'Yolda geçiş engeli var.',

@@ -2,6 +2,7 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { requireSupabase } from '@/services/supabase';
 import type { FeltIntensity, NewReportInput, ReportCategory, UserReport, Verification } from '@/types/report';
 import type { SendOutcome } from './pendingQueue';
+import { trustErrorMessage } from '@/features/trust/rules';
 
 const BUCKET = 'report-media';
 const FEED_HOURS = 48;
@@ -17,13 +18,17 @@ type ReportRow = {
   earthquake_event_id: string | null;
   verification: Verification;
   helpful_count: number;
+  confirm_count: number;
+  deny_count: number;
+  author_role: 'official' | 'rescue' | null;
+  author_org: string | null;
   created_at: string;
   report_media: { id: string; storage_path: string }[] | null;
 };
 
 // author_id gibi gizli sütunlara erişim yok; sütunlar açıkça listelenir.
 const COLUMNS =
-  'id, category, felt_intensity, description, latitude, longitude, area_label, earthquake_event_id, verification, helpful_count, created_at, report_media(id, storage_path)';
+  'id, category, felt_intensity, description, latitude, longitude, area_label, earthquake_event_id, verification, helpful_count, confirm_count, deny_count, author_role, author_org, created_at, report_media(id, storage_path)';
 
 export async function fetchFeed(): Promise<UserReport[]> {
   const sb = requireSupabase();
@@ -55,6 +60,10 @@ export async function fetchFeed(): Promise<UserReport[]> {
     earthquakeEventId: r.earthquake_event_id,
     verification: r.verification,
     helpfulCount: r.helpful_count,
+    confirmCount: r.confirm_count ?? 0,
+    denyCount: r.deny_count ?? 0,
+    authorRole: r.author_role ?? null,
+    authorOrg: r.author_org ?? null,
     createdAt: r.created_at,
     media: (r.report_media ?? []).map((m) => ({ id: m.id, path: m.storage_path, url: signed.get(m.storage_path) ?? null })),
   }));
@@ -97,12 +106,18 @@ export async function sendReport(input: NewReportInput, existingServerId: string
         longitude: input.location?.longitude ?? null,
         area_label: input.areaLabel,
         earthquake_event_id: input.earthquakeEventId,
+        // Sunucu bu konumu yalnızca 1 km kuralı için kullanır ve kaydetmez.
+        device_latitude: input.device?.latitude ?? null,
+        device_longitude: input.device?.longitude ?? null,
+        device_accuracy_m: input.device?.accuracy ?? null,
       })
       .select('id')
       .single();
     if (error) {
       if (error.code === '23505') return { kind: 'sent', serverId: 'duplicate' }; // daha önce ulaşmış
       if (error.message?.includes('rate_limited')) return { kind: 'retry', error: 'Hız sınırı: birkaç dakika sonra tekrar denenecek.' };
+      const rule = trustErrorMessage(error.message);
+      if (rule) return { kind: 'fatal', error: rule };
       if (isNetworkError(error)) return { kind: 'retry', error: 'Bağlantı yok' };
       return { kind: 'fatal', error: error.message };
     }
@@ -110,15 +125,18 @@ export async function sendReport(input: NewReportInput, existingServerId: string
   }
 
   try {
-    for (const [i, uri] of input.photos.entries()) {
+    for (const [i, photo] of input.photos.entries()) {
       const path = `${uid}/${serverId}/${i}.jpg`;
-      const body = await sanitizePhoto(uri);
+      const body = await sanitizePhoto(photo.uri);
       const up = await sb.storage.from(BUCKET).upload(path, body, { contentType: 'image/jpeg', upsert: true });
       if (up.error) throw up.error;
-      const { error } = await sb.from('report_media').insert({ report_id: serverId, storage_path: path });
+      const { error } = await sb.from('report_media').insert({ report_id: serverId, storage_path: path, captured_at: photo.capturedAt });
       if (error && error.code !== '23505') throw error;
     }
   } catch (e) {
+    const rule = trustErrorMessage((e as Error).message);
+    // Canlı fotoğraf süresi dolduysa tekrar denemek işe yaramaz.
+    if (rule) return { kind: 'fatal', error: rule };
     return { kind: 'partial', serverId, error: `Fotoğraf yüklenemedi: ${(e as Error).message}` };
   }
   return { kind: 'sent', serverId };
@@ -151,4 +169,28 @@ export async function flagReport(reportId: string, reason: FlagReason): Promise<
   const sb = requireSupabase();
   const { error } = await sb.from('moderation_reports').insert({ report_id: reportId, reason });
   if (error && error.code !== '23505') throw error;
+}
+
+export type Vote = 'confirm' | 'deny';
+
+/** Yakındaki doğrulanmış kullanıcının oyu. Mesafe ve kimlik kuralını sunucu uygular. */
+export async function voteReport(reportId: string, vote: Vote, device: { latitude: number; longitude: number; accuracy: number } | null) {
+  const sb = requireSupabase();
+  const { error } = await sb.from('report_votes').insert({
+    report_id: reportId,
+    vote,
+    device_latitude: device?.latitude ?? null,
+    device_longitude: device?.longitude ?? null,
+    device_accuracy_m: device?.accuracy ?? null,
+  });
+  if (error) {
+    if (error.code === '23505') throw new Error('Bu bildirimi zaten oyladınız.');
+    throw new Error(trustErrorMessage(error.message) ?? error.message);
+  }
+}
+
+export async function fetchMyVotes(): Promise<Map<string, Vote>> {
+  const sb = requireSupabase();
+  const { data } = await sb.from('report_votes').select('report_id, vote');
+  return new Map((data ?? []).map((r: { report_id: string; vote: Vote }) => [r.report_id, r.vote]));
 }

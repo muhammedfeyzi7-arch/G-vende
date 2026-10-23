@@ -104,6 +104,7 @@ describe('LiveFeedTab', () => {
         areaLabel: null,
         earthquakeEventId: null,
         photos: [],
+        device: null,
         createdAt: new Date().toISOString(),
         attempts: 1,
         lastError: 'Bağlantı yok',

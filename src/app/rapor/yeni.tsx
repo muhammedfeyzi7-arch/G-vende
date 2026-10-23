@@ -19,6 +19,17 @@ import { isBackendConfigured } from '@/services/env';
 import { colors, radius, spacing } from '@/theme';
 import type { FeltIntensity, ReportCategory } from '@/types/report';
 import { coarsen, distanceKm } from '@/utils/geo';
+import { evaluateGates, gatesPass, LOCATION_REQUIRED, PHOTO_REQUIRED, type Gate } from '@/features/trust/rules';
+import { useTrust } from '@/features/trust/TrustProvider';
+import type { DeviceFix, ReportPhoto } from '@/types/report';
+
+const GATE_ICON: Record<Gate['state'], { icon: keyof typeof Ionicons.glyphMap; color: string }> = {
+  ok: { icon: 'checkmark-circle', color: colors.safe },
+  todo: { icon: 'ellipse-outline', color: colors.caution },
+  blocked: { icon: 'close-circle', color: colors.danger },
+  skip: { icon: 'remove-circle-outline', color: colors.textMuted },
+  info: { icon: 'information-circle', color: colors.primary },
+};
 
 const ORDER: ReportCategory[] = ['shake', 'damage', 'road', 'safe', 'help', 'other'];
 
@@ -31,7 +42,10 @@ export default function NewReport() {
   const [category, setCategory] = useState<ReportCategory | null>(null);
   const [felt, setFelt] = useState<FeltIntensity | null>(null);
   const [description, setDescription] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<ReportPhoto[]>([]);
+  const [fix, setFix] = useState<DeviceFix | null>(null);
+  const [locating, setLocating] = useState(false);
+  const { trust } = useTrust();
   const [attachLocation, setAttachLocation] = useState(settings.attachLocationByDefault);
   const [areaLabel, setAreaLabel] = useState('');
   const [sending, setSending] = useState(false);
@@ -52,24 +66,48 @@ export default function NewReport() {
       .catch(() => {});
   }, [attachLocation, userCoords, location, areaLabel]);
 
-  const addPhoto = async (fromCamera: boolean) => {
+  // Yalnızca uygulama kamerası: galeriden eski/internetten bulunmuş fotoğraf yüklenemez.
+  const takePhoto = async () => {
     if (photos.length >= MAX_PHOTOS) return;
-    const perm = fromCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(
-        'İzin gerekli',
-        fromCamera ? 'Fotoğraf çekmek için kamera izni verin (Ayarlar).' : 'Fotoğraf seçmek için galeri izni verin (Ayarlar).',
-      );
-      return;
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) return Alert.alert('İzin gerekli', 'Fotoğraf çekmek için kamera izni verin (Ayarlar).');
+    const res = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8, exif: false });
+    if (!res.canceled && res.assets[0]) {
+      const shot = { uri: res.assets[0].uri, capturedAt: new Date().toISOString() };
+      setPhotos((p) => [...p, shot].slice(0, MAX_PHOTOS));
     }
-    const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.8, exif: false, allowsMultipleSelection: false };
-    const res = fromCamera ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts);
-    if (!res.canceled && res.assets[0]) setPhotos((p) => [...p, res.assets[0]!.uri].slice(0, MAX_PHOTOS));
   };
+
+  // Canlı GPS: bildirilen yer bu konumun 1 km yakınında olmalı (sunucu da kontrol eder).
+  const locate = async () => {
+    setLocating(true);
+    try {
+      const perm = await Location.requestForegroundPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Konum izni gerekli', 'Olay yeri bildirmek için bulunduğunuz yerin GPS konumu gerekir.');
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      setFix({ latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy ?? 9999 });
+    } catch {
+      Alert.alert('Konum alınamadı', 'GPS açık mı? Açık alanda tekrar deneyin.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  const needLocation = !!category && LOCATION_REQUIRED.includes(category);
+  const withLocation = attachLocation || needLocation;
+  useEffect(() => {
+    if (withLocation && !fix && location.status === 'granted') locate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [withLocation]);
 
   const onSubmit = async () => {
     if (!category) return;
-    const coords = attachLocation && userCoords ? coarsen(userCoords) : null;
+    // Tam konum gönderilir: sunucu herkese ~1 km'ye yuvarlayarak gösterir, tam halini yalnızca
+    // yakındaki kişilerin oylamasını ölçmek için saklar.
+    const coords = withLocation && fix ? { latitude: fix.latitude, longitude: fix.longitude } : null;
     // En yakın, 1 saatten yeni ve 300 km içindeki depremle ilişkilendir (varsa).
     const related = userCoords
       ? events.find((e) => Date.now() - Date.parse(e.primary.occurredAt) < 3600_000 && distanceKm(userCoords, e.primary) < 300)
@@ -83,6 +121,7 @@ export default function NewReport() {
       areaLabel: areaLabel.trim() || null,
       earthquakeEventId: related?.id ?? null,
       photos,
+      device: withLocation ? fix : null,
     };
     const v = validateReport(input);
     if (!v.ok) return Alert.alert('Bildirim gönderilemedi', v.error);
@@ -101,7 +140,23 @@ export default function NewReport() {
   };
 
   const signedIn = !!session;
-  const canPublish = isBackendConfigured() && signedIn;
+  const gates = evaluateGates({
+    backend: isBackendConfigured(),
+    signedIn,
+    trust,
+    category,
+    withLocation,
+    device: fix,
+    point: fix,
+    photos,
+  });
+  const canPublish = isBackendConfigured() && signedIn && gatesPass(gates);
+  const onGate = (g: Gate) => {
+    if (g.key === 'identity' && g.state === 'todo') router.push(signedIn ? '/kimlik' : '/giris');
+    else if (g.key === 'location' && g.state === 'todo') locate();
+    else if (g.key === 'photo' && g.state === 'todo') takePhoto();
+    else router.push('/guven');
+  };
 
   const smsFamily = async () => {
     if (category !== 'safe' && category !== 'help') return;
@@ -224,11 +279,14 @@ export default function NewReport() {
         </View>
 
         <View style={{ gap: spacing.sm }}>
-          <AppText variant="heading">Fotoğraf (isteğe bağlı, en fazla {MAX_PHOTOS})</AppText>
+          <AppText variant="heading">
+            {category && PHOTO_REQUIRED.includes(category) ? 'Kanıt fotoğrafı (zorunlu)' : 'Fotoğraf (isteğe bağlı)'} · en fazla{' '}
+            {MAX_PHOTOS}
+          </AppText>
           <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-            {photos.map((uri, i) => (
-              <View key={uri}>
-                <Image source={{ uri }} style={styles.photo} contentFit="cover" />
+            {photos.map((ph, i) => (
+              <View key={ph.uri}>
+                <Image source={{ uri: ph.uri }} style={styles.photo} contentFit="cover" />
                 <Pressable
                   onPress={() => setPhotos((p) => p.filter((_, j) => j !== i))}
                   style={styles.removePhoto}
@@ -240,53 +298,46 @@ export default function NewReport() {
               </View>
             ))}
             {photos.length < MAX_PHOTOS ? (
-              <>
-                <Pressable
-                  onPress={() => addPhoto(true)}
-                  style={styles.addPhoto}
-                  accessibilityRole="button"
-                  accessibilityLabel="Fotoğraf çek"
-                >
-                  <Ionicons name="camera-outline" size={24} color={colors.textSecondary} />
-                </Pressable>
-                <Pressable
-                  onPress={() => addPhoto(false)}
-                  style={styles.addPhoto}
-                  accessibilityRole="button"
-                  accessibilityLabel="Galeriden seç"
-                >
-                  <Ionicons name="images-outline" size={24} color={colors.textSecondary} />
-                </Pressable>
-              </>
+              <Pressable onPress={takePhoto} style={styles.addPhoto} accessibilityRole="button" accessibilityLabel="Fotoğraf çek">
+                <Ionicons name="camera-outline" size={24} color={colors.textSecondary} />
+                <AppText variant="caption">Çek</AppText>
+              </Pressable>
             ) : null}
           </View>
           <AppText variant="caption">
-            Fotoğraflar yeniden kodlanır; konum (EXIF) bilgisi silinir. İnsan yüzü ve plaka içermemesine dikkat edin.
+            Yalnızca uygulama kamerasıyla şimdi çekilen fotoğraf eklenebilir; galeriden yükleme kapalıdır. Fotoğraflar yeniden kodlanır,
+            konum (EXIF) bilgisi silinir. İnsan yüzü ve plaka içermemesine dikkat edin.
           </AppText>
         </View>
 
         <Card style={{ gap: spacing.sm }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={{ flex: 1 }}>
-              <AppText variant="heading">Yaklaşık konumu ekle</AppText>
-              <AppText variant="caption">Konum ~1 km’ye yuvarlanarak yayınlanır. Kesin konumunuz paylaşılmaz.</AppText>
+              <AppText variant="heading">{needLocation ? 'Olay yeri konumu (zorunlu)' : 'Konumu ekle'}</AppText>
+              <AppText variant="caption">
+                Telefonunuzun canlı GPS konumu kullanılır. Herkese ~1 km’ye yuvarlanarak gösterilir; tam konum yalnızca yakındaki kişilerin
+                oylamasını ölçmek için sunucuda tutulur.
+              </AppText>
             </View>
-            <Switch
-              value={attachLocation}
-              onValueChange={setAttachLocation}
-              trackColor={{ true: colors.primary, false: colors.borderStrong }}
-              accessibilityLabel="Yaklaşık konumu ekle"
-            />
+            {needLocation ? null : (
+              <Switch
+                value={attachLocation}
+                onValueChange={setAttachLocation}
+                trackColor={{ true: colors.primary, false: colors.borderStrong }}
+                accessibilityLabel="Konumu ekle"
+              />
+            )}
           </View>
-          {attachLocation && !userCoords ? (
+          {withLocation ? (
             <Button
-              label={location.status === 'denied' && !location.canAskAgain ? 'İl seç' : 'Konumumu al'}
+              label={locating ? 'Konum alınıyor…' : fix ? `Konum alındı (±${Math.round(fix.accuracy)} m) · yenile` : 'Canlı konumumu al'}
               icon="locate-outline"
               variant="secondary"
-              onPress={() => (location.status === 'denied' && !location.canAskAgain ? router.push('/konum') : requestLocation())}
+              loading={locating}
+              onPress={locate}
             />
           ) : null}
-          {attachLocation ? (
+          {withLocation ? (
             <TextInput
               value={areaLabel}
               onChangeText={setAreaLabel}
@@ -299,9 +350,41 @@ export default function NewReport() {
           ) : null}
         </Card>
 
+        <Card style={{ gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+            <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+            <AppText variant="heading" style={{ flex: 1 }}>
+              Yayın kontrolleri
+            </AppText>
+            <Pressable onPress={() => router.push('/guven')} accessibilityRole="link" hitSlop={8}>
+              <AppText variant="label" color={colors.primary}>
+                Neden?
+              </AppText>
+            </Pressable>
+          </View>
+          {gates.map((g, i) => (
+            <Pressable
+              key={g.key}
+              onPress={() => onGate(g)}
+              accessibilityRole="button"
+              accessibilityLabel={`${i + 1}. ${g.title}. ${g.detail}`}
+              style={styles.gate}
+            >
+              <Ionicons name={GATE_ICON[g.state].icon} size={20} color={GATE_ICON[g.state].color} />
+              <View style={{ flex: 1 }}>
+                <AppText variant="label" color={colors.text} style={{ fontWeight: '600' }}>
+                  {i + 1}. {g.title}
+                </AppText>
+                <AppText variant="caption">{g.detail}</AppText>
+              </View>
+              {g.state === 'todo' ? <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} /> : null}
+            </Pressable>
+          ))}
+        </Card>
+
         <AppText variant="caption">
-          Gönderdiğiniz bildirim; kategori, açıklama, fotoğraf, bölge adı ve yaklaşık konumla birlikte herkese açık görünür. Hesabınız ve
-          kimliğiniz gösterilmez. Yanlış bildirimler topluluk tarafından işaretlenip gizlenebilir.
+          Bildiriminiz kategori, açıklama, fotoğraf, bölge adı ve yaklaşık konumla herkese açık görünür; adınız gösterilmez. Kimliğiniz
+          yalnızca yanlış ihbar durumunda hesabınıza yaptırım uygulanabilmesi için doğrulanmıştır.
         </AppText>
 
         {category === 'safe' || category === 'help' ? (
@@ -324,7 +407,9 @@ export default function NewReport() {
           <AppText variant="caption" style={{ textAlign: 'center' }}>
             {!isBackendConfigured()
               ? 'Herkese açık yayın için sunucu bağlantısı gerekli (bu kurulumda yok).'
-              : 'Herkese açık yayın için giriş yapmalısınız.'}
+              : !signedIn
+                ? 'Herkese açık yayın için giriş yapmalısınız.'
+                : 'Yayın kontrollerindeki eksikleri tamamlayın.'}
           </AppText>
         ) : null}
       </ScrollView>
@@ -381,7 +466,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  gate: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 44 },
   addPhoto: {
+    gap: 2,
     width: 84,
     height: 84,
     borderRadius: radius.md,

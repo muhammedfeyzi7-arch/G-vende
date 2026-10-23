@@ -1,5 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { fetchFeed, fetchMyReactions, flagReport, markHelpful, sendReport, type FlagReason } from '@/features/reports/api';
+import {
+  fetchFeed,
+  fetchMyReactions,
+  fetchMyVotes,
+  flagReport,
+  markHelpful,
+  sendReport,
+  voteReport,
+  type FlagReason,
+  type Vote,
+} from '@/features/reports/api';
 import { applyOutcome, enqueue, isRetryable, nextAttemptDelayMs } from '@/features/reports/pendingQueue';
 import { buildSampleReports } from '@/features/reports/sampleReports';
 import { env, isBackendConfigured } from '@/services/env';
@@ -24,6 +34,9 @@ interface ReportsContextValue {
   helpful: Set<string>;
   toggleHelpful: (id: string) => Promise<void>;
   flag: (id: string, reason: FlagReason) => Promise<void>;
+  /** Kullanıcının verdiği topluluk oyları */
+  votes: Map<string, Vote>;
+  vote: (id: string, v: Vote, device: { latitude: number; longitude: number; accuracy: number } | null) => Promise<void>;
 }
 
 const Ctx = createContext<ReportsContextValue | null>(null);
@@ -36,6 +49,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingReport[]>([]);
   const [helpful, setHelpful] = useState<Set<string>>(new Set());
+  const [votes, setVotes] = useState<Map<string, Vote>>(new Map());
   const pendingRef = useRef<PendingReport[]>([]);
   const flushing = useRef(false);
 
@@ -86,6 +100,9 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     if (!session || !isBackendConfigured()) return setHelpful(new Set());
     fetchMyReactions()
       .then(setHelpful)
+      .catch(() => {});
+    fetchMyVotes()
+      .then(setVotes)
       .catch(() => {});
   }, [session]);
 
@@ -169,9 +186,53 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const vote = useCallback(
+    async (id: string, v: Vote, device: { latitude: number; longitude: number; accuracy: number } | null) => {
+      try {
+        await voteReport(id, v, device);
+      } catch (e) {
+        throw new Error(friendlyError(e));
+      }
+      setVotes((m) => new Map(m).set(id, v));
+      // Doğrulama/kaldırma sunucuda hesaplanır; güncel durumu çek.
+      refresh();
+    },
+    [refresh],
+  );
+
   const value = useMemo(
-    () => ({ reports, status, error, lastSyncedAt, refresh, pending, submit, retryPending, discardPending, helpful, toggleHelpful, flag }),
-    [reports, status, error, lastSyncedAt, refresh, pending, submit, retryPending, discardPending, helpful, toggleHelpful, flag],
+    () => ({
+      reports,
+      status,
+      error,
+      lastSyncedAt,
+      refresh,
+      pending,
+      submit,
+      retryPending,
+      discardPending,
+      helpful,
+      toggleHelpful,
+      flag,
+      votes,
+      vote,
+    }),
+    [
+      reports,
+      status,
+      error,
+      lastSyncedAt,
+      refresh,
+      pending,
+      submit,
+      retryPending,
+      discardPending,
+      helpful,
+      toggleHelpful,
+      flag,
+      votes,
+      vote,
+    ],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

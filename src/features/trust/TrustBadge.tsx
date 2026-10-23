@@ -1,0 +1,51 @@
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View } from 'react-native';
+import { AppText } from '@/components/ui';
+import { colors } from '@/theme';
+import type { UserReport } from '@/types/report';
+import { VERIFY_THRESHOLD } from './rules';
+
+/** Bildirimin güven düzeyi: Resmî (kurum rozeti) · Doğrulanmış (topluluk) · Geçici Bilgi. */
+export function trustMeta(r: Pick<UserReport, 'verification' | 'authorOrg' | 'confirmCount'>) {
+  if (r.verification === 'official')
+    return { label: r.authorOrg ? `Resmî · ${r.authorOrg}` : 'Resmî', color: colors.primary, icon: 'checkmark-circle' as const };
+  if (r.verification === 'community')
+    return { label: `Doğrulanmış · ${r.confirmCount} onay`, color: colors.safe, icon: 'shield-checkmark' as const };
+  return {
+    label: r.confirmCount > 0 ? `Geçici Bilgi · ${r.confirmCount}/${VERIFY_THRESHOLD} onay` : 'Geçici Bilgi',
+    color: colors.caution,
+    icon: 'time-outline' as const,
+  };
+}
+
+export function TrustBadge({
+  report,
+  compact,
+}: {
+  report: Pick<UserReport, 'verification' | 'authorOrg' | 'confirmCount'>;
+  compact?: boolean;
+}) {
+  const m = trustMeta(report);
+  return (
+    <View style={[styles.badge, { borderColor: m.color + '88', backgroundColor: m.color + '1F' }]} accessibilityLabel={m.label}>
+      <Ionicons name={m.icon} size={compact ? 11 : 13} color={m.color} />
+      <AppText variant="caption" color={m.color} numberOfLines={1} style={{ fontSize: compact ? 9.5 : 10.5, fontWeight: '700' }}>
+        {m.label}
+      </AppText>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    flexShrink: 1,
+  },
+});

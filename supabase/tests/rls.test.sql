@@ -21,10 +21,16 @@ begin
 end $$;
 set client_min_messages = notice;
 
+-- Güven katmanı (0005): bildirim için kimlik doğrulaması gerekir; bu testlerde herkes doğrulanmış.
+insert into public.profiles (id, identity_verified_at)
+  select id, now() from auth.users;
+
 -- 1) Bildirim oluşturma, konum yuvarlama, yazar kimliğinin gizliliği
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
-insert into public.user_reports (client_id, category, felt_intensity, description, latitude, longitude, area_label)
-values ('11111111-1111-1111-1111-111111111111', 'shake', 3, '  Sarsıntı hissettim  ', 40.771234, 30.992187, 'Düzce · Merkez');
+insert into public.user_reports (client_id, category, felt_intensity, description, latitude, longitude, area_label,
+                                 device_latitude, device_longitude, device_accuracy_m)
+values ('11111111-1111-1111-1111-111111111111', 'shake', 3, '  Sarsıntı hissettim  ', 40.771234, 30.992187, 'Düzce · Merkez',
+        40.7715, 30.9925, 15);
 select pg_temp.ok((select latitude = 40.77 and longitude = 30.99 from public.user_reports limit 1), 'konum ~1 km ızgaraya yuvarlandı');
 select pg_temp.ok((select description = 'Sarsıntı hissettim' from public.user_reports limit 1), 'açıklama kırpıldı');
 
@@ -41,7 +47,7 @@ exception when insufficient_privilege then raise notice 'OK: sayaç sütunları 
 end $$;
 
 do $$ begin
-  insert into public.user_reports (client_id, category, felt_intensity) values (gen_random_uuid(), 'road', 2);
+  insert into public.user_reports (client_id, category, felt_intensity) values (gen_random_uuid(), 'safe', 2);
   raise exception 'BAŞARISIZ: sarsıntı dışı kategoride şiddet kabul edildi';
 exception when check_violation then raise notice 'OK: şiddet yalnızca sarsıntı bildiriminde';
 end $$;
@@ -59,9 +65,9 @@ end $$;
 -- 3) Aynı client_id ile tekrar gönderim reddedilir (çevrimdışı kuyruk tekilleştirmesi)
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
-insert into public.user_reports (client_id, category) values ('22222222-2222-2222-2222-222222222222', 'damage');
+insert into public.user_reports (client_id, category) values ('22222222-2222-2222-2222-222222222222', 'other');
 do $$ begin
-  insert into public.user_reports (client_id, category) values ('22222222-2222-2222-2222-222222222222', 'damage');
+  insert into public.user_reports (client_id, category) values ('22222222-2222-2222-2222-222222222222', 'other');
   raise exception 'BAŞARISIZ: tekrar gönderim kabul edildi';
 exception when unique_violation then raise notice 'OK: client_id tekilleştirmesi';
 end $$;
@@ -96,35 +102,35 @@ select pg_temp.ok((select helpful_count = 1 from public.user_reports where descr
 -- 7) Moderasyon: 3 farklı işaret → gizlenir
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
-insert into public.moderation_reports (report_id, reason) select id, 'spam' from public.user_reports where category = 'damage';
+insert into public.moderation_reports (report_id, reason) select id, 'spam' from public.user_reports where category = 'other';
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000d');
-insert into public.moderation_reports (report_id, reason) select id, 'spam' from public.user_reports where category = 'damage';
+insert into public.moderation_reports (report_id, reason) select id, 'spam' from public.user_reports where category = 'other';
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
-insert into public.moderation_reports (report_id, reason) select id, 'false_info' from public.user_reports where category = 'damage';
-select pg_temp.ok((select count(*) = 0 from public.user_reports where category = 'damage'), '3 işaretten sonra bildirim akıştan gizlendi');
+insert into public.moderation_reports (report_id, reason) select id, 'false_info' from public.user_reports where category = 'other';
+select pg_temp.ok((select count(*) = 0 from public.user_reports where category = 'other'), '3 işaretten sonra bildirim akıştan gizlendi');
 reset role;
-select pg_temp.ok((select status = 'hidden' from public.user_reports where category = 'damage'), 'durum hidden');
+select pg_temp.ok((select status = 'hidden' from public.user_reports where category = 'other'), 'durum hidden');
 
 -- 8) Fotoğraf: yalnızca kendi bildirimine ve kendi klasörüne
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
 do $$ begin
-  insert into public.report_media (report_id, storage_path)
-    select id, '00000000-0000-0000-0000-00000000000c/x.jpg' from public.user_reports where description = 'Sarsıntı hissettim';
+  insert into public.report_media (report_id, storage_path, captured_at)
+    select id, '00000000-0000-0000-0000-00000000000c/x.jpg', now() from public.user_reports where description = 'Sarsıntı hissettim';
   raise exception 'BAŞARISIZ: başkasının bildirimine fotoğraf eklendi';
 exception when insufficient_privilege then raise notice 'OK: başkasının bildirimine fotoğraf eklenemez';
 end $$;
 reset role;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 do $$ begin
-  insert into public.report_media (report_id, storage_path)
-    select id, '00000000-0000-0000-0000-00000000000c/x.jpg' from public.user_reports where description = 'Sarsıntı hissettim';
+  insert into public.report_media (report_id, storage_path, captured_at)
+    select id, '00000000-0000-0000-0000-00000000000c/x.jpg', now() from public.user_reports where description = 'Sarsıntı hissettim';
   raise exception 'BAŞARISIZ: başka kullanıcının klasör yolu kabul edildi';
 exception when insufficient_privilege then raise notice 'OK: depolama yolu kullanıcı klasörüyle sınırlı';
 end $$;
-insert into public.report_media (report_id, storage_path)
-  select id, '00000000-0000-0000-0000-00000000000a/1.jpg' from public.user_reports where description = 'Sarsıntı hissettim';
+insert into public.report_media (report_id, storage_path, captured_at)
+  select id, '00000000-0000-0000-0000-00000000000a/1.jpg', now() from public.user_reports where description = 'Sarsıntı hissettim';
 do $$ begin
   insert into storage.objects (bucket_id, name) values ('report-media', '00000000-0000-0000-0000-00000000000c/evil.jpg');
   raise exception 'BAŞARISIZ: başka klasöre yükleme';

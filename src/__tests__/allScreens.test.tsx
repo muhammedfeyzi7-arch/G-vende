@@ -277,6 +277,8 @@ describe('alt ekranlar', () => {
     ['yardim', /Sık sorulan sorular/],
     ['geri-bildirim', /Hata, öneri/],
     ['hakkinda', /Veri kaynakları/],
+    ['kimlik', /kimliğinizi bir kez doğrulamanız gerekir/],
+    ['guven', /Yalnızca anlık kamera/],
     ['bildirimler', /Bildirim yok/],
     ['akis', /Canlı akış henüz bağlı değil/],
     ['depremler', /Kayıt yok/],
@@ -335,6 +337,27 @@ describe('alt ekranlar', () => {
     await fireEvent.press(screen.getByText('Güvendeyim'));
     expect(screen.getByText(/Acil kişilerime SMS gönder/)).toBeTruthy();
     expect(screen.getByText(/Herkese açık yayın için sunucu bağlantısı gerekli/)).toBeTruthy();
+  });
+
+  it('Bildirim Ekle: yol bildiriminde 4 yayın kontrolü, galeriden yükleme yok', async () => {
+    const Yeni = require('@/app/rapor/yeni').default;
+    await open(<Yeni />);
+    await fireEvent.press(screen.getByText('Yol kapanması veya engel'));
+    expect(screen.getByText('Yayın kontrolleri')).toBeTruthy();
+    expect(screen.getByText(/1\. Kimlik doğrulama/)).toBeTruthy();
+    expect(screen.getByText(/Kanıt fotoğrafı gerekli/)).toBeTruthy();
+    expect(screen.getByText(/Önce “Geçici Bilgi”/)).toBeTruthy();
+    expect(screen.getByLabelText('Fotoğraf çek')).toBeTruthy();
+    expect(screen.queryByLabelText('Galeriden seç')).toBeNull();
+    expect(screen.getByText('Olay yeri konumu (zorunlu)')).toBeTruthy();
+  });
+
+  it('Kimlik doğrulama: geçersiz T.C. no uyarısı, onaysız gönderilemez', async () => {
+    const Kimlik = require('@/app/kimlik').default;
+    await open(<Kimlik />);
+    await fireEvent.changeText(screen.getByLabelText('T.C. kimlik numarası'), '12345678901');
+    expect(screen.getByText('Numara geçersiz görünüyor.')).toBeTruthy();
+    expect(screen.getByText(/e-Devlet Kapısı ile giriş/)).toBeTruthy();
   });
 
   it('İl seçimi konumu ayarlar', async () => {

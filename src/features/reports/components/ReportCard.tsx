@@ -6,6 +6,7 @@ import { colors, radius, spacing } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { relativeTimeTr } from '@/utils/time';
 import { CATEGORY_META, feltColor, reportHeadline } from '../categories';
+import { TrustBadge, trustMeta } from '@/features/trust/TrustBadge';
 
 /** Ana sayfadaki yatay "Son Bildirimler" kartı. */
 export function ReportCard({ report, onPress }: { report: UserReport; onPress: () => void }) {
@@ -17,7 +18,7 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${meta.label}. ${title} ${report.areaLabel ?? ''}. ${relativeTimeTr(report.createdAt)}. Doğrulanmamış kullanıcı bildirimi.`}
+      accessibilityLabel={`${meta.label}. ${title} ${report.areaLabel ?? ''}. ${relativeTimeTr(report.createdAt)}. ${trustMeta(report).label}.`}
       style={({ pressed }) => [styles.card, pressed && { opacity: 0.9 }]}
     >
       <View style={{ flex: 1, gap: 4 }}>
@@ -35,6 +36,7 @@ export function ReportCard({ report, onPress }: { report: UserReport; onPress: (
         <AppText variant="caption" numberOfLines={1}>
           {report.areaLabel ?? 'Bölge belirtilmemiş'}
         </AppText>
+        <TrustBadge report={report} compact />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 'auto' }}>
           <Ionicons name="thumbs-up-outline" size={15} color={colors.textSecondary} />
           <AppText variant="caption">{report.helpfulCount}</AppText>

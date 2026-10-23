@@ -12,4 +12,4 @@ run_pg "'$PGBIN/pg_ctl' -D '$work/data' -o '-p 54329 -k $work -c listen_addresse
 psql_() { psql -h "$work" -p 54329 -U postgres -d postgres -v ON_ERROR_STOP=1 -q -At -o /dev/null "$@"; }
 psql_ -f "$here/00_supabase_stub.sql"
 for f in "$here"/../migrations/*.sql; do psql_ -f "$f"; done
-psql_ -f "$here/rls.test.sql"
+for t in "$here"/*.test.sql; do psql_ -f "$t"; done

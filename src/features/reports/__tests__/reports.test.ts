@@ -12,13 +12,14 @@ const input = (o: Partial<NewReportInput> = {}): NewReportInput => ({
   areaLabel: null,
   earthquakeEventId: null,
   photos: [],
+  device: null,
   ...o,
 });
 
 describe('validateReport', () => {
   it('geçerli sarsıntı bildirimi', () => expect(validateReport(input())).toEqual({ ok: true, warnings: [] }));
   it('uzun açıklamayı reddeder', () => expect(validateReport(input({ description: 'a'.repeat(501) })).ok).toBe(false));
-  it('fazla fotoğrafı reddeder', () => expect(validateReport(input({ photos: ['1', '2', '3', '4'] })).ok).toBe(false));
+  it('fazla fotoğrafı reddeder', () => expect(validateReport(input({ photos: ['1', '2', '3', '4'].map((uri) => ({ uri, capturedAt: '2026-01-01T00:00:00Z' })) })).ok).toBe(false));
   it('sarsıntı dışı kategoride şiddeti reddeder', () => expect(validateReport(input({ category: 'road' })).ok).toBe(false));
   it('"Diğer" için açıklama ister', () => expect(validateReport(input({ category: 'other', feltIntensity: null })).ok).toBe(false));
   it('telefon numarasında uyarır', () => {
@@ -43,7 +44,7 @@ describe('bekleyen kuyruk', () => {
     expect(isRetryable(q[0]!)).toBe(true);
   });
   it('kısmi gönderimde sunucu kimliğini saklar (tekrar kayıt oluşturulmaz)', () => {
-    const q = applyOutcome(enqueue([], input({ photos: ['a'] }), now), 'c1', { kind: 'partial', serverId: 'srv', error: 'foto' });
+    const q = applyOutcome(enqueue([], input({ photos: [{ uri: 'a', capturedAt: '2026-01-01T00:00:00Z' }] }), now), 'c1', { kind: 'partial', serverId: 'srv', error: 'foto' });
     expect(q[0]!.serverId).toBe('srv');
   });
   it('kalıcı hatada otomatik tekrar denemez', () => {

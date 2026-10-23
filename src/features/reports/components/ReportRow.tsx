@@ -6,6 +6,7 @@ import { colors, hitSlop, radius, spacing } from '@/theme';
 import type { UserReport } from '@/types/report';
 import { relativeTimeTr } from '@/utils/time';
 import { CATEGORY_META, feltColor, reportHeadline } from '../categories';
+import { TrustBadge, trustMeta } from '@/features/trust/TrustBadge';
 
 export function ReportRow({
   report,
@@ -28,7 +29,7 @@ export function ReportRow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${meta.label}. ${area}. ${headline} ${report.description ?? ''}. ${time}. ${report.helpfulCount} kişi faydalı buldu.`}
+      accessibilityLabel={`${meta.label}. ${area}. ${headline} ${report.description ?? ''}. ${trustMeta(report).label}. ${time}. ${report.helpfulCount} kişi faydalı buldu.`}
       // Satır tek erişilebilir öğe olduğundan iç düğme ekran okuyucuya eylem olarak sunulur.
       accessibilityActions={[{ name: 'activate' }, { name: 'helpful', label: helpful ? 'Faydalı işaretini kaldır' : 'Faydalı buldum' }]}
       onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'helpful' ? onHelpful() : onPress())}
@@ -50,13 +51,10 @@ export function ReportRow({
             {report.description}
           </AppText>
         ) : null}
-        {report.isSample || report.verification !== 'unverified' ? (
-          <View style={styles.badges}>
-            {report.isSample ? <Pill label="ÖRNEK VERİ" color={colors.warning} /> : null}
-            {report.verification === 'official' ? <Pill label="Yetkili doğruladı" color={colors.safe} /> : null}
-            {report.verification === 'community' ? <Pill label="Topluluk teyitli" color={colors.primary} /> : null}
-          </View>
-        ) : null}
+        <View style={styles.badges}>
+          <TrustBadge report={report} compact />
+          {report.isSample ? <Pill label="ÖRNEK VERİ" color={colors.warning} /> : null}
+        </View>
       </View>
       <View style={styles.side}>
         <AppText variant="label" style={styles.time}>
@@ -96,7 +94,7 @@ const styles = StyleSheet.create({
   area: { fontSize: 11.5 },
   headline: { fontSize: 14, fontWeight: '700' },
   desc: { fontSize: 12.5, lineHeight: 16.5 },
-  badges: { flexDirection: 'row', gap: spacing.xs, marginTop: 4 },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: 4 },
   side: { alignSelf: 'stretch', alignItems: 'flex-end', justifyContent: 'space-between', paddingVertical: 2 },
   time: { fontSize: 11.5 },
   helpful: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 32, paddingLeft: 6 },

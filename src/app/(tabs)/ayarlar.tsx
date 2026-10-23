@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui';
+import { useTrust } from '@/features/trust/TrustProvider';
 import { Avatar, BellButton, ListRow, QuickCard, RowGroup, ScreenHeader, SectionCard, ToggleRow, accent } from '@/components/ds';
 import { formatPhone, loadContacts } from '@/features/family/local';
 import { MAP_STYLE_OPTIONS } from '@/features/map/mapStyle';
@@ -23,6 +24,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { settings, updateSettings, session, userCoords } = useApp();
+  const { trust } = useTrust();
   const { unread } = useInbox();
   const { profile } = useProfile();
   const area = useAreaLabel();
@@ -200,6 +202,20 @@ export default function SettingsScreen() {
               subtitle="Face ID / parmak izi"
               value={settings.biometricLock}
               onChange={toggleBiometric}
+            />
+            <ListRow
+              icon="id-card-outline"
+              title="Kimlik doğrulama"
+              subtitle="Bildirim ve oylama için"
+              value={trust?.verified ? (trust.role === 'user' ? 'Doğrulandı' : 'Kurumsal') : 'Doğrulanmadı'}
+              valueColor={trust?.verified ? colors.safe : colors.caution}
+              onPress={() => router.push('/kimlik')}
+            />
+            <ListRow
+              icon="shield-half-outline"
+              title="Bilgi güvenliği"
+              subtitle="Sahte ihbara karşı kurallar"
+              onPress={() => router.push('/guven')}
             />
           </RowGroup>
         </View>
