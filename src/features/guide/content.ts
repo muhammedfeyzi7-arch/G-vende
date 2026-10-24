@@ -75,7 +75,11 @@ export type Item = {
   note?: string;
   /** Hazırlık listesinde ayrı grupta gösterilir (Eşya ve mobilya güvenliği) */
   g?: 'furniture';
+  /** Adımı gösteren küçük fotoğraf (Art.tsx → PICS) */
+  pic?: PicId;
 };
+
+export type PicId = 'bed' | 'wall' | 'cane' | 'coast' | 'breaker' | 'stove';
 
 export type Category = 'before' | 'during' | 'after' | 'trapped' | 'family';
 export type ArtId =
@@ -135,14 +139,14 @@ export const TOPICS: Topic[] = [
         t: 'Sağlam bir masanın altına ya da dolgun koltuk, kanepe gibi koruma sağlayabilecek bir eşyanın yanına dizlerinizin üzerine ÇÖKÜN.',
         src: [A, R],
       },
-      { t: 'Yakında sığınacak eşya yoksa pencerelerden uzak bir iç duvarın yanına çökün.', src: [A, R] },
+      { t: 'Yakında sığınacak eşya yoksa pencerelerden uzak bir iç duvarın yanına çökün.', src: [A, R], pic: 'wall' },
       { t: 'Başınızı ve ensenizi kollarınızla ya da yastık, kitap gibi bir şeyle koruyarak KAPANIN.', src: [A, R] },
       {
         t: 'Düşmemek için sabit bir yere TUTUNUN; masanın altındaysanız masa kayarsa onunla birlikte hareket edin. Sarsıntı geçene kadar bu pozisyonda kalın.',
         src: [A, R],
       },
       { t: 'Pencere, cam, sabitlenmemiş dolap ve raflardan, üzerinize düşebilecek lamba ve eşyalardan uzak durun.', src: [A, B] },
-      { t: 'Mutfak veya atölyedeyseniz ocak, fırın gibi cihazları kapatıp dökülebilecek maddelerden uzaklaşın.', src: [A] },
+      { t: 'Mutfak veya atölyedeyseniz ocak, fırın gibi cihazları kapatıp dökülebilecek maddelerden uzaklaşın.', src: [A], pic: 'stove' },
       { t: 'Telefonu yalnızca acil durum veya yangın bildirmek için kullanın.', src: [A] },
       {
         t: '“Hayat üçgeni” oluşturun.',
@@ -153,6 +157,7 @@ export const TOPICS: Topic[] = [
       {
         t: 'Yataktaysanız yüzüstü dönün; başınızı ve ensenizi yastıkla koruyun.',
         src: [R],
+        pic: 'bed',
       },
     ],
     why: [
@@ -185,7 +190,7 @@ export const TOPICS: Topic[] = [
       { t: 'Binalardan, duvar diplerinden, ağaçlardan, elektrik hatlarından ve direklerden uzaklaşın.', src: [A, B, R] },
       { t: 'Açık alanda çömelin ve çevreden gelebilecek tehlikelere karşı hazırlıklı olun.', src: [A] },
       { t: 'Taş veya kaya düşebilecek yamaçların altındaysanız hızla güvenli bir yere geçin.', src: [A] },
-      { t: 'Deniz kıyısındaysanız sahilden uzaklaşın ve mümkün olduğunca yüksek yerlere çıkın.', src: [A, B, R] },
+      { t: 'Deniz kıyısındaysanız sahilden uzaklaşın ve mümkün olduğunca yüksek yerlere çıkın.', src: [A, B, R], pic: 'coast' },
     ],
     why: [
       {
@@ -256,6 +261,7 @@ export const TOPICS: Topic[] = [
       {
         t: 'Baston kullanıyorsanız çökün ya da bir sandalyeye veya yatağa oturup başınızı iki elinizle koruyun; bastonunuzu yanınızda tutun.',
         src: [R],
+        pic: 'cane',
       },
       { t: 'Cam, pencere ve devrilebilecek eşyalardan uzak durun.', src: [A, B] },
     ],
@@ -272,7 +278,7 @@ export const TOPICS: Topic[] = [
     art: 'after',
     doList: [
       { t: 'Önce kendi güvenliğinizden emin olun, sonra çevrenizde yardıma ihtiyacı olan var mı bakın.', src: [A, B] },
-      { t: 'Elektrik, gaz ve su vanalarını kapatın; soba ve ısıtıcıları söndürün.', src: [A, B] },
+      { t: 'Elektrik, gaz ve su vanalarını kapatın; soba ve ısıtıcıları söndürün.', src: [A, B], pic: 'breaker' },
       {
         t: 'Etrafınızı kontrol edip güvenli olduğundan emin olduktan sonra binayı daha önce belirlediğiniz yoldan terk edin.',
         src: [A, B],

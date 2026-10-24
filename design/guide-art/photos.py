@@ -47,6 +47,18 @@ TILES['dch2'] = SRC2.crop((0, 0, 722, 540))
 TILES['gas2'] = SRC2.crop((726, 0, 1448, 540))
 TILES['kit2'] = SRC2.crop((0, 546, 722, 1086))
 
+# Üçüncü ve dördüncü kolaj (source/collage3.png, collage4.png; 1448×1086, 5×2 dikey karo ~277×531).
+# Kullanılmayanlar: gaz (iki kolajda da vana dikey boruda ve kol boruya paralel = AÇIK, yanında onay);
+# enkaz yığınında çömelen kişi (hasarlı binanın dibinde: "hasarlı binalardan uzak durun" ile çelişir).
+# İç duvar karosunda kişinin hemen yanındaki pencere perdesi kırpıldı ("pencereden uzak").
+C34 = [(4, 281), (295, 574), (587, 862), (875, 1155), (1170, 1444)]
+R34 = [(4, 535), (549, 1082)]
+for n in (3, 4):
+    src = Image.open(ROOT / f'design/guide-art/source/collage{n}.png').convert('RGB')
+    for r, (y0, y1) in enumerate(R34):
+        for c, (x0, x1) in enumerate(C34):
+            TILES[f'c{n}{r}{c}'] = src.crop((x0, y0, x1, y1))
+
 # çıktı adı → (karo, karo içi kutu ya da None = tamamı)
 CROPS = {
     'drop-cover-hold': ('dch2', None),
@@ -72,14 +84,25 @@ CROPS = {
     'gas': ('gas2', (474, 40, 722, 420), 4 / 3),
     'gas-wide': ('gas2', (474, 40, 722, 420), 2),
     # yeşil ok dışarıda
-    'wheelchair': ('wheelchair', (0, 0, 269, 152)),
-    'wheelchair-wide': ('wheelchair', (0, 10, 269, 144)),
+    'wheelchair': ('c302', (0, 90, 277, 298)),
+    'wheelchair-wide': ('c302', (0, 100, 277, 238)),
+    'family-msg': ('c303', (0, 70, 277, 278)),
+    'family-msg-wide': ('c303', (0, 130, 277, 268)),
+    'documents': ('c304', (0, 80, 277, 288)),
+    'documents-wide': ('c304', (0, 170, 277, 308)),
+    # adım küçük resimleri (dikey, ~0.79)
+    'pic-bed': ('c310', (0, 80, 277, 430)),
+    'pic-wall': ('c311', (0, 118, 212, 386)),
+    'pic-cane': ('c312', (0, 20, 277, 370)),
+    'pic-coast': ('c313', (0, 90, 277, 440)),
+    'pic-breaker': ('c403', (0, 60, 277, 410)),
+    'pic-stove': ('c404', (0, 150, 277, 500)),
     # Acil Durum araç kartları ve çanta
     'tool-siren': ('siren', None),
     'tool-light': ('beacon', None),
     'tool-sms': ('chat', None),
     'tool-assembly': ('after', (176, 6, 309, 120)),
-    'backpack': ('backpack', None),
+    'backpack': ('c411', (0, 40, 277, 320)),
 }
 
 

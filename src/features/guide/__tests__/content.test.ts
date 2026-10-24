@@ -1,4 +1,4 @@
-import { ART_IDS } from '../Art';
+import { ART_IDS, PIC_IDS } from '../Art';
 import {
   CATEGORIES,
   CHECKED_AT,
@@ -40,6 +40,11 @@ describe('acil durum rehberi içeriği', () => {
     const all = PUBLISHED_TOPICS.flatMap((t) => [...shown(t.doList), ...shown(t.dontList)].map((i) => i.t)).join(' ');
     expect(all).not.toMatch(/hayat üçgeni/i);
   });
+  it('adım fotoğrafları tanımlı; en az biri gösteriliyor', () => {
+    const pics = PUBLISHED_TOPICS.flatMap((t) => [...shown(t.doList), ...shown(t.dontList)]).flatMap((i) => (i.pic ? [i.pic] : []));
+    expect(pics.length).toBeGreaterThan(0);
+    for (const p of pics) expect(PIC_IDS).toContain(p);
+  });
   it('kategoriler var olan konulara gider; konu kimlikleri benzersiz', () => {
     for (const c of CATEGORIES) expect(PUBLISHED_TOPICS.some((t) => t.cat === c.id)).toBe(true);
     expect(new Set(TOPICS.map((t) => t.id)).size).toBe(TOPICS.length);
@@ -56,7 +61,11 @@ describe('acil durum rehberi içeriği', () => {
   });
   it('aile: yanıt vermemek tehlike işareti sayılmaz', () => {
     const t = topicById('family')!;
-    expect(shown(t.dontList).map((i) => i.t).join(' ')).toMatch(/tek başına “tehlikede” işareti olarak yorumlamayın/);
+    expect(
+      shown(t.dontList)
+        .map((i) => i.t)
+        .join(' '),
+    ).toMatch(/tek başına “tehlikede” işareti olarak yorumlamayın/);
   });
   it('doğrulama tarihi bir yıldan eskiyse uyarı verir', () => {
     expect(isStale(Date.parse(CHECKED_AT) + 10 * 86400_000)).toBe(false);
@@ -67,7 +76,9 @@ describe('acil durum rehberi içeriği', () => {
     expect(keys.length).toBeGreaterThan(8);
     expect(new Set(keys).size).toBe(keys.length);
     expect(prepProgress([]).percent).toBe(0);
-    const kitKeys = prepGroups().find((g) => g.id === 'kit')!.items.map((i) => i.key);
+    const kitKeys = prepGroups()
+      .find((g) => g.id === 'kit')!
+      .items.map((i) => i.key);
     expect(prepProgress(keys).percent).toBeLessThan(100);
     expect(prepProgress(keys, kitKeys).percent).toBe(100);
     expect(prepProgress(keys.slice(0, 1)).done).toBe(1);
@@ -76,16 +87,42 @@ describe('acil durum rehberi içeriği', () => {
     const g = prepGroups();
     expect(g.map((x) => x.id)).toEqual(['home', 'kit', 'plan', 'furniture', 'special']);
     for (const x of g) expect(x.items.length).toBeGreaterThan(0);
-    const home = g.find((x) => x.id === 'home')!.items.map((i) => i.text).join(' ');
+    const home = g
+      .find((x) => x.id === 'home')!
+      .items.map((i) => i.text)
+      .join(' ');
     expect(home).not.toMatch(/Dolapları/);
     const kit = g.find((x) => x.id === 'kit')!;
-    const all = prepProgress([], kit.items.map((i) => i.key));
+    const all = prepProgress(
+      [],
+      kit.items.map((i) => i.key),
+    );
     expect(all.done).toBe(kit.items.length);
   });
   it('Türkçe iyelik eki', () => {
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 20, 22, 30, 40, 50, 60, 70, 80, 90, 100].map(possessive)).toEqual([
-      "0'ı", "1'i", "2'si", "3'ü", "4'ü", "5'i", "6'sı", "7'si", "8'i", "9'u", "10'u", "13'ü", "20'si", "22'si", "30'u", "40'ı", "50'si",
-      "60'ı", "70'i", "80'i", "90'ı", "100'ü",
+      "0'ı",
+      "1'i",
+      "2'si",
+      "3'ü",
+      "4'ü",
+      "5'i",
+      "6'sı",
+      "7'si",
+      "8'i",
+      "9'u",
+      "10'u",
+      "13'ü",
+      "20'si",
+      "22'si",
+      "30'u",
+      "40'ı",
+      "50'si",
+      "60'ı",
+      "70'i",
+      "80'i",
+      "90'ı",
+      "100'ü",
     ]);
   });
 });

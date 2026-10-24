@@ -1,5 +1,5 @@
 import { Image, type ImageStyle, type StyleProp } from 'react-native';
-import type { ArtId } from './content';
+import type { ArtId, PicId } from './content';
 
 /**
  * Rehber ve Acil Durum görselleri. Konu görselleri kullanıcının sağladığı kolajdan kırpılmış
@@ -37,6 +37,16 @@ export const GUIDE_IMG = {
   'gas-wide': require('../../../assets/guide/art/gas-wide.jpg'),
   'wheelchair-wide': require('../../../assets/guide/art/wheelchair-wide.jpg'),
   backpack: require('../../../assets/guide/art/backpack.jpg'),
+  'family-msg': require('../../../assets/guide/art/family-msg.jpg'),
+  'family-msg-wide': require('../../../assets/guide/art/family-msg-wide.jpg'),
+  documents: require('../../../assets/guide/art/documents.jpg'),
+  'documents-wide': require('../../../assets/guide/art/documents-wide.jpg'),
+  'pic-bed': require('../../../assets/guide/art/pic-bed.jpg'),
+  'pic-wall': require('../../../assets/guide/art/pic-wall.jpg'),
+  'pic-cane': require('../../../assets/guide/art/pic-cane.jpg'),
+  'pic-coast': require('../../../assets/guide/art/pic-coast.jpg'),
+  'pic-breaker': require('../../../assets/guide/art/pic-breaker.jpg'),
+  'pic-stove': require('../../../assets/guide/art/pic-stove.jpg'),
   'tool-siren': require('../../../assets/guide/art/tool-siren.jpg'),
   'tool-light': require('../../../assets/guide/art/tool-light.jpg'),
   'tool-sms': require('../../../assets/guide/art/tool-sms.jpg'),
@@ -60,7 +70,7 @@ const SCENES: Record<ArtId, { img: GuideImgKey; wide?: GuideImgKey; label: strin
   wheelchair: {
     img: 'wheelchair',
     wide: 'wheelchair-wide',
-    label: 'Tekerlekli sandalyede öne eğilip kollarıyla başını koruyan kişi',
+    label: 'Tekerlekli sandalyede öne eğilip elleriyle başını ve ensesini koruyan kişi',
   },
   after: { img: 'after-quake', wide: 'after-quake-wide', label: 'Sırt çantasıyla toplanma alanı tabelasına doğru yürüyen kişi' },
   gas: {
@@ -69,9 +79,9 @@ const SCENES: Record<ArtId, { img: GuideImgKey; wide?: GuideImgKey; label: strin
     label: 'Gaz sayacı ve ateş yakmayın işareti',
   },
   trapped: { img: 'trapped', wide: 'trapped-wide', label: 'Enkaz altında yüzüstü yatan, ışıkla yerini duyurmaya çalışan kişi' },
-  family: { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda rota ve aile simgeleri' },
+  family: { img: 'family-msg', wide: 'family-msg-wide', label: 'Dışarıda telefonundan kısa mesaj yazan kişi' },
   'prep-home': { img: 'home-safety', label: 'Ev, yangın söndürücü ve güvenlik kalkanı' },
-  'prep-plan': { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda rota ve aile simgeleri' },
+  'prep-plan': { img: 'documents', wide: 'documents-wide', label: 'Su geçirmez şeffaf poşette kimlik, pasaport ve belge kopyaları' },
   'prep-special': {
     img: 'special-needs',
     label: 'Tekerlekli sandalyedeki yaşlı kişi, ilk yardım çantası ve sarı acil durum kutusu',
@@ -108,6 +118,23 @@ export function GuideHero({ id, width, style }: { id: ArtId; width: number; styl
   const s = SCENES[id];
   const img = s.wide ?? s.img;
   return <GuideImage img={img} label={s.label} cover={!!s.wide} style={[{ width, height: width / 2 }, style]} />;
+}
+
+/** Tek bir adımı gösteren küçük resimler (dikey). */
+const PICS: Record<PicId, { img: GuideImgKey; label: string }> = {
+  bed: { img: 'pic-bed', label: 'Yatakta yüzüstü yatıp başını ve ensesini yastıkla koruyan kişi' },
+  wall: { img: 'pic-wall', label: 'Bir iç duvarın dibine çökmüş, elleriyle başını koruyan kişi' },
+  cane: { img: 'pic-cane', label: 'Sandalyede oturup elleriyle başını koruyan, bastonu yanında duran yaşlı kişi' },
+  coast: { img: 'pic-coast', label: 'Deniz kıyısından yokuş yukarı yürüyerek uzaklaşan aile' },
+  breaker: { img: 'pic-breaker', label: 'Sigorta kutusundaki şalterlere uzanan el' },
+  stove: { img: 'pic-stove', label: 'Ocağın düğmesini kapatan el' },
+};
+export const PIC_IDS = Object.keys(PICS) as PicId[];
+
+/** Adım küçük resmi (varsayılan 88×112). */
+export function StepPic({ id, style }: { id: PicId; style?: StyleProp<ImageStyle> }) {
+  const p = PICS[id];
+  return <GuideImage img={p.img} label={p.label} style={[{ width: 88, height: 112, borderRadius: 12 }, style]} />;
 }
 
 /** Konu görselinin dosya anahtarı. */

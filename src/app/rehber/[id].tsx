@@ -4,7 +4,7 @@ import { View, useWindowDimensions } from 'react-native';
 import { AppText, Button, StateMessage } from '@/components/ui';
 import { Page } from '@/components/ds';
 import { call112 } from '@/features/home/tabs';
-import { ART_BG, GuideHero } from '@/features/guide/Art';
+import { ART_BG, GuideHero, StepPic } from '@/features/guide/Art';
 import { CATEGORIES, EMERGENCY_NUMBER, shown, topicById, topicSources, type Item } from '@/features/guide/content';
 import { OfflineNote, SourceList } from '@/features/guide/ui';
 import { colors, radius, spacing, themedStyles } from '@/theme';
@@ -42,6 +42,7 @@ function Section({
           <AppText variant="body" style={{ flex: 1, fontSize: 15.5, lineHeight: 22 }}>
             {it.t}
           </AppText>
+          {it.pic ? <StepPic id={it.pic} /> : null}
         </View>
       ))}
     </View>
