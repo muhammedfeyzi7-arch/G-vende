@@ -52,7 +52,7 @@ const SCENES: Record<ArtId, { img: GuideImgKey; wide?: GuideImgKey; label: strin
   indoor: {
     img: 'drop-cover-hold',
     wide: 'drop-cover-hold-wide',
-    label: 'Masanın altında dizlerinin üzerine çökmüş, iki eliyle başını ve ensesini koruyan kişi',
+    label: 'Masanın altında dizlerinin üzerine çökmüş, bir eliyle başını ve ensesini koruyan, diğer eliyle masa ayağına tutunan kişi',
   },
   outdoor: { img: 'outdoor', wide: 'outdoor-wide', label: 'Açık alanda yere çömelip elleriyle başını koruyan kişi' },
   vehicle: { img: 'vehicle', wide: 'vehicle-wide', label: 'Gece yol kenarına yanaşıp durmuş araç ve bekle işareti' },
@@ -76,7 +76,7 @@ const SCENES: Record<ArtId, { img: GuideImgKey; wide?: GuideImgKey; label: strin
     img: 'special-needs',
     label: 'Tekerlekli sandalyedeki yaşlı kişi, ilk yardım çantası ve sarı acil durum kutusu',
   },
-  kit: { img: 'kit', label: 'İlk yardım çantası, su, fener, sargı bezleri ve ilaçlar' },
+  kit: { img: 'kit', label: 'İlk yardım çantası, su, fener, radyo, yangın söndürücü, sargı bezleri ve ilaçlar' },
 };
 
 /** Fotoğraflar varsayılan olarak kutuyu doldurur; `cover={false}` kırpmadan gösterir. */

@@ -37,13 +37,23 @@ for r, (y0, y1) in enumerate(ROWS):
     for c, (x0, x1) in enumerate(COLS[r]):
         TILES[NAMES[r][c]] = SRC.crop((x0, y0, x1, y1))
 
+# İkinci kolaj (source/collage2.png, 1448×1086, 2×2; karo ~720×540): Çök-Kapan-Tutun, gaz, çanta,
+# tekerlekli sandalye yakın çekim.
+# - gaz2: vana yine dikey boru üzerinde ve kol boruya paralel (= AÇIK) + onay işareti → vana ve onay
+#   kullanılmadı, yalnızca sayaç ve "ateş yakmayın" işareti.
+# - sandalye yakın çekimi kullanılmadı: frenin kilitli olduğu anlaşılmıyor, el tekerleği itiyor gibi.
+SRC2 = Image.open(ROOT / 'design/guide-art/source/collage2.png').convert('RGB')
+TILES['dch2'] = SRC2.crop((0, 0, 722, 540))
+TILES['gas2'] = SRC2.crop((726, 0, 1448, 540))
+TILES['kit2'] = SRC2.crop((0, 546, 722, 1086))
+
 # çıktı adı → (karo, karo içi kutu ya da None = tamamı)
 CROPS = {
-    'drop-cover-hold': ('dch', None),
-    'drop-cover-hold-hero': ('dch', (40, 40, 320, 240)),
-    'drop-cover-hold-wide': ('dch', (0, 80, 320, 240)),
+    'drop-cover-hold': ('dch2', None),
+    'drop-cover-hold-hero': ('dch2', (40, 100, 640, 540)),
+    'drop-cover-hold-wide': ('dch2', (0, 170, 722, 531)),
     'home-safety': ('home', None),
-    'kit': ('kit', None),
+    'kit': ('kit2', None),
     'family-plan': ('family', None),
     'furniture': ('furniture', None),
     'after-quake': ('after', None),
@@ -59,8 +69,8 @@ CROPS = {
     'special-needs': ('special', None),
     'checklist': ('checklist', None),
     # vana kolu ve onay işareti dışarıda: yalnızca sayaç + "ateş yakmayın"
-    'gas': ('gas', (162, 0, 296, 205), 4 / 3),
-    'gas-wide': ('gas', (162, 0, 296, 205), 2),
+    'gas': ('gas2', (474, 40, 722, 420), 4 / 3),
+    'gas-wide': ('gas2', (474, 40, 722, 420), 2),
     # yeşil ok dışarıda
     'wheelchair': ('wheelchair', (0, 0, 269, 152)),
     'wheelchair-wide': ('wheelchair', (0, 10, 269, 144)),
@@ -90,6 +100,7 @@ for name, (tile, box, *ratio) in CROPS.items():
     im = TILES[tile] if box is None else TILES[tile].crop(box)
     if ratio:
         im = fill(im, ratio[0])
-    im = im.resize((im.width * 2, im.height * 2), Image.LANCZOS)
+    if im.width < 600:  # ilk kolajın küçük karoları
+        im = im.resize((im.width * 2, im.height * 2), Image.LANCZOS)
     im.save(OUT / f'{name}.jpg', quality=88, optimize=True)
     print(name, im.size)

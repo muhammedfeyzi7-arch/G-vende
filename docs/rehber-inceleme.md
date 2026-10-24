@@ -79,5 +79,5 @@ Konu görselleri kullanıcının sağladığı 5×4 kolajdan kırpıldı. Biline
 - **Çözünürlük:** her karo ~300×230 piksel; çıktılar 2× büyütüldü. Büyük alanlarda (konu sayfası üst görseli) telefonda yumuşak görünebilir. Karoların tek tek ≥1600 px sürümleri gelince `photos.py` doğrudan o dosyalarla çalıştırılmalı.
 - **Gaz:** karodaki vana kolu boruya paralel (= açık) ve yanında yeşil onay var; "vanayı kapatın" ile çeliştiği için kol ve onay kırpıldı, yalnızca sayaç ve "ateş yakmayın" işareti kaldı. Kolu boruya dik (kapalı) yeni bir görsel gerekli.
 - **Tekerlekli sandalye:** "hareket" anlamındaki yeşil ok kırpıldı. Kilitli fren görünmüyor.
-- **Çök-Kapan-Tutun:** kişi iki eliyle başını koruyor, masa ayağına tutunmuyor (AFAD'ın "baş iki el arasına alınarak" ifadesiyle uyumlu).
+- **İkinci kolaj (`collage2.png`, 24.10.2026):** Çök-Kapan-Tutun (bir el başta, diğeri masa ayağında) ve çanta görselleri bununla değiştirildi. Gaz karosunda vana yine dikey boru üzerinde ve kol boruya paralel (= açık), yanında onay var; vana ve onay yine kırpıldı. Tekerlekli sandalye yakın çekimi kullanılmadı: frenin kilitli olduğu anlaşılmıyor ve el tekerleği itiyor gibi.
 - Kullanılmayan karolar: acil çıkış tabelası, konum/uyarı telefonu.
