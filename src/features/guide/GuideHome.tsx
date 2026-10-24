@@ -235,7 +235,7 @@ export function GuideHome({ bottomPad = 0, back }: { bottomPad?: number; back?: 
         style={({ pressed }) => [styles.kit, pressed && { opacity: 0.88 }]}
       >
         <View style={[styles.kitArt, { width: pageW * 0.32 }]}>
-          <GuideImage img="kit" style={{ width: '100%', height: '100%' }} />
+          <GuideImage img="backpack" style={{ width: '100%', height: '100%' }} />
           <EdgeFade color={colors.surface} size={22} />
         </View>
         <View style={{ flex: 1, gap: 4, paddingVertical: spacing.md }}>

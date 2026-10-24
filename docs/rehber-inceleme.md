@@ -23,7 +23,7 @@ Sayfalar, geliştirme ortamının internet erişimi kısıtlı olduğu için Sup
 
 - AFAD sayfalarının altında "© 2026 T.C. İçişleri Bakanlığı Afet ve Acil Durum Yönetimi Başkanlığı" ibaresi var; açık lisans ifadesi bulunmuyor. Bu nedenle:
   - Metinler **birebir kopyalanmadı**; bilgiye dayanan kısa, özgün ifadeler yazıldı.
-  - **AFAD görseli, infografiği, fotoğraf veya logo kullanılmadı.** Rehber illüstrasyonları GÜVENDE için elle yazılmış özgün vektör sahnelerdir (`design/guide-art/scenes.mjs`); `node design/guide-art/build.mjs` ile `assets/guide/art/` altına JPEG/PNG olarak üretilir. Önceki, tasarım ekran görüntülerinden kırpılmış dosyalar kaldırıldı.
+  - **AFAD görseli, infografiği veya logosu kullanılmadı.** Rehber ve Acil Durum fotoğrafları uygulama sahibinin sağladığı kolajdan kırpılır (`design/guide-art/source/collage.png` → `python3 design/guide-art/photos.py` → `assets/guide/art/`). Kullanım hakkı uygulama sahibinin beyanına dayanır. Logo ve ana sayfa kart dekoru çizimdir (`node design/guide-art/build.mjs`).
   - Uygulamada "GÜVENDE, AFAD'ın veya başka bir kurumun resmî uygulaması değildir" ibaresi her konu sayfasında ve rehber merkezinde gösterilir.
 - **Hukuki değerlendirme önerilir:** Kaynak gösterilerek özetleme yapılması (FSEK m.35 alıntı/özet sınırları) ve kurum adının kaynak olarak anılması uygun kabul edilse de yayın öncesi bir hukukçunun onayı alınmalıdır.
 
@@ -71,3 +71,13 @@ AFAD'ın iki sayfası yeniden okunup her gösterilen madde metinle karşılaşt�
 
 - Yeni özgün sahneler: **gaz** (borudaki vanayı kapatan el, açık pencere, "ateş yakmayın" işareti; AFAD gaz maddeleri) ve **tekerlekli sandalye** (tekerlekler kilitli, öne eğilip kollarla baş ve enseyi koruma; AFAD + Ready.gov). Önceden gaz konusu "binadan uzaklaşma", tekerlekli sandalye konusu genel "özel ihtiyaçlar" görselini kullanıyordu.
 - Konu sayfasının üst görseli artık iç çerçevesiz, tam genişlikte 2:1 yatay kesittir (`GuideHero`); metro, gaz ve tekerlekli sandalye için de yatay kesit üretildi.
+
+### Fotoğraflar (24 Ekim 2026)
+
+Konu görselleri kullanıcının sağladığı 5×4 kolajdan kırpıldı. Bilinen sınırlar:
+
+- **Çözünürlük:** her karo ~300×230 piksel; çıktılar 2× büyütüldü. Büyük alanlarda (konu sayfası üst görseli) telefonda yumuşak görünebilir. Karoların tek tek ≥1600 px sürümleri gelince `photos.py` doğrudan o dosyalarla çalıştırılmalı.
+- **Gaz:** karodaki vana kolu boruya paralel (= açık) ve yanında yeşil onay var; "vanayı kapatın" ile çeliştiği için kol ve onay kırpıldı, yalnızca sayaç ve "ateş yakmayın" işareti kaldı. Kolu boruya dik (kapalı) yeni bir görsel gerekli.
+- **Tekerlekli sandalye:** "hareket" anlamındaki yeşil ok kırpıldı. Kilitli fren görünmüyor.
+- **Çök-Kapan-Tutun:** kişi iki eliyle başını koruyor, masa ayağına tutunmuyor (AFAD'ın "baş iki el arasına alınarak" ifadesiyle uyumlu).
+- Kullanılmayan karolar: acil çıkış tabelası, konum/uyarı telefonu.

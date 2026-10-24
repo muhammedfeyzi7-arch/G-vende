@@ -2,12 +2,11 @@ import { Image, type ImageStyle, type StyleProp } from 'react-native';
 import type { ArtId } from './content';
 
 /**
- * Rehber illüstrasyonları: GÜVENDE için çizilmiş özgün vektör sahnelerden üretilen raster dosyalar
- * (kaynak: design/guide-art/scenes.mjs → `node design/guide-art/build.mjs`). Uygulamaya gömülüdür;
- * internet gerekmez. Fotoğraf, dış görsel veya kurum logosu yoktur.
+ * Rehber ve Acil Durum görselleri. Konu görselleri kullanıcının sağladığı kolajdan kırpılmış
+ * fotoğraflardır (`python3 design/guide-art/photos.py`); logo ve ana sayfa kart dekoru çizimdir
+ * (`node design/guide-art/build.mjs`). Hepsi uygulamaya gömülüdür; internet gerekmez. Kurum logosu yoktur.
  *
- * Opak sahnelerin kenarları düz ART_BG rengindedir; "contain" ile gösterilir, böylece hiçbir öğe
- * kırpılmaz ve kutunun kalan alanı aynı renkle dolar.
+ * Fotoğraflar kutuyu doldurur ("cover"); saydam çizimler kırpılmadan ("contain") gösterilir.
  */
 export const ART_BG = '#0E1A2E';
 
@@ -17,7 +16,7 @@ export const GUIDE_IMG = {
   'family-plan': require('../../../assets/guide/art/family-plan.jpg'),
   furniture: require('../../../assets/guide/art/furniture.jpg'),
   'drop-cover-hold': require('../../../assets/guide/art/drop-cover-hold.jpg'),
-  'drop-cover-hold-hero': require('../../../assets/guide/art/drop-cover-hold-hero.png'),
+  'drop-cover-hold-hero': require('../../../assets/guide/art/drop-cover-hold-hero.jpg'),
   'after-quake': require('../../../assets/guide/art/after-quake.jpg'),
   trapped: require('../../../assets/guide/art/trapped.jpg'),
   outdoor: require('../../../assets/guide/art/outdoor.jpg'),
@@ -37,45 +36,50 @@ export const GUIDE_IMG = {
   'transit-wide': require('../../../assets/guide/art/transit-wide.jpg'),
   'gas-wide': require('../../../assets/guide/art/gas-wide.jpg'),
   'wheelchair-wide': require('../../../assets/guide/art/wheelchair-wide.jpg'),
+  backpack: require('../../../assets/guide/art/backpack.jpg'),
+  'tool-siren': require('../../../assets/guide/art/tool-siren.jpg'),
+  'tool-light': require('../../../assets/guide/art/tool-light.jpg'),
+  'tool-sms': require('../../../assets/guide/art/tool-sms.jpg'),
+  'tool-assembly': require('../../../assets/guide/art/tool-assembly.jpg'),
 } as const;
 export type GuideImgKey = keyof typeof GUIDE_IMG;
 
 /** Saydam zeminli dosyalar (kırmızı kart, başlık logosu) */
-const TRANSPARENT: GuideImgKey[] = ['drop-cover-hold-hero', 'logo', 'quake-card'];
+const TRANSPARENT: GuideImgKey[] = ['logo', 'quake-card'];
 
 /** Konu görseli → dosya, (varsa) 2:1 yatay kesit ve ekran okuyucu açıklaması. */
 const SCENES: Record<ArtId, { img: GuideImgKey; wide?: GuideImgKey; label: string }> = {
   indoor: {
     img: 'drop-cover-hold',
     wide: 'drop-cover-hold-wide',
-    label: 'Masanın altında dizlerinin üzerine çökmüş, bir koluyla başını ve ensesini koruyan, diğer eliyle masa ayağına tutunan kişi',
+    label: 'Masanın altında dizlerinin üzerine çökmüş, iki eliyle başını ve ensesini koruyan kişi',
   },
-  outdoor: { img: 'outdoor', wide: 'outdoor-wide', label: 'Binalardan, ağaçtan ve direkten uzak açık alanda çömelip başını koruyan kişi' },
-  vehicle: { img: 'vehicle', wide: 'vehicle-wide', label: 'Yolun sağ kenarına yanaşıp dörtlü flaşörle durmuş araç' },
-  transit: { img: 'transit', wide: 'transit-wide', label: 'Metro vagonunda dikey direğe sıkıca tutunan kişi' },
+  outdoor: { img: 'outdoor', wide: 'outdoor-wide', label: 'Açık alanda yere çömelip elleriyle başını koruyan kişi' },
+  vehicle: { img: 'vehicle', wide: 'vehicle-wide', label: 'Gece yol kenarına yanaşıp durmuş araç ve bekle işareti' },
+  transit: { img: 'transit', wide: 'transit-wide', label: 'Metro kapısının yanında dikey direğe tutunan kişi' },
   wheelchair: {
     img: 'wheelchair',
     wide: 'wheelchair-wide',
-    label: 'Tekerlekleri kilitli tekerlekli sandalyede öne eğilip kollarıyla başını ve ensesini koruyan kişi; pencere uzakta',
+    label: 'Tekerlekli sandalyede öne eğilip kollarıyla başını koruyan kişi',
   },
-  after: { img: 'after-quake', wide: 'after-quake-wide', label: 'Sırt çantasıyla hasarlı binadan uzaklaşıp toplanma alanına yürüyen kişi' },
+  after: { img: 'after-quake', wide: 'after-quake-wide', label: 'Sırt çantasıyla toplanma alanı tabelasına doğru yürüyen kişi' },
   gas: {
     img: 'gas',
     wide: 'gas-wide',
-    label: 'Gaz borusundaki vanayı kapatan el, açık pencereden çıkan hava ve ateş yakmayın işareti',
+    label: 'Gaz sayacı ve ateş yakmayın işareti',
   },
-  trapped: { img: 'trapped', wide: 'trapped-wide', label: 'Enkaz altında, elindeki taşla boruya vurarak yerini duyuran kişi' },
-  family: { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
+  trapped: { img: 'trapped', wide: 'trapped-wide', label: 'Enkaz altında yüzüstü yatan, ışıkla yerini duyurmaya çalışan kişi' },
+  family: { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda rota ve aile simgeleri' },
   'prep-home': { img: 'home-safety', label: 'Ev, yangın söndürücü ve güvenlik kalkanı' },
-  'prep-plan': { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
+  'prep-plan': { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda rota ve aile simgeleri' },
   'prep-special': {
     img: 'special-needs',
-    label: 'Frenleri kilitli tekerlekli sandalyedeki kişi, ilaç çantası ve evcil hayvan taşıma çantası',
+    label: 'Tekerlekli sandalyedeki yaşlı kişi, ilk yardım çantası ve sarı acil durum kutusu',
   },
-  kit: { img: 'kit', label: 'Su, fener, düdük, belge kılıfı ve ilk yardım çantası' },
+  kit: { img: 'kit', label: 'İlk yardım çantası, su, fener, sargı bezleri ve ilaçlar' },
 };
 
-/** cover: yalnızca konusu güvenli alanda olan yatay kesitler ("-wide") için; kare sahneler kırpılmadan (contain) gösterilir. */
+/** Fotoğraflar varsayılan olarak kutuyu doldurur; `cover={false}` kırpmadan gösterir. */
 export function GuideImage({
   img,
   label,
@@ -90,7 +94,7 @@ export function GuideImage({
   return (
     <Image
       source={GUIDE_IMG[img]}
-      resizeMode={cover ? 'cover' : 'contain'}
+      resizeMode={(cover ?? !TRANSPARENT.includes(img)) ? 'cover' : 'contain'}
       accessible={!!label}
       accessibilityRole={label ? 'image' : undefined}
       accessibilityLabel={label}

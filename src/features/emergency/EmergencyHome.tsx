@@ -24,11 +24,11 @@ const SERVICES: { key: string; title: string; icon: string; color: string }[] = 
 const AFAD_URL = 'https://www.afad.gov.tr';
 
 const TOOLS = [
-  { key: 'enkaz', title: 'Enkaz Altı Modu', sub: 'İnternetsiz siren ve flaş', icon: 'megaphone', color: '#FF4B55', href: '/enkaz' },
-  { key: 'fener', title: 'Fener', sub: 'Cihazınızın fenerini açın', icon: 'flashlight', color: '#F7B548', href: '/isik?led=1' },
-  { key: 'sms', title: 'Acil SMS', sub: 'Hazır mesajlarla yardım isteyin', icon: 'chatbox-ellipses', color: '#4DA3FF', href: '/acil-sms' },
-  { key: 'toplanma', title: 'Toplanma Alanları', sub: 'Yakınınızdaki güvenli alanlar', icon: 'people', color: '#4DA3FF', href: '/harita' },
-] as const;
+  { key: 'enkaz', title: 'Enkaz Altı Modu', sub: 'İnternetsiz siren ve flaş', img: 'tool-siren', href: '/enkaz' },
+  { key: 'fener', title: 'Fener', sub: 'Cihazınızın fenerini açın', img: 'tool-light', href: '/isik?led=1' },
+  { key: 'sms', title: 'Acil SMS', sub: 'Hazır mesajlarla yardım isteyin', img: 'tool-sms', href: '/acil-sms' },
+  { key: 'toplanma', title: 'Toplanma Alanları', sub: 'Yakınınızdaki güvenli alanlar', img: 'tool-assembly', href: '/harita' },
+] as const satisfies readonly { key: string; title: string; sub: string; img: GuideImgKey; href: string }[];
 
 const GUIDE: { id: string; title: string; sub: string; img: GuideImgKey }[] = [
   { id: 'during-indoor', title: 'Deprem anında ne yapmalıyım?', sub: 'Çök · Kapan · Tutun', img: 'drop-cover-hold-wide' },
@@ -258,15 +258,17 @@ export function EmergencyHome({ bottomPad = 0 }: { bottomPad?: number }) {
             onPress={() => router.push(t.href)}
             accessibilityRole="button"
             accessibilityLabel={`${t.title}. ${t.sub}`}
-            style={({ pressed }) => [styles.tool, { width: cellW }, narrow && { padding: 6 }, pressed && { opacity: 0.85 }]}
+            style={({ pressed }) => [styles.tool, { width: cellW }, pressed && { opacity: 0.85 }]}
           >
-            <Ionicons name={t.icon} size={narrow ? 26 : 32} color={t.color} />
-            <AppText variant="heading" style={{ fontSize: narrow ? 10.5 : 13, lineHeight: narrow ? 13 : 16 }}>
-              {t.title}
-            </AppText>
-            <AppText variant="caption" style={{ fontSize: narrow ? 9.5 : 10.5, lineHeight: narrow ? 12 : 13.5 }}>
-              {t.sub}
-            </AppText>
+            <GuideImage img={t.img} style={{ width: '100%', height: cellW * 0.62 }} />
+            <View style={[styles.toolText, narrow && { paddingHorizontal: 6 }]}>
+              <AppText variant="heading" style={{ fontSize: narrow ? 10.5 : 13, lineHeight: narrow ? 13 : 16 }}>
+                {t.title}
+              </AppText>
+              <AppText variant="caption" style={{ fontSize: narrow ? 9.5 : 10.5, lineHeight: narrow ? 12 : 13.5 }}>
+                {t.sub}
+              </AppText>
+            </View>
           </Pressable>
         ))}
       </View>
@@ -367,12 +369,12 @@ const styles = themedStyles(() => ({
   tool: {
     minHeight: 118,
     borderRadius: 16,
-    padding: spacing.sm,
-    gap: 6,
+    overflow: 'hidden',
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
   },
+  toolText: { gap: 4, paddingHorizontal: spacing.sm, paddingTop: 6, paddingBottom: spacing.sm },
   guide: {
     flexDirection: 'row',
     alignItems: 'center',
