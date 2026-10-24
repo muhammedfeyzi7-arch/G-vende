@@ -94,7 +94,6 @@ const frame = (body, { transparent = false } = {}) =>
   ${transparent ? '' : `<rect x="0" y="0" width="34" height="400" fill="url(#eL)"/><rect x="366" y="0" width="34" height="400" fill="url(#eR)"/><rect x="0" y="0" width="400" height="34" fill="url(#eT)"/><rect x="0" y="352" width="400" height="48" fill="url(#eB)"/>`}
 </svg>`;
 
-
 /**
  * Dizlerin üzerine çökmüş, öne kapanmış figür (sağa bakar). (x,y): diz-zemin noktası.
  * Yakın kol baş ve enseyi örter; uzak kol `hold` noktasına (masa ayağı) tutunur ya da başı korur.
@@ -105,21 +104,59 @@ function crouch(x, y, shirt, shirtD, hold) {
   const S = [x + 16, y - 56]; // omuz
   const hd = [x + 30, y - 30]; // baş: aşağıda, öne eğik
   const far = hold
-    ? limb([[S[0] - 4, S[1] + 10], [x + 28, y - 14], [hold[0] - 6, hold[1]]], shirtD, 12) + `<circle cx="${hold[0] - 1}" cy="${hold[1]}" r="7.5" fill="${P.skinD}"/>`
-    : limb([[S[0] - 4, S[1] + 6], [hd[0] + 10, hd[1] - 26], [hd[0] + 22, hd[1] - 10]], shirtD, 12) + `<circle cx="${hd[0] + 23}" cy="${hd[1] - 6}" r="7" fill="${P.skinD}"/>`;
+    ? limb(
+        [
+          [S[0] - 4, S[1] + 10],
+          [x + 28, y - 14],
+          [hold[0] - 6, hold[1]],
+        ],
+        shirtD,
+        12,
+      ) + `<circle cx="${hold[0] - 1}" cy="${hold[1]}" r="7.5" fill="${P.skinD}"/>`
+    : limb(
+        [
+          [S[0] - 4, S[1] + 6],
+          [hd[0] + 10, hd[1] - 26],
+          [hd[0] + 22, hd[1] - 10],
+        ],
+        shirtD,
+        12,
+      ) + `<circle cx="${hd[0] + 23}" cy="${hd[1] - 6}" r="7" fill="${P.skinD}"/>`;
   return `
   <ellipse cx="${x - 14}" cy="${y + 4}" rx="74" ry="9" fill="#0A1424" opacity="0.55"/>
   ${far}
   <!-- baldır yerde, ayak geride -->
-  ${limb([[x - 70, y - 6], [x - 4, y - 8]], P.pantsD, 18)}
+  ${limb(
+    [
+      [x - 70, y - 6],
+      [x - 4, y - 8],
+    ],
+    P.pantsD,
+    18,
+  )}
   <!-- uyluk -->
-  ${limb([[H[0] + 4, H[1] + 4], [x - 8, y - 14]], 'url(#gPants)', 24)}
+  ${limb(
+    [
+      [H[0] + 4, H[1] + 4],
+      [x - 8, y - 14],
+    ],
+    'url(#gPants)',
+    24,
+  )}
   <!-- kambur sırt (kapanmış gövde) -->
   <path d="M${H[0] - 12} ${H[1] + 10} C ${H[0] - 14} ${y - 92}, ${S[0] + 4} ${y - 96}, ${S[0] + 14} ${S[1] + 10} L ${x + 6} ${y - 22} Q ${x - 22} ${y - 10} ${H[0] - 12} ${H[1] + 10} Z" fill="${shirt}"/>
   <path d="M${H[0] - 6} ${H[1] - 4} C ${H[0] - 4} ${y - 84}, ${S[0] - 6} ${y - 88}, ${S[0] + 6} ${S[1] + 2}" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-width="5" stroke-linecap="round"/>
   ${head(hd[0], hd[1], 16, 1)}
   <!-- yakın kol: başın ve ensenin üstünde -->
-  ${limb([[S[0] + 4, S[1] + 4], [hd[0] + 2, hd[1] - 24], [hd[0] + 18, hd[1] - 16]], shirtD, 13)}
+  ${limb(
+    [
+      [S[0] + 4, S[1] + 4],
+      [hd[0] + 2, hd[1] - 24],
+      [hd[0] + 18, hd[1] - 16],
+    ],
+    shirtD,
+    13,
+  )}
   <circle cx="${hd[0] + 21}" cy="${hd[1] - 13}" r="7.5" fill="${P.skin}"/>`;
 }
 
@@ -317,11 +354,35 @@ function afterQuake() {
   </g>
   <ellipse cx="214" cy="334" rx="46" ry="9" fill="#0A1424" opacity="0.55"/>
   <!-- kişi, sırt çantasıyla yürüyor -->
-  ${limb([[206, 262], [190, 300], [180, 330]], 'url(#gPants)', 15)}
-  ${limb([[212, 262], [234, 296], [248, 326]], P.pantsD, 15)}
+  ${limb(
+    [
+      [206, 262],
+      [190, 300],
+      [180, 330],
+    ],
+    'url(#gPants)',
+    15,
+  )}
+  ${limb(
+    [
+      [212, 262],
+      [234, 296],
+      [248, 326],
+    ],
+    P.pantsD,
+    15,
+  )}
   <rect x="172" y="198" width="32" height="56" rx="12" fill="url(#gRed)"/>
   <rect x="190" y="196" width="40" height="72" rx="16" fill="url(#gBlue)"/>
-  ${limb([[214, 210], [236, 236], [244, 258]], P.blueD, 11)}
+  ${limb(
+    [
+      [214, 210],
+      [236, 236],
+      [244, 258],
+    ],
+    P.blueD,
+    11,
+  )}
   <circle cx="245" cy="262" r="6" fill="${P.skin}"/>
   ${head(214, 178, 16, 1)}
   `);
@@ -348,14 +409,51 @@ function trapped() {
   <rect x="312" y="230" width="26" height="12" rx="4" fill="#6F84A6"/>
   <!-- yüzüstü, dirseklerine dayanmış kişi -->
   <ellipse cx="200" cy="304" rx="120" ry="6" fill="#0A1424" opacity="0.5"/>
-  ${limb([[70, 294], [150, 290]], P.pantsD, 18)}
-  ${limb([[150, 290], [182, 286]], 'url(#gPants)', 22)}
-  ${limb([[176, 288], [246, 274]], 'url(#gTeal)', 36)}
+  ${limb(
+    [
+      [70, 294],
+      [150, 290],
+    ],
+    P.pantsD,
+    18,
+  )}
+  ${limb(
+    [
+      [150, 290],
+      [182, 286],
+    ],
+    'url(#gPants)',
+    22,
+  )}
+  ${limb(
+    [
+      [176, 288],
+      [246, 274],
+    ],
+    'url(#gTeal)',
+    36,
+  )}
   ${head(270, 262, 16, 1)}
-  ${limb([[236, 280], [244, 298], [262, 298]], P.tealD, 12)}
+  ${limb(
+    [
+      [236, 280],
+      [244, 298],
+      [262, 298],
+    ],
+    P.tealD,
+    12,
+  )}
   <circle cx="266" cy="297" r="6.5" fill="${P.skinD}"/>
   <!-- taşla boruya vuran el -->
-  ${limb([[246, 272], [276, 286], [302, 272]], P.teal, 12)}
+  ${limb(
+    [
+      [246, 272],
+      [276, 286],
+      [302, 272],
+    ],
+    P.teal,
+    12,
+  )}
   <circle cx="304" cy="270" r="7" fill="${P.skin}"/>
   <rect x="304" y="258" width="14" height="12" rx="3" fill="#A9B6C9" transform="rotate(-18 311 264)"/>
   <!-- ses dalgaları -->
@@ -442,12 +540,44 @@ function transit() {
   <rect x="226" y="86" width="4" height="206" rx="2" fill="#FFFFFF" opacity="0.6"/>
   <ellipse cx="200" cy="300" rx="56" ry="8" fill="#0A1424" opacity="0.55"/>
   <!-- direğe sıkıca tutunan, dizleri hafif bükük kişi -->
-  ${limb([[196, 232], [186, 264], [182, 296]], 'url(#gPants)', 16)}
-  ${limb([[204, 232], [216, 264], [214, 296]], P.pantsD, 16)}
+  ${limb(
+    [
+      [196, 232],
+      [186, 264],
+      [182, 296],
+    ],
+    'url(#gPants)',
+    16,
+  )}
+  ${limb(
+    [
+      [204, 232],
+      [216, 264],
+      [214, 296],
+    ],
+    P.pantsD,
+    16,
+  )}
   <rect x="180" y="164" width="40" height="76" rx="16" fill="url(#gTeal)"/>
-  ${limb([[214, 176], [226, 160], [232, 140]], P.tealD, 12)}
+  ${limb(
+    [
+      [214, 176],
+      [226, 160],
+      [232, 140],
+    ],
+    P.tealD,
+    12,
+  )}
   <circle cx="232" cy="136" r="7.5" fill="${P.skin}"/>
-  ${limb([[210, 186], [224, 200], [232, 196]], P.teal, 12)}
+  ${limb(
+    [
+      [210, 186],
+      [224, 200],
+      [232, 196],
+    ],
+    P.teal,
+    12,
+  )}
   <circle cx="234" cy="196" r="7" fill="${P.skin}"/>
   ${head(200, 144, 16, 1)}
   `);
@@ -469,10 +599,26 @@ function special() {
   <g filter="url(#sh)"><circle cx="96" cy="330" r="16" fill="url(#gTeal)"/></g>
   <rect x="89" y="328" width="14" height="11" rx="2" fill="#fff"/><path d="M92 328 v-4 a4 4 0 0 1 8 0 v4" fill="none" stroke="#fff" stroke-width="2.5"/>
   <!-- oturan kişi -->
-  ${limb([[150, 272], [186, 272], [190, 312]], 'url(#gPants)', 16)}
+  ${limb(
+    [
+      [150, 272],
+      [186, 272],
+      [190, 312],
+    ],
+    'url(#gPants)',
+    16,
+  )}
   <path d="M120 276 Q 112 220 146 210 Q 168 214 168 246 L 162 278 Z" fill="url(#gBlue)"/>
   ${head(146, 190, 16, 1, '#C9CED6')}
-  ${limb([[150, 226], [176, 250], [196, 244]], P.blueD, 11)}
+  ${limb(
+    [
+      [150, 226],
+      [176, 250],
+      [196, 244],
+    ],
+    P.blueD,
+    11,
+  )}
   <circle cx="200" cy="243" r="6" fill="${P.skin}"/>
   <!-- ilaç çantası -->
   <g filter="url(#sh)">
@@ -490,6 +636,114 @@ function special() {
   <circle cx="298" cy="286" r="14" fill="#E9A15A"/>
   <path d="M286 278 l2 -14 l8 9 z M310 278 l-2 -14 l-8 9 z" fill="#E9A15A"/>
   <circle cx="293" cy="285" r="2.2" fill="${P.ink}"/><circle cx="303" cy="285" r="2.2" fill="${P.ink}"/>
+  `);
+}
+
+// ───────────────────────── Gaz kokusu: vanayı kapat, pencereyi aç, ateş yakma ─────────────────────────
+// AFAD: gaz kokusu alırsanız gaz vanasını kapatın, camları ve kapıları açın, binayı terk edin; kibrit/çakmak yakmayın.
+function gasSafety() {
+  return frame(`
+  <!-- mutfak duvarı -->
+  <rect x="34" y="70" width="332" height="250" rx="14" fill="url(#gNavy)"/>
+  <path d="M34 262 H366" stroke="${P.line}" stroke-width="4"/>
+  <!-- açık pencere ve dışarı akan hava -->
+  <g filter="url(#sh)">
+    <rect x="236" y="96" width="104" height="112" rx="8" fill="#0F1E34" stroke="${P.wallD}" stroke-width="7"/>
+    <rect x="243" y="103" width="45" height="98" fill="#1B3050"/>
+    <path d="M288 103 L330 92 L330 214 L288 201 Z" fill="url(#gGlass)" stroke="${P.wallD}" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+  <path d="M200 130 q 22 -12 44 0 t 44 0" fill="none" stroke="${P.teal}" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+  <path d="M190 158 q 26 -12 52 0 t 52 0" fill="none" stroke="${P.teal}" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M206 186 q 20 -10 40 0 t 40 0" fill="none" stroke="${P.teal}" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+  <!-- gaz borusu ve vana -->
+  <path d="M60 330 V214 Q60 196 78 196 H150" fill="none" stroke="#C9A43A" stroke-width="14" stroke-linecap="round"/>
+  <path d="M150 196 H190" fill="none" stroke="#C9A43A" stroke-width="14" stroke-linecap="round"/>
+  <g filter="url(#sh)">
+    <rect x="132" y="182" width="30" height="28" rx="6" fill="#8EA3C2"/>
+    <!-- kol boruya dik: kapalı -->
+    <rect x="140" y="132" width="14" height="62" rx="7" fill="url(#gAmber)"/>
+  </g>
+  <!-- vanayı çeviren el -->
+  ${limb(
+    [
+      [-10, 96],
+      [60, 112],
+      [122, 136],
+      [140, 146],
+    ],
+    P.blueD,
+    16,
+  )}
+  <circle cx="146" cy="148" r="10" fill="${P.skin}"/>
+  <path d="M172 140 a 30 30 0 0 1 0 44" fill="none" stroke="${P.white}" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+  <path d="M166 186 l8 -2 l-1 -9" fill="none" stroke="${P.white}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+  <!-- ateş yakmayın: yasak işareti içinde alev -->
+  <g filter="url(#sh)">
+    <circle cx="300" cy="244" r="40" fill="#1A2740"/>
+    <path d="M300 218 C 316 234 318 248 312 258 C 306 268 294 268 288 258 C 282 248 290 238 294 230 C 296 240 300 242 302 238 C 304 232 300 224 300 218 Z" fill="url(#gAmber)"/>
+    <circle cx="300" cy="244" r="34" fill="none" stroke="${P.red}" stroke-width="8"/>
+    <path d="M276 220 L324 268" stroke="${P.red}" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  `);
+}
+
+// ───────────────────────── Tekerlekli sandalyede deprem anı ─────────────────────────
+// AFAD: tekerlekleri kilitleyin, baş ve boynu koruyun. Ready.gov: öne eğilin, kollarla/kitapla/yastıkla örtün.
+function wheelchair() {
+  return frame(`
+  ${ground(332, 150)}
+  <!-- uzakta pencere (camdan uzak durun) -->
+  <rect x="268" y="96" width="78" height="96" rx="8" fill="#1B3050" stroke="${P.line}" stroke-width="6"/>
+  <path d="M307 96 V192 M268 144 H346" stroke="${P.line}" stroke-width="5"/>
+  <!-- sandalye -->
+  <g filter="url(#sh)">
+    <circle cx="170" cy="282" r="46" fill="none" stroke="${P.line}" stroke-width="10"/>
+    <circle cx="170" cy="282" r="34" fill="none" stroke="#2A3B58" stroke-width="3"/>
+    <circle cx="170" cy="282" r="7" fill="${P.line}"/>
+    <path d="M130 196 L 146 272 L 234 272" fill="none" stroke="#8EA3C2" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M234 272 L 246 314" stroke="#8EA3C2" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="250" cy="318" r="12" fill="none" stroke="${P.line}" stroke-width="7"/>
+  </g>
+  <!-- fren kilidi -->
+  <g filter="url(#sh)"><circle cx="112" cy="318" r="18" fill="url(#gTeal)"/></g>
+  <rect x="104" y="316" width="16" height="12" rx="2" fill="#fff"/><path d="M107 316 v-5 a5 5 0 0 1 10 0 v5" fill="none" stroke="#fff" stroke-width="2.8"/>
+  <path d="M130 318 H 152" stroke="${P.teal}" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 6"/>
+  <!-- öne kapanmış kişi -->
+  ${limb(
+    [
+      [176, 262],
+      [228, 262],
+      [234, 306],
+    ],
+    'url(#gPants)',
+    18,
+  )}
+  <path d="M144 266 C 132 230 150 196 196 200 C 214 204 222 220 218 236 L 196 262 Z" fill="url(#gBlue)"/>
+  <path d="M150 248 C 148 222 166 206 194 206" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-width="5" stroke-linecap="round"/>
+  ${head(222, 236, 16, 1)}
+  <!-- kollar başın ve ensenin üstünde -->
+  ${limb(
+    [
+      [196, 208],
+      [214, 206],
+      [238, 222],
+    ],
+    P.blueD,
+    13,
+  )}
+  <circle cx="240" cy="226" r="7.5" fill="${P.skin}"/>
+  ${limb(
+    [
+      [188, 214],
+      [208, 214],
+      [230, 214],
+    ],
+    P.blueD,
+    12,
+  )}
+  <circle cx="232" cy="214" r="7" fill="${P.skinD}"/>
+  <!-- sarsıntı çizgileri -->
+  <path d="M70 200 q -10 20 0 40 M56 190 q -14 30 0 60" fill="none" stroke="${P.line}" stroke-width="5" stroke-linecap="round"/>
   `);
 }
 
@@ -558,8 +812,16 @@ function logo() {
 
 /** name → { svg, transparent } */
 export const SCENES = {
-  'drop-cover-hold': { svg: dropCoverHold(), wide: [40, 150, 320, 160], what: 'Çök-Kapan-Tutun (masa altında, bir el masa ayağında, kol başı/enseyi korur)' },
-  'drop-cover-hold-hero': { svg: dropCoverHold({ transparent: true }), transparent: true, what: 'Çök-Kapan-Tutun, saydam (kırmızı kart için)' },
+  'drop-cover-hold': {
+    svg: dropCoverHold(),
+    wide: [40, 150, 320, 160],
+    what: 'Çök-Kapan-Tutun (masa altında, bir el masa ayağında, kol başı/enseyi korur)',
+  },
+  'drop-cover-hold-hero': {
+    svg: dropCoverHold({ transparent: true }),
+    transparent: true,
+    what: 'Çök-Kapan-Tutun, saydam (kırmızı kart için)',
+  },
   'home-safety': { svg: homeSafety(), what: 'Deprem öncesi ev güvenliği' },
   kit: { svg: kit(), what: 'Acil durum çantası' },
   'family-plan': { svg: familyPlan(), what: 'Aile iletişim ve buluşma planı' },
@@ -568,7 +830,13 @@ export const SCENES = {
   trapped: { svg: trapped(), wide: [20, 150, 360, 180], what: 'Enkaz altında mahsur kalma' },
   outdoor: { svg: outdoor(), wide: [10, 130, 380, 190], what: 'Açık alanda deprem güvenliği' },
   vehicle: { svg: vehicle(), wide: [10, 170, 380, 190], what: 'Araçta doğru davranış' },
-  transit: { svg: transit(), what: 'Metro/trende direğe tutunma' },
+  transit: { svg: transit(), wide: [0, 110, 400, 200], what: 'Metro/trende direğe tutunma' },
+  gas: { svg: gasSafety(), wide: [0, 84, 400, 200], what: 'Gaz kokusu: vanayı kapat, pencereyi aç, ateş yakma' },
+  wheelchair: {
+    svg: wheelchair(),
+    wide: [0, 150, 400, 200],
+    what: 'Tekerlekli sandalye: tekerlekler kilitli, öne eğilip baş ve enseyi koru',
+  },
   'special-needs': { svg: special(), what: 'Özel ihtiyaçlı bireyler ve evcil hayvanlar' },
   checklist: { svg: checklist(), what: 'Hazırlık kontrol listesi' },
   logo: { svg: logo(), transparent: true, size: [120, 132], what: 'Uygulama içi logo' },

@@ -24,6 +24,8 @@ export const GUIDE_IMG = {
   vehicle: require('../../../assets/guide/art/vehicle.jpg'),
   transit: require('../../../assets/guide/art/transit.jpg'),
   'special-needs': require('../../../assets/guide/art/special-needs.jpg'),
+  gas: require('../../../assets/guide/art/gas.jpg'),
+  wheelchair: require('../../../assets/guide/art/wheelchair.jpg'),
   checklist: require('../../../assets/guide/art/checklist.jpg'),
   logo: require('../../../assets/guide/art/logo.png'),
   'quake-card': require('../../../assets/guide/art/quake-card.png'),
@@ -32,25 +34,37 @@ export const GUIDE_IMG = {
   'trapped-wide': require('../../../assets/guide/art/trapped-wide.jpg'),
   'outdoor-wide': require('../../../assets/guide/art/outdoor-wide.jpg'),
   'vehicle-wide': require('../../../assets/guide/art/vehicle-wide.jpg'),
+  'transit-wide': require('../../../assets/guide/art/transit-wide.jpg'),
+  'gas-wide': require('../../../assets/guide/art/gas-wide.jpg'),
+  'wheelchair-wide': require('../../../assets/guide/art/wheelchair-wide.jpg'),
 } as const;
 export type GuideImgKey = keyof typeof GUIDE_IMG;
 
 /** Saydam zeminli dosyalar (kırmızı kart, başlık logosu) */
 const TRANSPARENT: GuideImgKey[] = ['drop-cover-hold-hero', 'logo', 'quake-card'];
 
-/** Konu görseli → dosya ve ekran okuyucu açıklaması. */
-const SCENES: Record<ArtId, { img: GuideImgKey; label: string }> = {
+/** Konu görseli → dosya, (varsa) 2:1 yatay kesit ve ekran okuyucu açıklaması. */
+const SCENES: Record<ArtId, { img: GuideImgKey; wide?: GuideImgKey; label: string }> = {
   indoor: {
     img: 'drop-cover-hold',
+    wide: 'drop-cover-hold-wide',
     label: 'Masanın altında dizlerinin üzerine çökmüş, bir koluyla başını ve ensesini koruyan, diğer eliyle masa ayağına tutunan kişi',
   },
-  outdoor: { img: 'outdoor', label: 'Binalardan, ağaçtan ve direkten uzak açık alanda çömelip başını koruyan kişi' },
-  vehicle: { img: 'vehicle', label: 'Yolun sağ kenarına yanaşıp dörtlü flaşörle durmuş araç' },
-  transit: { img: 'transit', label: 'Metro vagonunda dikey direğe sıkıca tutunan kişi' },
-  wheelchair: { img: 'special-needs', label: 'Frenleri kilitli tekerlekli sandalyedeki kişi, ilaç çantası ve evcil hayvan taşıma çantası' },
-  after: { img: 'after-quake', label: 'Sırt çantasıyla hasarlı binadan uzaklaşıp toplanma alanına yürüyen kişi' },
-  gas: { img: 'after-quake', label: 'Binadan uzaklaşıp açık alana yürüyen kişi' },
-  trapped: { img: 'trapped', label: 'Enkaz altında, elindeki taşla boruya vurarak yerini duyuran kişi' },
+  outdoor: { img: 'outdoor', wide: 'outdoor-wide', label: 'Binalardan, ağaçtan ve direkten uzak açık alanda çömelip başını koruyan kişi' },
+  vehicle: { img: 'vehicle', wide: 'vehicle-wide', label: 'Yolun sağ kenarına yanaşıp dörtlü flaşörle durmuş araç' },
+  transit: { img: 'transit', wide: 'transit-wide', label: 'Metro vagonunda dikey direğe sıkıca tutunan kişi' },
+  wheelchair: {
+    img: 'wheelchair',
+    wide: 'wheelchair-wide',
+    label: 'Tekerlekleri kilitli tekerlekli sandalyede öne eğilip kollarıyla başını ve ensesini koruyan kişi; pencere uzakta',
+  },
+  after: { img: 'after-quake', wide: 'after-quake-wide', label: 'Sırt çantasıyla hasarlı binadan uzaklaşıp toplanma alanına yürüyen kişi' },
+  gas: {
+    img: 'gas',
+    wide: 'gas-wide',
+    label: 'Gaz borusundaki vanayı kapatan el, açık pencereden çıkan hava ve ateş yakmayın işareti',
+  },
+  trapped: { img: 'trapped', wide: 'trapped-wide', label: 'Enkaz altında, elindeki taşla boruya vurarak yerini duyuran kişi' },
   family: { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
   'prep-home': { img: 'home-safety', label: 'Ev, yangın söndürücü ve güvenlik kalkanı' },
   'prep-plan': { img: 'family-plan', label: 'Harita üzerinde buluşma noktası, telefonda güvendeyim mesajı ve aile' },
@@ -85,20 +99,11 @@ export function GuideImage({
   );
 }
 
-/** Konu görseli; varsayılan oran 4:3. */
-export function GuideArt({
-  id,
-  width = 120,
-  height,
-  style,
-}: {
-  id: ArtId;
-  width?: number;
-  height?: number;
-  style?: StyleProp<ImageStyle>;
-}) {
+/** Konu sayfası üst görseli: yatay kesit varsa tam genişlikte (2:1, cover), yoksa kare sahne (contain). */
+export function GuideHero({ id, width, style }: { id: ArtId; width: number; style?: StyleProp<ImageStyle> }) {
   const s = SCENES[id];
-  return <GuideImage img={s.img} label={s.label} style={[{ width, height: height ?? (width * 3) / 4, borderRadius: 12 }, style]} />;
+  const img = s.wide ?? s.img;
+  return <GuideImage img={img} label={s.label} cover={!!s.wide} style={[{ width, height: width / 2 }, style]} />;
 }
 
 /** Konu görselinin dosya anahtarı. */

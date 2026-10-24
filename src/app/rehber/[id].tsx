@@ -4,7 +4,7 @@ import { View, useWindowDimensions } from 'react-native';
 import { AppText, Button, StateMessage } from '@/components/ui';
 import { Page } from '@/components/ds';
 import { call112 } from '@/features/home/tabs';
-import { GuideArt } from '@/features/guide/Art';
+import { ART_BG, GuideHero } from '@/features/guide/Art';
 import { CATEGORIES, EMERGENCY_NUMBER, shown, topicById, topicSources, type Item } from '@/features/guide/content';
 import { OfflineNote, SourceList } from '@/features/guide/ui';
 import { colors, radius, spacing, themedStyles } from '@/theme';
@@ -62,7 +62,7 @@ export default function GuideTopic() {
     <Page>
       <Stack.Screen options={{ title: cat.title }} />
       <View style={styles.hero}>
-        <GuideArt id={t.art} width={Math.min(width, 640) - spacing.md * 4} />
+        <GuideHero id={t.art} width={Math.min(width, 640) - spacing.md * 2} />
       </View>
       <View style={{ gap: 4 }}>
         <AppText variant="title" accessibilityRole="header">
@@ -101,7 +101,7 @@ export default function GuideTopic() {
 }
 
 const styles = themedStyles(() => ({
-  hero: { alignItems: 'center', padding: spacing.md, borderRadius: radius.xl, backgroundColor: colors.surface },
+  hero: { alignItems: 'center', borderRadius: radius.xl, overflow: 'hidden', backgroundColor: ART_BG },
   item: {
     flexDirection: 'row',
     gap: spacing.md,

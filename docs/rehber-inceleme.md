@@ -66,3 +66,8 @@ AFAD'ın iki sayfası yeniden okunup her gösterilen madde metinle karşılaşt�
 - Araç ve gaz konularındaki "neden" metinleri kaynakta olmayan ifadeler ("kontrolü kaybedebilir", "patlama") yerine kaynaktaki gerekçelerle yeniden yazıldı.
 - "Yaralanmaların önemli bir kısmı" gibi kaynaksız oran ifadesi kaldırıldı.
 - Ready.gov ile iki inceleme maddesi (yatak, toz) çözüldü ve yeni maddeler eklendi (bkz. bölüm 1).
+
+### Görseller (24 Ekim 2026)
+
+- Yeni özgün sahneler: **gaz** (borudaki vanayı kapatan el, açık pencere, "ateş yakmayın" işareti; AFAD gaz maddeleri) ve **tekerlekli sandalye** (tekerlekler kilitli, öne eğilip kollarla baş ve enseyi koruma; AFAD + Ready.gov). Önceden gaz konusu "binadan uzaklaşma", tekerlekli sandalye konusu genel "özel ihtiyaçlar" görselini kullanıyordu.
+- Konu sayfasının üst görseli artık iç çerçevesiz, tam genişlikte 2:1 yatay kesittir (`GuideHero`); metro, gaz ve tekerlekli sandalye için de yatay kesit üretildi.
