@@ -500,7 +500,8 @@ describe('alt ekranlar', () => {
     expect(screen.getAllByText(/Son kontrol: /).length).toBeGreaterThan(0);
     // İnceleme bekleyen (doğrulanmamış) maddeler gösterilmez
     expect(screen.queryByText(/Hayat üçgeni/i)).toBeNull();
-    expect(screen.queryByText(/yastıkla koruyun/)).toBeNull();
+    expect(screen.queryByText(/tüm katların düğmesine/)).toBeNull();
+    expect(screen.getByText(/yastıkla koruyun/)).toBeTruthy();
   });
 
   it('rehber: doğrulama bekleyen veya bilinmeyen konu açılmaz', async () => {

@@ -1,6 +1,6 @@
 # Acil Durum Rehberi — Kaynaklar, Telif ve Uzman İnceleme Listesi
 
-İçerik sürümü: **2026.10.23-2** · Son kaynak karşılaştırması: **23 Ekim 2026**
+İçerik sürümü: **2026.10.24-1** · Son kaynak karşılaştırması: **23 Ekim 2026**
 İçerik dosyası: `src/features/guide/content.ts` (her madde kaynağa bağlı; `status: 'review'` maddeler uygulamada gösterilmez).
 
 ## 1. Kullanılan resmî kaynaklar
@@ -9,12 +9,15 @@
 |---|---|---|---|---|---|
 | `afad-onlemler` | AFAD | Deprem Öncesi, Anı ve Sonrası Alabileceğiniz Önlemleri Biliyor Musunuz? | https://www.afad.gov.tr/deprem-oncesi-ani-ve-sonrasi-alabileceginiz-onlemleri-biliyor-musunuz | 05.03.2018 | 23.10.2026 |
 | `afad-guvende-kal` | AFAD | Deprem Öncesi, Anı ve Sonrası Önlemini Al, Güvende Kal | https://www.afad.gov.tr/deprem-oncesi-ani-ve-sonrasi-onlemini-al-guvende-kal | 19.03.2018 | 23.10.2026 |
+| `ready` | FEMA (ABD) — Ready.gov | Earthquakes | https://www.ready.gov/earthquakes | — (son güncelleme 09.09.2026) | 23.10.2026 |
 | `acm112` | İçişleri Bakanlığı — 112 Acil Çağrı Merkezi | 112 Acil Çağrı Merkezi | https://www.112.gov.tr/ | — | 23.10.2026 |
 | `guvende` | GÜVENDE | Uygulamanın çalışma biçimi (resmî kaynak değil) | — | — | — |
 
+**Ready.gov tamamlayıcı kaynaktır:** yalnızca AFAD metinlerinde bulunmayan ve AFAD ile çelişmeyen maddelerde kullanılır (yatakta yastıkla korunma, iç duvar yanına çökme, kapı eşiğine sığınmama, el freni, baston/yürüteç, düdük, toz için ağzı örtme, artçıda yeniden Çök-Kapan-Tutun, arama yerine SMS, ağır enkazı tek başına kaldırmama). ABD'ye özgü bilgiler (911, sigorta) alınmadı. AFAD ile çelişen konularda (hayat üçgeni, tünelde araçtan inme) madde gösterilmez.
+
 Sayfalar, geliştirme ortamının internet erişimi kısıtlı olduğu için Supabase sunucusundan (pg_net) indirilip okundu.
 
-**Erişilemeyen / okunamayan:** `saglik.gov.tr` (bağlantı koptu); AFAD'ın ayrıntılı "Afet ve Acil Durum Çantası" sayfası (aranan adreslerde 404).
+**Erişilemeyen / okunamayan:** `saglik.gov.tr` (bağlantı koptu); `shakeout.org` ve `earthquakecountry.org` (403); `kizilay.org.tr` deprem sayfası (404); AFAD'ın ayrıntılı "Afet ve Acil Durum Çantası" sayfası (aranan adreslerde 404).
 
 ## 2. Telif ve kullanım
 
@@ -29,10 +32,8 @@ Sayfalar, geliştirme ortamının internet erişimi kısıtlı olduğu için Sup
 | Konu | Madde | Neden beklemede |
 |---|---|---|
 | İçerideyseniz | "Hayat üçgeni" oluşturun | AFAD 2018 metni Çök-Kapan-Tutun ile birlikte "hayat üçgeni" ifadesini kullanıyor; uluslararası kuruluşlar bu yöntemi önermiyor. Kaynaklar arası çelişki: uygulama yalnızca Çök-Kapan-Tutun anlatır. |
-| İçerideyseniz | Yataktaysanız yüzüstü dönüp başınızı yastıkla koruyun | Okunan AFAD kaynaklarında yok (eski sürümden kalma). |
 | İçerideyseniz | Asansördeyseniz tüm katların düğmesine basıp ilk durakta inin | Okunan AFAD kaynaklarında yok. |
 | Araçtaysanız | Tünel/kapalı otoparkta araçtan inip aracın yanına yan yatın | AFAD önerisi; başka ülkelerin rehberleri araçta kalmayı öneriyor. Uzman görüşü gerekli. |
-| Enkaz altında | Toz için ağız ve burnu kumaşla örtün | Okunan AFAD kaynaklarında yok; Sağlık Bakanlığı / Kızılay ile doğrulanmalı. |
 | Çanta | Çantayı ulaşılması zor yerde saklamayın | Genel öneri; kaynakta açık ifade yok. |
 
 ## 4. Kaldırılan önceki içerik
@@ -55,3 +56,13 @@ Sayfalar, geliştirme ortamının internet erişimi kısıtlı olduğu için Sup
 2. Değişen maddeler güncellenir; `CONTENT_VERSION` artırılır, `CHECKED_AT` ve kaynakların `checkedAt` alanları güncellenir.
 3. `npx jest src/features/guide` çalıştırılır (her gösterilen maddenin kaynağı, bağlantılar, kısayollar test edilir).
 4. Doğrulama 365 günden eskiyse uygulama "güncel olmayabilir" uyarısı gösterir.
+
+## 7. 24 Ekim 2026 karşılaştırması
+
+AFAD'ın iki sayfası yeniden okunup her gösterilen madde metinle karşılaştırıldı:
+
+- "Sağlam masa **veya** mobilyanın yanında çökün" → AFAD metnine uygun olarak "masanın **altına** ya da dolgun koltuk/kanepe gibi eşyanın **yanına**" diye düzeltildi.
+- "Eşya almak için geri dönmeyin" kaldırıldı (AFAD, binayı terk ederken gerekli eşyanın alınmasını söylüyor).
+- Araç ve gaz konularındaki "neden" metinleri kaynakta olmayan ifadeler ("kontrolü kaybedebilir", "patlama") yerine kaynaktaki gerekçelerle yeniden yazıldı.
+- "Yaralanmaların önemli bir kısmı" gibi kaynaksız oran ifadesi kaldırıldı.
+- Ready.gov ile iki inceleme maddesi (yatak, toz) çözüldü ve yeni maddeler eklendi (bkz. bölüm 1).
