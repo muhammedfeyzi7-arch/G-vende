@@ -76,7 +76,7 @@ const SCENES: Record<ArtId, { img: GuideImgKey; wide?: GuideImgKey; label: strin
   gas: {
     img: 'gas',
     wide: 'gas-wide',
-    label: 'Gaz sayacı ve ateş yakmayın işareti',
+    label: 'Yatay gaz borusundaki vananın kolunu boruya dik çevirerek kapatan el',
   },
   trapped: { img: 'trapped', wide: 'trapped-wide', label: 'Enkaz altında yüzüstü yatan, ışıkla yerini duyurmaya çalışan kişi' },
   family: { img: 'family-msg', wide: 'family-msg-wide', label: 'Dışarıda telefonundan kısa mesaj yazan kişi' },

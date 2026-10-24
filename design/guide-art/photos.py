@@ -59,6 +59,12 @@ for n in (3, 4):
         for c, (x0, x1) in enumerate(C34):
             TILES[f'c{n}{r}{c}'] = src.crop((x0, y0, x1, y1))
 
+# Beşinci kolaj (source/collage5.png, 1448×1086, 2 dikey karo): gaz vanası DOĞRU — yatay boru, kol boruya
+# dik (= kapalı), el kolu çeviriyor; tekerlekli sandalyede öne eğilip başını koruyan kişi.
+SRC5 = Image.open(ROOT / 'design/guide-art/source/collage5.png').convert('RGB')
+TILES['gas5'] = SRC5.crop((0, 0, 722, 1086))
+TILES['wheel5'] = SRC5.crop((728, 0, 1448, 1086))
+
 # çıktı adı → (karo, karo içi kutu ya da None = tamamı)
 CROPS = {
     'drop-cover-hold': ('dch2', None),
@@ -81,11 +87,11 @@ CROPS = {
     'special-needs': ('special', None),
     'checklist': ('checklist', None),
     # vana kolu ve onay işareti dışarıda: yalnızca sayaç + "ateş yakmayın"
-    'gas': ('gas2', (474, 40, 722, 420), 4 / 3),
-    'gas-wide': ('gas2', (474, 40, 722, 420), 2),
+    'gas': ('gas5', (0, 110, 722, 850), 4 / 3),
+    'gas-wide': ('gas5', (0, 110, 722, 850), 2),
     # yeşil ok dışarıda
-    'wheelchair': ('c302', (0, 90, 277, 298)),
-    'wheelchair-wide': ('c302', (0, 100, 277, 238)),
+    'wheelchair': ('wheel5', (0, 80, 720, 620)),
+    'wheelchair-wide': ('wheel5', (0, 110, 720, 470)),
     'family-msg': ('c303', (0, 70, 277, 278)),
     'family-msg-wide': ('c303', (0, 130, 277, 268)),
     'documents': ('c304', (0, 80, 277, 288)),
